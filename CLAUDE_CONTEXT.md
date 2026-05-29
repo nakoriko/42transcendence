@@ -178,7 +178,7 @@ transcend/
 - [x] Vue — hello world в браузере
 - [x] Django — hello world через API
 - [x] PostgreSQL — подключена к Django
-- [ ] nginx — HTTPS локально
+- [x] nginx — HTTPS локально
 - [x] .env.example заполнен
 - [ ] **Privacy Policy + Terms of Service страницы** ← обязательно, без них проект не принимают
 
@@ -302,15 +302,23 @@ WebSockets, Remote players, AI Opponent, Tournament, OAuth, 2FA, PWA, File uploa
      - import os + DATABASES настроен через env переменные
      - migrate выполнен вручную, 10 встроенных таблиц Django созданы
      - TODO: автозапуск migrate через Dockerfile (Неделя 2)
+- [x] nginx — HTTPS локально
+      - самоподписанный сертификат (openssl, 365 дней)
+      - nginx.conf: reverse proxy для frontend/backend, редирект http→https
+      - .dockerignore для frontend и backend
+      - frontend/Dockerfile написан
+      - websocket блок временно закомментирован (TODO: неделя 2)
 
 ### Открытые вопросы
-*(обновляй по ходу работы)*
+*(обновлять по ходу работы)*
 - healthcheck для db (backend ждёт реальной готовности PostgreSQL)
 - Как организовать WebSocket сервис отдельно от основного Django?
 - Как новый член команды получит доступ к репозиторию?
 - Перенести проект в ~/projects/ для нативного HMR (не срочно)
 - Автозапуск migrate при docker-compose up (скрипт в Dockerfile)
 - healthcheck для db — backend стартует раньше чем Postgres готов
+- websocket/Dockerfile пустой — нужен в неделю 2
+- backend порт 8000 торчит наружу — убрать когда nginx стабилен
 
 ---
 

@@ -52,10 +52,11 @@ services:
       - backend
     volumes: 
       - ./nginx:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
     ports: 
       - "443:443"
+      - "80:80"
     restart: unless-stopped
 
 volumes:
   postgres_data:
-
