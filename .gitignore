@@ -1,0 +1,25 @@
+# PostgreSQL data
+db/postgres-data/
+
+# Environment variables
+.env
+
+# Help folder
+help/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.py[cod]
+
+# Django
+db.sqlite3
+*.log
+
+# Node / Vue
+node_modules/
+dist/
+.DS_Store

@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    env_file:
+      - .env
+    #changed bindmount (./db/postgres-data:/var/lib/postgresql/data) to named volume 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped 
+
+  #redis keeps teporary events, in RAM (exist just during the session, doesnt keep dasta on phisical folder)
+  redis:
+    image:  redis:7
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+    depends_on: 
+      - db
+    ports:
+      - "8000:8000"
+    #add_later tha db has to eait portgerSQL (healthcheck) 
+    restart: unless-stopped
+  
+  websocket:
+    build: ./websocket
+    env_file:
+      - .env
+    depends_on:
+      - backend
+      - redis
+    #Django channels need (wait for migrations and creation of db from backeand)
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on: 
+      - backend
+    restart: unless-stopped
+
+
+  nginx:
+    image: nginx:alpine
+    depends_on: 
+      - frontend
+      - backend
+    volumes: 
+      - ./nginx:/etc/nginx/conf.d
+    ports: 
+      - "443:443"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
