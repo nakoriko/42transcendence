@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'api'
+    'api',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -128,3 +129,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#ADD customisation here
+AUTH_USER_MODEL = 'users.User'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+#add localhost as  secure addres for MIDDLEWARE
+CSRF_TRUSTED_ORIGINS = ['https://localhost']
