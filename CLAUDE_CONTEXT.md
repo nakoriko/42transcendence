@@ -1,355 +1,359 @@
 # CLAUDE_CONTEXT.md — ft_transcendence
 
-> Обновлять в конце каждого рабочего дня.
+> Update at the end of each working day.
 
 ---
 
-## Проект
+## Project
 
-**Название:** Transcend
-**Суть:** Мультиплеерный Pong с турнирами, AI-противником, чатом и друзьями.
-**Фишка:** Умная аналитика после матча — где пропускаешь мяч, динамика реакции, сравнение с друзьями. Фитнес-трекер для геймеров.
-**Школа:** 42, финальный проект Common Core (ft_transcendence)
-**Дедлайн:** 1 месяц
-
----
-
-## Команда
-
-- **Сейчас:** соло
-- **Ожидается:** +1–3 человека (вероятность 90%, без конкретных дат)
-- **Моя роль:** Tech Lead + PO. Отвечаю за архитектуру и онбординг новых людей.
-- **Принцип онбординга:** каждый модуль изолирован, новый человек берёт один сервис и не трогает остальное. Документация в README каждого сервиса.
+**Name:** Transcend
+**Description:** Multiplayer Pong with tournaments, AI opponent, chat, and friends.
+**Key feature:** Smart post-match analytics — where you miss the ball, reaction dynamics, comparison with friends. A fitness tracker for gamers.
+**School:** 42, final Common Core project (ft_transcendence)
+**Deadline:** 1 month
 
 ---
 
-## Стратегия соло → команда
+## Team
+
+- **Currently:** solo
+- **Expected:** +1–3 people (90% probability, no specific dates)
+- **My role:** Tech Lead + PO. Responsible for architecture and onboarding new members.
+- **Onboarding principle:** each module is isolated, a new person takes one service and doesn't touch the rest. Documentation in each service's README.
+
+---
+
+## Strategy: solo → team
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     ЗОНА 1 — ТОЛЬКО Я                           │
-│              Фундамент. Никто не трогает.                        │
+│                     ZONE 1 — MINE ONLY                          │
+│              Foundation. Nobody touches this.                    │
 │                                                                  │
-│   [Docker + структура]  [Auth система]  [Схема БД]              │
+│   [Docker + structure]  [Auth system]  [DB schema]              │
 │   [Privacy Policy + ToS]                                        │
 │                                                                  │
-│   Новый член команды не может сломать то, чего не касается.      │
+│   A new team member cannot break what they don't touch.         │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              ЗОНА 2 — Я НАЧИНАЮ, КОМАНДА ПОДХВАТЫВАЕТ           │
+│              ZONE 2 — I START, TEAM PICKS UP                    │
 │                                                                  │
 │   [WebSockets]    [Remote players]    [AI Opponent]             │
 │                                                                  │
-│   Я проектирую API контракт сервиса.                            │
-│   тимммейт реализует внутри — не трогая зону 1.                 │
+│   I design the service API contract.                            │
+│   Teammate implements inside — without touching zone 1.         │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  ЗОНА 3 — ОСТАВИТЬ КОМАНДЕ                      │
+│                  ZONE 3 — LEAVE FOR THE TEAM                    │
 │                                                                  │
 │   [Tournament]  [OAuth]  [2FA]  [PWA]  [Languages]             │
 │   [Gamification]  [File upload]  [Spectator]                    │
 │                                                                  │
-│   Изолированные модули. Берёшь — делаешь — сдаёшь.             │
-│   Не зависят от внутренней логики зон 1 и 2.                    │
+│   Isolated modules. Pick it up — build it — ship it.           │
+│   No dependency on internal logic of zones 1 and 2.             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Правило онбординга
-Новый тиммейт получает:
-- README своего сервиса (что делает, зачем)
-- API контракт (что принимает на вход, что отдаёт)
-- Доступ только к своей папке в репозитории
-- Первую задачу которую можно сделать за 2–4 часа
+### Onboarding rule
+A new teammate receives:
+- README for their service (what it does, why it exists)
+- API contract (input/output interface)
+- Access only to their folder in the repository
+- A first task completable in 2–4 hours
 
-### Порядок работы над каждой новой фичей
+### Workflow for each new feature
 ```
-[ИЗУЧЕНИЕ] → понять концепцию прежде чем делать
+[STUDY] → understand the concept before building
      ↓
-[АРХИТЕКТУРА] → спроектировать до написания кода
+[ARCHITECTURE] → design before writing code
      ↓
-[РЕАЛИЗАЦИЯ] → написать код 
+[IMPLEMENTATION] → write the code
      ↓
-[ЗАЩИТА] → проверить понимание после реализации (просить Claude протестировать твои знания)
+[DEFENSE] → verify understanding after implementation (ask Claude to test your knowledge)
 ```
 
 ---
 
-## Стек
+## Tech Stack
 
-| Слой | Технология | Статус знания |
+| Layer | Technology | Knowledge Level |
 |---|---|---|
-| Frontend | Vue + Tailwind | изучаю с нуля |
-| Backend | Django + DRF | изучаю с нуля |
-| БД | PostgreSQL | изучаю с нуля |
-| Деплой | Docker Compose | минимальный опыт |
-| Auth | JWT + bcrypt | изучаю с нуля |
-| Real-time | WebSockets (Django Channels) | изучаю с нуля |
+| Frontend | Vue + Tailwind | learning from scratch |
+| Backend | Django + DRF | learning from scratch |
+| Database | PostgreSQL | learning from scratch |
+| Deploy | Docker Compose | minimal experience |
+| Auth | JWT + bcrypt | learning from scratch |
+| Real-time | WebSockets (Django Channels) | learning from scratch |
 
-**Фоновые знания:** C/C++, базовый HTML/CSS/JS, Git (с косяками в merge/PR).
+**Background knowledge:** C/C++, basic HTML/CSS/JS, Git (some issues with merge/PR).
 
 ---
 
-## Модули проекта
+## Project Modules
 
-### Делаю сама (цель: 9 pts за 3 недели)
+### Doing solo (goal: 9 pts in 3 weeks)
 
-| Модуль | Тип | Pts | Статус |
+| Module | Type | Pts | Status |
 |---|---|---|---|
-| Framework фронт + бэк (Vue + Django) | Major | 2 | ⬜ не начат |
-| User management (профиль, аватар, друзья) | Major | 2 | ⬜ не начат |
-| Базовая игра Pong ⚠️ нужна раньше всего остального | Major | 2 | ⬜ не начат |
-| ORM (Django ORM встроен) | Minor | 1 | ⬜ не начат |
-| Analytics dashboard (win/loss, history, leaderboard) | Minor | 1 | ⬜ не начат |
+| Frontend + Backend framework (Vue + Django) | Major | 2 | ⬜ not started |
+| User management (profile, avatar, friends) | Major | 2 | ⬜ not started |
+| Basic Pong game ⚠️ needed before everything else | Major | 2 | ⬜ not started |
+| ORM (Django ORM built-in) | Minor | 1 | ⬜ not started |
+| Analytics dashboard (win/loss, history, leaderboard) | Minor | 1 | ⬜ not started |
 
-### С командой (цель: +6 pts)
+### With team (goal: +6 pts)
 
-| Модуль | Тип | Pts | Для кого |
+| Module | Type | Pts | Assigned to |
 |---|---|---|---|
-| WebSockets + Remote players | Major | 2 | команда/я |
-| AI Opponent | Major | 2 | команда/я |
-| Tournament system | Minor | 1 | команда |
-| Game customization | Minor | 1 | команда |
-| OAuth | Minor | 1 | команда |
+| WebSockets + Remote players | Major | 2 | team/me |
+| AI Opponent | Major | 2 | team/me |
+| Tournament system | Minor | 1 | team |
+| Game customization | Minor | 1 | team |
+| OAuth | Minor | 1 | team |
 
-### Бонус — только если Phase 1–4 полностью готовы
+### Bonus — only if Phases 1–4 are fully complete
 
-| Модуль | Тип | Pts | Примечание |
+| Module | Type | Pts | Note |
 |---|---|---|---|
-| Advanced Analytics (heatmap, real-time charts, export PDF/CSV) | Major | +2 | IV.8 — моя фишка |
-| 2FA | Minor | +1 | лёгкий, команде |
-| PWA | Minor | +1 | лёгкий, команде |
-| Multiple languages | Minor | +1 | лёгкий, команде |
+| Advanced Analytics (heatmap, real-time charts, PDF/CSV export) | Major | +2 | IV.8 — my signature feature |
+| 2FA | Minor | +1 | easy, for team |
+| PWA | Minor | +1 | easy, for team |
+| Multiple languages | Minor | +1 | easy, for team |
 
-### Лёгкие модули для новых тиммейтов (2–4 часа каждый)
+### Easy modules for new teammates (2–4 hours each)
 
 Spectator mode, Gamification, File upload, Sentiment analysis
 
-**Итого цель: 15 pts базовых, до 20 pts с командой и бонусами**
+**Total goal: 15 base pts, up to 20 pts with team and bonuses**
 
 ---
 
-## Архитектура
+## Architecture
 
 ```
 transcend/
 ├── docker-compose.yml
 ├── .env.example
-├── frontend/          # Vue — отдельный контейнер
-├── backend/           # Django — отдельный контейнер
-├── websocket/         # Django Channels + Redis — отдельный контейнер
+├── frontend/          # Vue — separate container
+├── backend/           # Django — separate container
+├── websocket/         # Django Channels + Redis — separate container
 ├── db/                # PostgreSQL
 ├── nginx/             # HTTPS, reverse proxy
-└── CLAUDE_CONTEXT.md  # этот файл
+└── CLAUDE_CONTEXT.md  # this file
 ```
 
-> Каждый сервис = отдельный Docker контейнер = отдельная зона ответственности для члена команды.
-> Online presence (статус онлайн) идёт через WebSocket Gateway, не через REST.
+> Each service = separate Docker container = separate area of responsibility for a team member.
+> Online presence (online status) goes through the WebSocket Gateway, not through REST.
 
 ---
 
-## Мой уровень (честно)
+## My Skill Level (honest)
 
-**Знаю хорошо:** C/C++, логика, алгоритмы, дизайн, инфографика, визуализация данных
-**Знаю базово:** HTML/CSS/JS (без фреймворков), Git
-**Минимальный опыт:** Docker (сдала один проект с трудом)
-**Изучаю с нуля:** Vue, Django, PostgreSQL, WebSockets
+**Know well:** C/C++, logic, algorithms, design, infographics, data visualization
+**Know basically:** HTML/CSS/JS (no frameworks), Git
+**Minimal experience:** Docker (submitted one project with difficulty)
+**Learning from scratch:** Vue, Django, PostgreSQL, WebSockets
 
-**Важно для ментора:**
-- Объясняй через аналогии с C/C++ где возможно
-- Не пропускай шаги — я новичок в вебе
-- Визуальные метафоры работают хорошо (дизайн-бэкграунд)
-- Я должна уметь объяснить каждую строчку на защите
+**Important for the mentor:**
+- Explain through analogies with C/C++ where possible
+- Don't skip steps — I'm a web beginner
+- Visual metaphors work well (design background)
+- I must be able to explain every line of code during the defense
 
 ---
 
-## План по неделям
+## Weekly Plan
 
-### Неделя 1 — Фундамент
-Цель: всё запускается, сервисы видят друг друга.
+### Week 1 — Foundation
+Goal: everything runs, services see each other.
 
-- [x] Структура папок репозитория
-- [x] docker-compose.yml с тремя сервисами (frontend, backend, db)
-- [x] Vue — hello world в браузере
-- [x] Django — hello world через API
-- [x] PostgreSQL — подключена к Django
-- [x] nginx — HTTPS локально
-- [x] .env.example заполнен
-- [x] **Privacy Policy + Terms of Service страницы** ← обязательно, без них проект не принимают
+- [x] Repository folder structure
+- [x] docker-compose.yml with three services (frontend, backend, db)
+- [x] Vue — hello world in browser
+- [x] Django — hello world via API
+- [x] PostgreSQL — connected to Django
+- [x] nginx — HTTPS locally
+- [x] .env.example filled in
+- [x] **Privacy Policy + Terms of Service pages** ← required, project won't be accepted without them
 
-### Неделя 2 — Auth + БД
-Цель: пользователь может зарегистрироваться и войти.
+### Week 2 — Auth + Database
+Goal: user can register and log in.
 
-- [ ] Auth: регистрация, логин, JWT, bcrypt
-- [ ] Модели БД: User, Session, Match, MatchEvent, FriendRelation
-- [ ] Базовый UI: страницы login/register/profile
-- [ ] Защищённые роуты (frontend + backend)
+- [ ] Auth: registration, login, JWT, bcrypt
+- [x] DB models: User, Session, Match, MatchEvent, FriendRelation
+- [ ] Basic UI: login/register/profile pages
+- [ ] Protected routes (frontend + backend)
 
-### Неделя 3 — Игра + User Management
-Цель: два игрока могут сыграть матч на одном компьютере.
+### Week 3 — Game + User Management
+Goal: two players can play a match on one computer.
 
-- [ ] Pong: game loop на canvas
-- [ ] Локальный мультиплеер (два игрока, одна клавиатура)
-- [ ] Логирование каждого удара и позиции мяча в MatchEvent
-- [ ] User management: профиль, аватар, список друзей
-- [ ] Базовое сохранение результатов матча в БД
+- [ ] Pong: game loop on canvas
+- [ ] Local multiplayer (two players, one keyboard)
+- [ ] Logging every hit and ball position in MatchEvent
+- [ ] User management: profile, avatar, friends list
+- [ ] Basic match result saving to DB
 
-### Неделя 4 — Analytics + финализация
-Цель: 15 pts, проект сдаётся.
+### Week 4 — Analytics + Finalization
+Goal: 15 pts, project submitted.
 
-- [ ] Analytics dashboard (win/loss, история матчей, leaderboard)
-- [ ] README.md по требованиям сабджекта (Team Info, Stack, DB Schema, Modules)
-- [ ] Тестирование в Chrome, чистая консоль
-- [ ] docker-compose up — всё поднимается одной командой
-- [ ] Подготовка к защите (симуляция эвалюации с Claude)
+- [ ] Analytics dashboard (win/loss, match history, leaderboard)
+- [ ] README.md per subject requirements (Team Info, Stack, DB Schema, Modules)
+- [ ] Testing in Chrome, clean console
+- [ ] docker-compose up — everything starts with one command
+- [ ] Defense preparation (defense simulation with Claude)
 
-### Буфер для команды (параллельно неделям 3–4)
-Когда придут тиммейты  — они берут из этого списка:
+### Buffer for team (parallel to weeks 3–4)
+When teammates arrive — they pick from this list:
 WebSockets, Remote players, AI Opponent, Tournament, OAuth, 2FA, PWA, File upload, Languages
 
 ---
 
-## Правила работы с Claude
+## Rules for Working with Claude
 
-### Принципы
-1. Вставляй этот файл в начало каждого нового чата
-2. Указывай тип чата в первом сообщении
-3. Обновляй "Прогресс" и "Открытые вопросы" каждый день
-4. Никогда не копипасти код без понимания 
+### Principles
+1. Paste this file at the beginning of each new chat
+2. Specify the chat type in your first message
+3. Update "Progress" and "Open questions" every day
+4. Never copy-paste code without understanding it
 
-### Типы чатов и шаблоны промптов
+### Chat Types and Prompt Templates
 
-**[АРХИТЕКТУРА]** — проектирование до написания кода
+**[ARCHITECTURE]** — design before writing code
 ```
-[АРХИТЕКТУРА]
-[вставь CLAUDE_CONTEXT.md]
-Задача: спроектировать [что именно].
-Не пиши код — только структура, схемы, вопросы.
-Начни с того, что уточни моё понимание задачи.
-```
-
-**[ИЗУЧЕНИЕ: тема]** — понять концепцию
-```
-[ИЗУЧЕНИЕ: название темы]
-[вставь CLAUDE_CONTEXT.md]
-Я никогда не работала с [тема].
-Сначала спроси что я уже понимаю.
-Объясни концепцию через аналогию, потом минимальный пример.
-В конце задай мне 2–3 вопроса чтобы проверить понимание.
+[ARCHITECTURE]
+[paste CLAUDE_CONTEXT.md]
+Task: design [exactly what].
+Don't write code — only structure, diagrams, questions.
+Start by clarifying my understanding of the task.
 ```
 
-**[РЕАЛИЗАЦИЯ: фича]** — работа с конкретным кодом
+**[STUDY: topic]** — understand a concept
 ```
-[РЕАЛИЗАЦИЯ: название фичи]
-[вставь CLAUDE_CONTEXT.md]
-Реализую: [что именно].
-Текущий код: [вставь или опиши].
-Проблема / вопрос: [конкретно].
-Объясняй каждое решение до того как пишешь код.
-```
-
-**[ЗАЩИТА]** — симуляция эвалюации
-```
-[ЗАЩИТА]
-[вставь CLAUDE_CONTEXT.md]
-Я реализовала: [модуль или фича].
-Задавай мне вопросы как строгий эвалюатор 42.
-Если отвечаю неточно — укажи на пробел, не давай ответ сразу.
-Веди счёт: что знаю хорошо / что нужно повторить.
+[STUDY: topic name]
+[paste CLAUDE_CONTEXT.md]
+I have never worked with [topic].
+First ask what I already understand.
+Explain the concept through analogy, then a minimal example.
+At the end ask me 2–3 questions to check my understanding.
 ```
 
-**[ОНБОРДИНГ]** — когда приходит новый член команды
+**[IMPLEMENTATION: feature]** — working with specific code
 ```
-[ОНБОРДИНГ]
-[вставь CLAUDE_CONTEXT.md]
-В команду пришёл новый человек. Его уровень: [описание].
-Его модуль: [что берёт].
-Помоги составить для него README с: контекстом проекта,
-описанием его сервиса, API контрактом с остальными сервисами,
-шагами чтобы запустить локально.
+[IMPLEMENTATION: feature name]
+[paste CLAUDE_CONTEXT.md]
+Implementing: [exactly what].
+Current code: [paste or describe].
+Problem / question: [specific].
+Explain every decision before writing code.
+```
+
+**[DEFENSE]** — evaluation simulation
+```
+[DEFENSE]
+[paste CLAUDE_CONTEXT.md]
+I implemented: [module or feature].
+Ask me questions as a strict 42 evaluator.
+If I answer imprecisely — point out the gap, don't give the answer immediately.
+Keep score: what I know well / what needs review.
+```
+
+**[ONBOARDING]** — when a new team member joins
+```
+[ONBOARDING]
+[paste CLAUDE_CONTEXT.md]
+A new person has joined the team. Their level: [description].
+Their module: [what they're taking].
+Help me create a README for them with: project context,
+service description, API contract with other services,
+steps to run locally.
 ```
 
 ---
 
-## Прогресс
+## Progress
 
-### Сделано
-- [x] Структура папок репозитория
-- [x] docker-compose.yml (6 сервисов: frontend, backend, 
+### Done
+- [x] Repository folder structure
+- [x] docker-compose.yml (6 services: frontend, backend,
       websocket, db, redis, nginx)
 - [x] .env.example
 - [x] .gitignore
-- [x] Vue — hello world в браузере
-     - Node.js 20 установлен в WSL
-     - Vite + Vue проект создан в frontend/
-     - HMR работает через usePolling (проект на /mnt/c/)
-     - Поняла: компонент = .vue файл с <template> блоком
-- [x] Django — hello world через API
-     - Dockerfile для backend написан
+- [x] Vue — hello world in browser
+     - Node.js 20 installed in WSL
+     - Vite + Vue project created in frontend/
+     - HMR working via usePolling (project on /mnt/c/)
+     - Understood: component = .vue file with <template> block
+- [x] Django — hello world via API
+     - Dockerfile for backend written
      - requirements.txt: django, djangorestframework, psycopg2-binary
-     - Django проект `core` создан
-     - App `api` создан
-     - Первый endpoint GET /api/hello/ возвращает JSON
-     - StatReloader работает (hot reload)
-     - Django Admin доступен на /admin/
-- [x] PostgreSQL — подключена к Django
-     - Именованный volume postgres_data (WSL совместимость)
-     - import os + DATABASES настроен через env переменные
-     - migrate выполнен вручную, 10 встроенных таблиц Django созданы
-     - TODO: автозапуск migrate через Dockerfile (Неделя 2)
-- [x] nginx — HTTPS локально
-      - самоподписанный сертификат (openssl, 365 дней)
-      - nginx.conf: reverse proxy для frontend/backend, редирект http→https
-      - .dockerignore для frontend и backend
-      - frontend/Dockerfile написан
-      - websocket блок временно закомментирован (TODO: неделя 2)
-- [x] Privacy Policy + Terms of Service страницы
-     - Созданы views/PrivacyPolicy.vue и views/TermsOfService.vue
-     - vue-router настроен: маршруты /privacy и /terms
-     - <RouterView> добавлен в App.vue
-     - Footer со ссылками на обеих страницах — доступен с любой страницы
-     - Поняла: views/ = страницы-экраны, components/ = переиспользуемые куски UI
-     - Поняла: <RouterView> = "слот" куда роутер вставляет нужный компонент
-- [x] Кастомная модель User (Неделя 2)
-     - Создано приложение `users/`
-     - AbstractUser расширен полями: nickname, avatar, wins, losses, is_online
-     - AUTH_USER_MODEL = 'users.User' прописан в settings.py
-     - MEDIA_URL и MEDIA_ROOT настроены для аватарок
-     - CSRF_TRUSTED_ORIGINS = ['https://localhost'] добавлен
-     - Pillow добавлен в requirements.txt
-     - Миграции применены (база сброшена и пересоздана чисто)
-     - Модель зарегистрирована в Django Admin
-     - nginx настроен для /admin/
-     - Суперпользователь создан вручную
+     - Django project `core` created
+     - App `api` created
+     - First endpoint GET /api/hello/ returns JSON
+     - StatReloader working (hot reload)
+     - Django Admin accessible at /admin/
+- [x] PostgreSQL — connected to Django
+     - Named volume postgres_data (WSL compatibility)
+     - import os + DATABASES configured via env variables
+     - migrate run manually, 10 built-in Django tables created
+     - TODO: auto-run migrate via Dockerfile (Week 2)
+- [x] nginx — HTTPS locally
+      - self-signed certificate (openssl, 365 days)
+      - nginx.conf: reverse proxy for frontend/backend, http→https redirect
+      - .dockerignore for frontend and backend
+      - frontend/Dockerfile written
+      - websocket block temporarily commented out (TODO: week 2)
+- [x] Privacy Policy + Terms of Service pages
+     - Created views/PrivacyPolicy.vue and views/TermsOfService.vue
+     - vue-router configured: routes /privacy and /terms
+     - <RouterView> added to App.vue
+     - Footer with links on both pages — accessible from any page
+     - Understood: views/ = screen pages, components/ = reusable UI pieces
+     - Understood: <RouterView> = "slot" where the router inserts the right component
+- [x] Database Models (Week 2)
+     - Created `users/` app
+     - Extended AbstractUser: nickname, avatar, wins, losses, is_online
+     - AUTH_USER_MODEL = 'users.User' set in settings.py
+     - MEDIA_URL and MEDIA_ROOT configured for avatars
+     - CSRF_TRUSTED_ORIGINS = ['https://localhost'] added
+     - Pillow added to requirements.txt
+     - Model Match: player1, player2, score, started_at, ended_at, winner
+     - Model MatchEvent: match, event_type, player, timestamp
+     - Model FriendRelation: from_user, to_user, status, created_at
+     - Migrations applied (0001_initial, 0002_friendrelation_match_matchevent)
+     - All models registered in Django Admin
+     - nginx configured for /admin/
+     - Superuser created manually
 
-### Открытые вопросы
-*(обновлять по ходу работы)*
-- healthcheck для db (backend ждёт реальной готовности PostgreSQL)
-- Как организовать WebSocket сервис отдельно от основного Django?
-- Как новый член команды получит доступ к репозиторию?
-- Перенести проект в ~/projects/ для нативного HMR (не срочно)
-- Автозапуск migrate при docker-compose up (скрипт в Dockerfile)
-- healthcheck для db — backend стартует раньше чем Postgres готов
-- websocket/Dockerfile пустой — нужен в неделю 2
-- backend порт 8000 торчит наружу — убрать когда nginx стабилен
-- HMR с usePolling иногда не подхватывает изменения — выяснить почему
+### Open Questions
+*(update as work progresses)*
+- healthcheck for db (backend waits for PostgreSQL to be truly ready)
+- How to organize the WebSocket service separately from main Django?
+- How will a new team member get access to the repository?
+- Move project to ~/projects/ for native HMR (not urgent)
+- Auto-run migrate on docker-compose up (script in Dockerfile)
+- healthcheck for db — backend starts before Postgres is ready
+- websocket/Dockerfile is empty — needed in week 2
+- backend port 8000 is exposed — remove when nginx is stable
+- HMR with usePolling sometimes misses changes — investigate why
 
 ---
 
-## Решения которые уже приняты (не обсуждаем повторно)
+## Decisions Already Made (not up for debate)
 
-| Решение | Причина |
+| Decision | Reason |
 |---|---|
-| Django вместо Node | Быстрый старт, встроенный ORM, меньше boilerplate |
-| Vue вместо React | Проще для новичка, концепции те же |
-| usePolling в vite.config.js | HMR не работает на /mnt/c/ в WSL — polling как workaround |
-| Именованный volume для Postgres | WSL не даёт права на bind mount |
-| PostgreSQL | Надёжность, поддержка сложных запросов для аналитики |
-| Отдельный контейнер для WS | Изоляция для команды, масштабируемость |
-| Analytics Minor (базовый) + Advanced Major (бонус) | Subject IV.3=Minor, IV.8=Major; Advanced только если успею |
-| OAuth → команде | Проще соло, меньше риска; ORM-схема должна быть готова до их старта |
-| Privacy Policy + ToS в Неделю 1 | Обязательное условие сабджекта — без них проект не принимают |
-| Online presence через WebSocket | Vue только рендерит; статус хранится в БД, транспорт — WS Gateway |
+| Django instead of Node | Fast start, built-in ORM, less boilerplate |
+| Vue instead of React | Easier for a beginner, same concepts |
+| usePolling in vite.config.js | HMR doesn't work on /mnt/c/ in WSL — polling as a workaround |
+| Named volume for Postgres | WSL doesn't allow bind mount permissions |
+| PostgreSQL | Reliability, complex query support for analytics |
+| Separate container for WS | Team isolation, scalability |
+| Analytics Minor (basic) + Advanced Major (bonus) | Subject IV.3=Minor, IV.8=Major; Advanced only if time allows |
+| OAuth → team | Simpler solo, less risk; ORM schema must be ready before they start |
+| Privacy Policy + ToS in Week 1 | Required subject condition — project won't be accepted without them |
+| Online presence via WebSocket | Vue only renders; status stored in DB, transport — WS Gateway |
+| No Session model — not needed with JWT | Django sessions kept for Admin only. No custom Session model created. |
