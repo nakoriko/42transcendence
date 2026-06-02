@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework_simplejwt',
     'api',
     'users'
 ]
@@ -138,3 +139,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 #add localhost as  secure addres for MIDDLEWARE
 CSRF_TRUSTED_ORIGINS = ['https://localhost']
+
+REST_FRAMEWORK = {
+    #define  authentication method (JWTAuthentication). So, it will search jwt in heeader inside every http request
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}

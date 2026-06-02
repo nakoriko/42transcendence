@@ -183,7 +183,7 @@ Goal: everything runs, services see each other.
 ### Week 2 — Auth + Database
 Goal: user can register and log in.
 
-- [ ] Auth: registration, login, JWT, bcrypt
+- [x] Auth: registration, login, JWT, bcrypt
 - [x] DB models: User, Session, Match, MatchEvent, FriendRelation
 - [ ] Basic UI: login/register/profile pages
 - [ ] Protected routes (frontend + backend)
@@ -327,6 +327,16 @@ steps to run locally.
      - All models registered in Django Admin
      - nginx configured for /admin/
      - Superuser created manually
+- [x] Auth endpoints + JWT (Week 2)
+     - djangorestframework-simplejwt installed
+     - JWT configured in settings.py (DEFAULT_AUTHENTICATION_CLASSES)
+     - CustomUserManager created (email as USERNAME_FIELD)
+     - RegisterSerializer built (write_only password, create_user)
+     - POST /api/users/register/ — works
+     - POST /api/users/login/ — returns access + refresh tokens
+     - POST /api/users/logout/ — backend returns 200 OK, 
+       frontend (Vue) will delete token from localStorage — Week 3
+     - GET /api/users/profile/ — protected route, validates JWT
 
 ### Open Questions
 *(update as work progresses)*
@@ -339,6 +349,10 @@ steps to run locally.
 - websocket/Dockerfile is empty — needed in week 2
 - backend port 8000 is exposed — remove when nginx is stable
 - HMR with usePolling sometimes misses changes — investigate why
+- Week 2 remaining: basic UI login/register/profile in Vue
+- Protected routes on frontend (Vue Router guards)
+- Recreate superuser via createsuperuser 
+  (old one was created before CustomUserManager)
 
 ---
 
