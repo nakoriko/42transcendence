@@ -185,8 +185,8 @@ Goal: user can register and log in.
 
 - [x] Auth: registration, login, JWT, bcrypt
 - [x] DB models: User, Session, Match, MatchEvent, FriendRelation
-- [ ] Basic UI: login/register/profile pages
-- [ ] Protected routes (frontend + backend)
+- [x] Basic UI: login/register/profile pages
+- [x] Protected routes (frontend + backend)
 
 ### Week 3 — Game + User Management
 Goal: two players can play a match on one computer.
@@ -337,6 +337,14 @@ steps to run locally.
      - POST /api/users/logout/ — backend returns 200 OK, 
        frontend (Vue) will delete token from localStorage — Week 3
      - GET /api/users/profile/ — protected route, validates JWT
+- [x] Basic UI: login/register/profile pages
+      - LoginView.vue: form, fetch, JWT → localStorage, redirect, try/catch
+      - RegisterView.vue: form, fetch, redirect to /login, try/catch
+      - ProfileView.vue: fetch with Bearer token, display user data
+      - All inputs have id, name, autocomplete attributes
+- [x] Protected routes (Vue Router guard + backend JWT)
+      - meta: { requiresAuth: true } on /profile
+      - router.beforeEach checks token before every navigation
 
 ### Open Questions
 *(update as work progresses)*
@@ -348,11 +356,11 @@ steps to run locally.
 - healthcheck for db — backend starts before Postgres is ready
 - websocket/Dockerfile is empty — needed in week 2
 - backend port 8000 is exposed — remove when nginx is stable
-- HMR with usePolling sometimes misses changes — investigate why
-- Week 2 remaining: basic UI login/register/profile in Vue
 - Protected routes on frontend (Vue Router guards)
 - Recreate superuser via createsuperuser 
   (old one was created before CustomUserManager)
+- [known issue] CSP warning "blocks use of eval" in DevTools Issues panel — comes from vite-plugin-vue-devtools, not from nginx (Response Headers are empty). Console is clean, functionality is not affected. Will disappear in production build (no Vite dev server). Fix before submission: remove vite-plugin-vue-devtools from vite.config.js. 
+- TODO: LogoutView is not protected (missing IsAuthenticated) — add before submission
 
 ---
 
@@ -371,3 +379,5 @@ steps to run locally.
 | Privacy Policy + ToS in Week 1 | Required subject condition — project won't be accepted without them |
 | Online presence via WebSocket | Vue only renders; status stored in DB, transport — WS Gateway |
 | No Session model — not needed with JWT | Django sessions kept for Admin only. No custom Session model created. |
+| frontend volumes in docker-compose | Without a bind mount, the container uses files baked into the image at build time. Required: ./frontend:/app + /app/node_modules (anonymous volume to protect container's node_modules from being overwritten by the host) |
+| username field in create_user set to email | AbstractUser has username with unique constraint. Set username=email via extra_fields setdefault() to avoid IntegrityError on second registration |

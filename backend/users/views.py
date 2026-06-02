@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/02 13:02:18 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/02 21:42:56 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,4 +42,6 @@ class ProfileView(APIView):
         return Response({
             "email": request.user.email,
             "nickname": request.user.nickname,
+            "wins": request.user.wins,
+            "losses": request.user.losses,
         })
