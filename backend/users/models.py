@@ -45,6 +45,10 @@ class MatchEvent(models.Model):
     player = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='match_events')
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    pos_x = models.FloatField(null=True) #float because we use 0 ..1  resolution-independent across screens
+    pos_y = models.FloatField(null=True) #existing rows have no coordinate data
+    reaction_time_ms = models.IntegerField(null=True) #null: bounce events have no player reaction
+
 
 class FriendRelation(models.Model):
     from_user =  models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invites')

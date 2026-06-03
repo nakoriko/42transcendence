@@ -6,12 +6,14 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/02 11:57:05 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/03 10:25:10 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+
+from .models import Match, MatchEvent
 
 #say whetre to take user model to do not write path everytime when it changes
 User = get_user_model()
@@ -34,3 +36,15 @@ class RegisterSerializer(serializers.ModelSerializer):
             nickname=validated_data['nickname'],
         )
         return user
+
+class MatchCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
+        fields = ['id', 'player1', 'player2', 'started_at']
+        read_only_fields = ['id', 'started_at']
+
+class MatchEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchEvent
+        fields = ['id', 'match', 'event_type', 'player', 'timestamp', 'pos_x', 'pos_y', 'reaction_time_ms']
+        read_only_fields= ['id', 'timestamp']
