@@ -1,8 +1,12 @@
 <script setup>
     import { ref, onMounted, onUnmounted} from 'vue'
+import { routeLocationKey, useRoute } from 'vue-router'
 
     const gameCanvas = ref(null)
+    const route = useRoute()
+    const player2Id = Number(route.query.player2)
     let animationId = null
+
 
     function startGame() {
         const canvas = gameCanvas.value
@@ -61,7 +65,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ player1: currentUserId, player2: currentUserId })
+                body: JSON.stringify({ player1: currentUserId, player2: player2Id })
             })
             const matchData = await match.json()
             matchId = matchData.id
@@ -149,7 +153,7 @@
                 && (ball.y + ball.radius >= r_paddle.y && ball.y + ball.radius <= r_paddle.y + r_paddle.height)) {
                 ball.vx = -Math.abs(ball.vx)
                 if(matchId) events.push({
-                    match: matchId, event_type: 'hit', player: currentUserId,
+                    match: matchId, event_type: 'hit', player: player2Id,
                     pos_x: +(ball.x / canvas.width).toFixed(4),
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
@@ -191,12 +195,11 @@
                 ctx.fillStyle = 'white'
                 ctx.font = '48px monospace'
                 ctx.textAlign = 'center'
-                saveMatch()
-                await finishMatch(currentUserId)
-                ctx.fillText(score_p1 >= 5 ? 'Player 1 wins!': 'Player 2 wins!', canvas.width / 2, canvas.height / 2)
+                await saveMatch()
+                const winnerId = score_p1 >= 5 ? currentUserId : player2Id
                 //write result
-                
-
+                await finishMatch(winnerId)
+                ctx.fillText(score_p1 >= 5 ? 'Player 1 wins!': 'Player 2 wins!', canvas.width / 2, canvas.height / 2)
                 return 
             }
 

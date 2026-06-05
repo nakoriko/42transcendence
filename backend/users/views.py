@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/05 12:46:20 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/05 18:14:42 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from rest_framework.permissions import IsAuthenticated
+from .models import User
 
 
 
@@ -41,6 +42,7 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated] #define by standart method of rest framaework.permissions (checks token)
     def get(self, request):
         return Response({
+            "id": request.user.id,
             "email": request.user.email,
             "nickname": request.user.nickname,
             "wins": request.user.wins,
@@ -48,5 +50,13 @@ class ProfileView(APIView):
         })
 
 
-
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+            users = User.objects.exclude(id=request.user.id)
+            data = [
+                {"id": u.id, "nickname": u.nickname}
+                for u in users
+            ]
+            return Response(data)
 

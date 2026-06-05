@@ -370,6 +370,10 @@ steps to run locally.
 - [x] LogoutView is protected
 - [x] Save match result to DB on game end (winner, ended_at, final score)
 - [x] Moved game URLs: /api/game/ instead of /api/users/game/
+- [x] Lobby: opponent selection from registered users before match
+     - GET /api/users/list/ — registered players list (excludes current user)
+     - LobbyView.vue — dropdown + "Start match" button → /game?player2=5
+     - Fixed: player2Id, winnerId, await saveMatch() in GameView.vue
 
 ### Open Questions
 *(update as work progresses)*
@@ -386,15 +390,20 @@ steps to run locally.
   (old one was created before CustomUserManager)
 - [known issue] CSP warning "blocks use of eval" in DevTools Issues panel — comes from vite-plugin-vue-devtools, not from nginx (Response Headers are empty). Console is clean, functionality is not affected. Will disappear in production build (no Vite dev server). Fix before submission: remove vite-plugin-vue-devtools from vite.config.js. 
 
+
 ### TODO
 - [x] LogoutView is not protected (missing IsAuthenticated) — add before submission
-- [ ] Pass player2Id into events.push() for right paddle hits
+- [x] Pass player2Id into events.push() for right paddle hits
 - [x] Move game logic into a separate Django app: game/
 - [х] Add requiresAuth: true to /game route
-- [ ] Lobby screen: select two players before match starts
+- [x] Lobby screen: select two players before match starts
 - [ ] Court design (tennis-style, minimalist lines)
+- [ ] Refresh token
 - [ ] Implement refresh token (auto-renew access token on 401)
 - [x] Save match result to DB on game end (winner, ended_at, final score)
+- [ ] Check event_type field in MatchEvent model — add types if missing: miss (ball passed paddle), goal (point scored)
+- [ ] Update game loop in GameView.vue: log miss when ball crosses paddle line without contact, log goal when ball hits left or right wall
+Without these events, accuracy analytics and heatmaps will be incomplete
 
 ---
 

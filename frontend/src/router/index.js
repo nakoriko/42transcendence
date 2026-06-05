@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import GameView from '../views/GameView.vue' 
+import LobbyView from '../views/LobbyView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,6 +16,7 @@ const router = createRouter({
     { path: '/profile', component: ProfileView, meta: {requiresAuth: true} },
     { path: '/register', component: RegisterView},
     { path: '/game', component:GameView, meta: {requiresAuth: true} },
+    { path: '/lobby', component:LobbyView, meta: {requiresAuth: true} }, 
   ],
 })
 

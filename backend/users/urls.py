@@ -6,12 +6,12 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:10:00 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/05 11:51:03 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/05 16:50:03 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from django.urls import path
-from .views import RegisterView, LogoutView, ProfileView
+from .views import RegisterView, LogoutView, ProfileView, UserListView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
@@ -21,5 +21,6 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='login'),  #token creates by this, and we dont need to create login view
     path('logout/', LogoutView.as_view(), name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
+    path('list/', UserListView.as_view(), name='users_list'),
 
 ]
