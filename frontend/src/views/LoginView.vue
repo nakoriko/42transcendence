@@ -41,5 +41,6 @@ async function handleLogin() {
     <input id="password" name="password" v-model="password" type="password" autocomplete="current-password" placeholder="Password" />
     <p v-if="error">{{ error }}</p>
     <button @click="handleLogin">Login</button>
+    <p>No account? <RouterLink to='/register'>Register</RouterLink></p>
   </div>
 </template>

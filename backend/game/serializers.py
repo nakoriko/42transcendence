@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/05 11:42:24 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/05 15:40:40 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,3 +24,8 @@ class MatchEventSerializer(serializers.ModelSerializer):
         model = MatchEvent
         fields = ['id', 'match', 'event_type', 'player', 'timestamp', 'pos_x', 'pos_y', 'reaction_time_ms']
         read_only_fields= ['id', 'timestamp']
+
+class MatchFinishSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
+        fields = ['winner', 'score_player1', 'score_player2', 'ended_at']

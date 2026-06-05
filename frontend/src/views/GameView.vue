@@ -55,7 +55,7 @@
             const profileData = await profile.json()
             currentUserId = profileData.id
 
-            const match = await fetch ('/api/users/game/match/start/', {
+            const match = await fetch ('/api/game/match/start/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,7 +71,7 @@
         async function saveMatch() {
             const token = localStorage.getItem('access')
             for (const event of events) {
-                await fetch ('/api/users/game/match/events/', {
+                await fetch ('/api/game/match/events/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -82,6 +82,23 @@
             }
         }
 
+        async function finishMatch(winnerId) {
+            const token = localStorage.getItem('access')
+            await fetch(`/api/game/match/${matchId}/finish/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    winner: winnerId,
+                    score_player1: score_p1,
+                    score_player2: score_p2,
+                    ended_at: new Date().toISOString() //convert to ISO 8601: 2026-06-05T14:23:11...., because jangpo is waiting for this format
+                })
+            })
+        }
+
 
         function resetBall() {
             ball.x = canvas.width / 2
@@ -90,7 +107,7 @@
             ball.vy = 3 * (Math.random() > 0.5 ? 1 : -1)
         }
 
-        function render() {
+        async function render() {
             //updating ball possition
             ball.x = ball.x + ball.vx
             ball.y = ball.y + ball.vy
@@ -175,7 +192,11 @@
                 ctx.font = '48px monospace'
                 ctx.textAlign = 'center'
                 saveMatch()
+                await finishMatch(currentUserId)
                 ctx.fillText(score_p1 >= 5 ? 'Player 1 wins!': 'Player 2 wins!', canvas.width / 2, canvas.height / 2)
+                //write result
+                
+
                 return 
             }
 

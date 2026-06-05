@@ -29,6 +29,11 @@ async function loadProfile() {
         error.value = 'Connection error'
     }
 }
+
+function logout() {
+    localStorage.removeItem('access')
+    router.push('/login')
+}
 onMounted(loadProfile)
 
 </script>
@@ -40,6 +45,7 @@ onMounted(loadProfile)
         <p>Nickname: {{ user.nickname }}</p>
         <p>Wins: {{ user.wins ?? 0 }}</p>
         <p>Losses {{ user.losses ?? 0 }}</p>
+        <button @click="logout">Logout</button>
     </div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else>Loading...</div>

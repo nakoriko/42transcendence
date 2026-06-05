@@ -195,7 +195,7 @@ Goal: two players can play a match on one computer.
 - [x] Local multiplayer (two players, one keyboard)
 - [x] Logging every hit and ball position in MatchEvent
 - [ ] User management: profile, avatar, friends list
-- [ ] Basic match result saving to DB
+- [x] Basic match result saving to DB
 
 ### Week 4 — Analytics + Finalization
 Goal: 15 pts, project submitted.
@@ -362,6 +362,14 @@ steps to run locally.
      - Keyboard uses e.code (not e.key) — layout-independent
      - JWT lifetime extended to 8h in settings.py for development
      - Tested: 13 MatchEvents recorded in PostgreSQL after active match
+- [x] Moved game logic to Django app game/
+- [x] Logout on frontend (button + localStorage cleanup)
+- [x] container_name added to docker-compose.yml
+- [x] Created empty apps: analytics, tournament, chat
+- [x] Register link added on Login page
+- [x] LogoutView is protected
+- [x] Save match result to DB on game end (winner, ended_at, final score)
+- [x] Moved game URLs: /api/game/ instead of /api/users/game/
 
 ### Open Questions
 *(update as work progresses)*
@@ -379,14 +387,14 @@ steps to run locally.
 - [known issue] CSP warning "blocks use of eval" in DevTools Issues panel — comes from vite-plugin-vue-devtools, not from nginx (Response Headers are empty). Console is clean, functionality is not affected. Will disappear in production build (no Vite dev server). Fix before submission: remove vite-plugin-vue-devtools from vite.config.js. 
 
 ### TODO
-- [ ] LogoutView is not protected (missing IsAuthenticated) — add before submission
+- [x] LogoutView is not protected (missing IsAuthenticated) — add before submission
 - [ ] Pass player2Id into events.push() for right paddle hits
 - [x] Move game logic into a separate Django app: game/
-- [ ] Add requiresAuth: true to /game route
+- [х] Add requiresAuth: true to /game route
 - [ ] Lobby screen: select two players before match starts
 - [ ] Court design (tennis-style, minimalist lines)
 - [ ] Implement refresh token (auto-renew access token on 401)
-- [ ] Save match result to DB on game end (winner, ended_at, final score)
+- [x] Save match result to DB on game end (winner, ended_at, final score)
 
 ---
 

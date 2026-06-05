@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Match, MatchEvent
-from .serializers import MatchCreateSerializer, MatchEventSerializer
+from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer
 
 
 class StartMatchView(APIView):
@@ -24,3 +24,17 @@ class LogMatchEventView(APIView):
             serializer.save()
             return Response (serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FinishMatchView(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request, match_id):
+        try: #not necessary in outr case, but good practice: check if object exists
+            match = Match.objects.get(id=match_id)
+        except Match.DoesNotExist:
+            return Response({'error': 'Match not found'}, status=status_HTTP_404_NOT_FOUND)
+        serializer = MatchFinishSerializer(match, data=request.data, partial=True) #without partial - jango wants all fields
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
