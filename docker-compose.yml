@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   db:
+    container_name: db
     image: postgres:15
     env_file:
       - .env
@@ -12,10 +13,12 @@ services:
 
   #redis keeps teporary events, in RAM (exist just during the session, doesnt keep dasta on phisical folder)
   redis:
+    container_name: redis
     image:  redis:7
     restart: unless-stopped
 
   backend:
+    container_name: backend
     build: ./backend
     env_file:
       - .env
@@ -29,6 +32,7 @@ services:
     restart: unless-stopped
   
   # websocket:
+  #   container_name: websocket
   #   build: ./websocket
   #   env_file:
   #     - .env
@@ -39,6 +43,7 @@ services:
   #   restart: unless-stopped
 
   frontend:
+    container_name: frontend
     build: ./frontend
     volumes:
       - ./frontend:/app
@@ -49,6 +54,7 @@ services:
 
 
   nginx:
+    container_name: nginx
     image: nginx:alpine
     depends_on: 
       - frontend

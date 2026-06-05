@@ -381,7 +381,7 @@ steps to run locally.
 ### TODO
 - [ ] LogoutView is not protected (missing IsAuthenticated) — add before submission
 - [ ] Pass player2Id into events.push() for right paddle hits
-- [ ] Move game logic into a separate Django app: game/
+- [x] Move game logic into a separate Django app: game/
 - [ ] Add requiresAuth: true to /game route
 - [ ] Lobby screen: select two players before match starts
 - [ ] Court design (tennis-style, minimalist lines)

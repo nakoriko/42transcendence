@@ -6,12 +6,12 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:10:00 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/03 10:47:35 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/05 11:51:03 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from django.urls import path
-from .views import RegisterView, LogoutView, ProfileView, StartMatchView, LogMatchEventView
+from .views import RegisterView, LogoutView, ProfileView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
@@ -22,6 +22,4 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('profile/', ProfileView.as_view(), name='profile'),
 
-    path('game/match/start/', StartMatchView.as_view(), name='start_match'),
-    path('game/match/events/', LogMatchEventView.as_view(), name='log_match_event'), 
 ]

@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/03 10:39:45 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/05 11:46:55 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,23 +47,5 @@ class ProfileView(APIView):
         })
 
 
-from .models import Match, MatchEvent
-from .serializers import MatchCreateSerializer, MatchEventSerializer
 
-class StartMatchView(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
-        serializer = MatchCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class LogMatchEventView(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
-        serializer = MatchEventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response (serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
