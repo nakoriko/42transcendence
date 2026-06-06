@@ -6,12 +6,13 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/05 11:42:13 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/06 11:43:37 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from .models import FriendRelation
 
 
 #say whetre to take user model to do not write path everytime when it changes
@@ -36,3 +37,28 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+class AvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['avatar']
+#ImageFiled already knows how to validate (by Pillow librarury for images)
+
+
+class FriendUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'nickname', 'is_online', 'avatar']
+
+class FriendRelationSerializer(serializers.ModelSerializer):
+    #data takes from method, not directl;y from model
+    friend = serializers.SerializerMethodField() #needs to define "from user" or "to_user"
+
+    def get_friend(self, obj): #obj - actual obj from FriendRelation model
+        request = self.context['request'] #define user who makes request
+        if obj.from_user == request.user: #if  rerquest was send by me
+            return FriendUserSerializer(obj.to_user).data  #i sent request to friend (frined - to_user)
+        return FriendUserSerializer(obj.from_user).data #else - request cames from friend (friend - from_yser)
+
+    class Meta:
+        model = FriendRelation
+        fields = ['id', 'status', 'friend']

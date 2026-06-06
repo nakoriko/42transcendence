@@ -5,6 +5,34 @@ import { useRouter } from 'vue-router'
 const user = ref(null)
 const error = ref('')
 const router = useRouter()
+const selectedFile = ref(null)
+
+//AVATAR
+async function handleFileSelect(event) {
+    selectedFile.value = event.target.files[0] //saves selected file inside variable
+    await uploadAvatar()
+}
+
+//upload
+async function uploadAvatar() {
+    if(!selectedFile.value) return
+
+    const formData = new FormData()
+    formData.append('avatar', selectedFile.value)
+
+    const token = localStorage.getItem('access')
+    const response = await fetch('/api/users/avatar/', {
+        method: 'PATCH', //updates user tha already exist
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+
+    })
+
+    if(response.ok)
+        await loadProfile()
+}
+
+
 
 //async function tu use await
 async function loadProfile() {
@@ -16,9 +44,7 @@ async function loadProfile() {
     }
     try {
         const response = await fetch('/api/users/profile/', {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
+            headers: { 'Authorization': `Bearer ${token}`},
         })
         if(response.ok) {
             user.value = await response.json()
@@ -41,6 +67,13 @@ onMounted(loadProfile)
 <template>
     <div v-if="user">
         <h1>Profile</h1>
+        <img
+            :src="user.avatar || '/default-avatar.png'"
+            alt="avatar"
+            width="100"
+        >
+        <input type="file" accept="image/*" @change="handleFileSelect">
+        <!-- <button @click="uploadAvatar">Upload avatar</button> -->
         <p>Email: {{ user.email }}</p>
         <p>Nickname: {{ user.nickname }}</p>
         <p>Wins: {{ user.wins ?? 0 }}</p>

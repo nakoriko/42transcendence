@@ -194,7 +194,7 @@ Goal: two players can play a match on one computer.
 - [x] Pong: game loop on canvas
 - [x] Local multiplayer (two players, one keyboard)
 - [x] Logging every hit and ball position in MatchEvent
-- [ ] User management: profile, avatar, friends list
+- [x] User management: profile, avatar, friends list
 - [x] Basic match result saving to DB
 
 ### Week 4 — Analytics + Finalization
@@ -374,6 +374,15 @@ steps to run locally.
      - GET /api/users/list/ — registered players list (excludes current user)
      - LobbyView.vue — dropdown + "Start match" button → /game?player2=5
      - Fixed: player2Id, winnerId, await saveMatch() in GameView.vue
+- [x] User management: profile, avatar, friends list (Week 3)
+     - PATCH /api/users/avatar/ — avatar upload (FormData, ImageField, Pillow)
+     - GET /api/users/friends/ — friends list, incoming/outgoing requests
+     - POST /api/users/friends/request/ — send request (Q check both directions)
+     - PATCH/DELETE /api/users/friends/<pk>/ — accept/reject/remove
+     - FriendsView.vue — friends + incoming + allUsers + online status
+     - apiFetch() helper — single point for authorized requests
+     - App.vue nav — RouterLink + watch(route) + logout
+     - Router: / and catch-all → redirect /login
 
 ### Open Questions
 *(update as work progresses)*

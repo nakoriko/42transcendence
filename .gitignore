@@ -1,6 +1,9 @@
 # PostgreSQL data
 db/postgres-data/
 
+# Media
+backend/media/
+
 # Environment variables
 .env
 
