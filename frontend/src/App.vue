@@ -28,28 +28,13 @@
 
   <RouterView />
 
-  <footer>
-    <a href="/privacy">Privacy Policy</a>
-    <span> | </span>
-    <a href="/terms">Terms of Service</a>
+  <footer class="fixed bottom-0 w-full py-4 text-center text-xs text-muted/40 bg-navy-900">
+    <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>
+    <span class="mx-2 text-muted/20"> | </span>
+    <a href="/terms" class="hover:text-muted transition">Terms of Service</a>
   </footer>
 
 </template>
 
 <style scoped>
-footer {
-  margin-top: 60px;
-  padding: 20px;
-  text-align: center;
-  font-size: 0.85em;
-  color: #888;
-  border-top: 1px solid #eee;
-}
-footer a {
-  color: #888;
-  text-decoration: none;
-}
-footer a:hover {
-  text-decoration: underline;
-}
 </style>
