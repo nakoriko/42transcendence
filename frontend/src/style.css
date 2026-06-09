@@ -1,0 +1,38 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   style.css                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/06/07 11:38:29 by nakoriko          #+#    #+#             */
+/*   Updated: 2026/06/07 12:44:29 by nakoriko         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+@import "tailwindcss";
+
+@theme {
+    --color-navy-900: #0f1629;
+    --color-navy-800: #1a1d2e;
+    --color-navy-700: #1a2f5a;
+    --color-muted: #8892a4;
+
+    --color-teal:  #4A8C9B;
+    --color-sage:  #ABC7C3;
+    --color-sand:  #F4C295;
+    --color-coral: #F8856D;
+
+    --font-sans: 'Poppins', sans-serif;
+
+    --radius-card: 16px;
+    --radius-pil: 50px;
+}
+
+@layer base {
+    body {
+        background-color: #080d1a;
+        color: white;
+        font-family: 'Poppins', sans-serif
+    }
+}
