@@ -3,3 +3,7 @@ djangorestframework
 psycopg2-binary
 Pillow
 djangorestframework-simplejwt
+
+# for websocket:
+channels
+channels-redis
