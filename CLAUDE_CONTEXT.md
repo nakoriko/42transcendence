@@ -98,11 +98,11 @@ A new teammate receives:
 |---|---|---|---|
 | IV.1 Framework frontend + backend (Vue + Django) | Major | 2 | ✅ done |
 | IV.1 ORM (Django ORM built-in) | Minor | 1 | ✅ done |
-| IV.1 Custom design system (10+ reusable components) | Minor | 1 | ⬜ in progress |
+| IV.1 Custom design system (10+ reusable components) | Minor | 1 | ✅ in progress |
 | IV.1 User Interaction (chat + profile + friends) | Major | 2 | ⬜ after WebSocket. Profile and friends done |
 | IV.3 Standard User management (profile, avatar, friends) | Major | 2 | ✅ done (add one endpoint) |
 | IV.3 User activity dashboard | Minor | 1 | ⬜ in progress |
-| IV.6 Web-based Pong | Major | 2 | ✅ done |
+| IV.6 Web-based game Pong | Major | 2 | ✅⚠️ needs fixes  |
 | IV.8 Advanced analytics | Major | 2 | ⬜ in progress |
 
 **My total: 13 pts**
@@ -197,7 +197,7 @@ transcend/
 ### Week 1 (June 9–15) — Analytics
 Goal: close 9 pts.
 
-- [ ] UI + Custom design system: Button, Card, Avatar, Logo, Input, Badge, Modal, Chart, Leaderboard, Navbar — minimum 10 components
+- [x] UI + Custom design system: Button, Card, Avatar, Logo, Input, Badge, Modal, Chart, Leaderboard, Navbar — minimum 10 components
 - [ ] Define color palette (3–5 colors)
 - [ ] Define typography (1–2 fonts)
 - [ ] Choose icon set (e.g. lucide-icons or heroicons)
@@ -386,12 +386,38 @@ steps to run locally.
      - apiFetch() helper — single point for authorised requests
      - App.vue nav — RouterLink + watch(route) + logout
      - Router: / and catch-all → redirect /login
+[x] Lobby redesigned (sidebar layout, game mode selection, opponent selection, toggle)
+[x] AppNavbar → AppSidebar (new app shell layout)
+[x] AppButton — variants: primary / large / cta / ghost
+[x] Fixed memory leak in GameView + arrow key page scroll
+[x] Auth pages updated to match design system
 
 ### Open questions
 *(update as you go)*
 - Move project to ~/projects/ for native HMR (not urgent)
 - backend port 8000 exposed externally — remove when nginx is stable
 - [known issue] CSP warning "blocks use of eval" in DevTools Issues panel — comes from vite-plugin-vue-devtools, not nginx. Console is clean, functionality not broken. Will disappear in production build. Fix: remove vite-plugin-vue-devtools from vite.config.js before submission.
+- [ ] Sidebar: improve appearance, replace Logout button with a plain link,
+      logo links to '/', nav order: Profile → Game → Dashboard → Chat
+- [ ] AppStatsCard and PlayCard: wire up real wins/losses data from API
+- [ ] Verify that wins/losses are correctly saved to DB after match ends
+- [ ] GameView: replace "Player 1 / Player 2" labels with real usernames
+- [ ] Add solo/training mode (one player, one keyboard) —
+      no data written to DB, controls hint updates accordingly
+- [ ] Local game with opponent (two browsers, one or two computers):
+      currently match is not established — opponent receives no notification
+      and has no way to know they were challenged. Requires WebSocket + invite mechanic.
+      Coordinate with teammate as part of Remote Players module
+- [ ] Define disconnect behaviour in remote game:
+      WS event handling, win for remaining player, UI feedback —
+      coordinate with teammate
+- [ ] Clarify lobby mode logic: which mode launches
+      when opponent is selected vs not selected
+- [ ] Surrender button: counts as a loss for current player,
+      calls finishMatch() with opponent as winner.
+      Decide whether it applies in training mode
+- [ ] Profile: if no avatar uploaded — show initials circle
+      as in AppAvatar, remove default placeholder image
 
 ### TODO
 - [ ] Pass player2Id into events.push() for right paddle
