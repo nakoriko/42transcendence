@@ -2,6 +2,9 @@
 import { ref } from 'vue' 
 import { useRouter } from 'vue-router'
 import AppLogo from '@/components/AppLogo.vue'
+import AppCard from '@/components/AppCard.vue'
+import AppInput from '@/components/AppInput.vue'
+import AppButton from '@/components/AppButton.vue'
 
 
 const email = ref('')
@@ -45,39 +48,37 @@ async function handleLogin() {
     </div>
 
     <!-- Контент по центру -->
-    <div class="flex-1 flex flex-col items-center justify-center gap-6">
+    <div class="flex-1 flex flex-col items-center justify-center gap-6 -mt-16">
 
-      <h1 class="text-3xl font-light text-white">Login</h1>
+      <h1 class="page-title">Login</h1>
 
-      <div class="bg-navy-800 border border-white/[0.07] rounded-[16px] p-10 w-full max-w-sm">
-
+      <AppCard class="w-full max-w-sm">
         <div class="space-y-4">
-          <div>
-            <label class="block text-xs text-muted mb-1 uppercase tracking-widest">Email</label>
-            <input v-model="email" type="email" placeholder="Enter your email"
-              class="w-full bg-navy-900 border border-white/[0.07] rounded-xl px-4 py-3 text-white placeholder:text-muted/50 focus:outline-none focus:border-teal/50 transition" />
-          </div>
-          <div>
-            <label class="block text-xs text-muted mb-1 uppercase tracking-widest">Password</label>
-            <input v-model="password" type="password" placeholder="Enter your password"
-              class="w-full bg-navy-900 border border-white/[0.07] rounded-xl px-4 py-3 text-white placeholder:text-muted/50 focus:outline-none focus:border-teal/50 transition" />
-          </div>
+          <AppInput
+            v-model="email"
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            autocomplete="email"
+          />
+
+            <AppInput
+            v-model="password"
+            label="Password"
+            type="password"
+            placeholder="Enter your password"
+          />
         </div>
 
         <p v-if="error" class="text-coral text-sm mt-3">{{ error }}</p>
-
-        <button @click="handleLogin"
-          class="w-full mt-6 border border-teal text-teal py-3 rounded-[50px] hover:bg-sage hover:border-transparent hover:text-navy-900 transition">
-          Login
-        </button>
-
-        <p class="text-center text-muted text-sm mt-6">
+  
+        <AppButton class="w-full mt-6" @click="handleLogin">Login</AppButton>
+  
+        <p class="secondary-text text-center mt-6">
           No account?
-          <RouterLink to="/register" class="text-teal hover:text-sand transition">Register</RouterLink>
+          <RouterLink to="/register" class="link">Register</RouterLink>
         </p>
-
+      </AppCard>
       </div>
     </div>
-
-  </div>
 </template>

@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 11:38:29 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/06/07 12:44:29 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/06/11 12:31:30 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,45 @@
     --font-sans: 'Poppins', sans-serif;
 
     --radius-card: 16px;
-    --radius-pil: 50px;
+    --radius-pill: 50px;
 }
 
 @layer base {
     body {
-        background-color: #080d1a;
+        background-color: #0f1629;
         color: white;
-        font-family: 'Poppins', sans-serif
+        font-family: 'Poppins', sans-serif;
+    }
+}
+
+@layer components {
+    .page-title {
+        @apply text-4xl font-light text-white;
+    }
+    .input-label {
+        @apply block text-xs text-muted mb-1 uppercase tracking-widest;
+    }
+    .secondary-text {
+        @apply text-sm text-muted;
+    }
+
+    .footer-text {
+        @apply text-sm text-muted/40;
+    }
+    
+    .link {
+    @apply text-white/50 hover:text-white transition;
+    }
+
+    .link.router-link-active {
+    @apply text-teal;
+    }
+
+    .sidebar-link {
+    @apply flex items-center px-3 py-2 rounded-lg text-sm 
+            text-white/50 hover:text-white hover:bg-white/5 transition;
+    }
+    .sidebar-link.router-link-active {
+    @apply text-teal bg-teal/10;
     }
 }

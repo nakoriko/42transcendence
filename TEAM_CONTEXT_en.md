@@ -86,8 +86,8 @@
 | IV.1 Framework frontend + backend (Vue + Django) | Major | 2 | ✅ done |
 | IV.1 ORM (Django ORM) | Minor | 1 | ✅ done |
 | IV.3 Standard User management (profile, avatar, friends) | Major | 2 | ✅ done |
-| IV.6 Web-based Pong | Major | 2 | ✅ done |
-| IV.1 Custom design system (10+ components) | Minor | 1 | 🔄 in progress |
+| IV.6 Web-based game Pong | Major | 2 | ✅⚠️ needs fixes |
+| IV.1 Custom design system (10+ components) | Minor | 1 | ✅ in progress |
 | IV.1 User Interaction (chat + profile + friends) | Major | 2 | 🔄 chat waiting for WebSocket |
 | IV.3 User activity dashboard (history, leaderboard) | Minor | 1 | 🔄 in progress |
 | IV.8 Advanced analytics (heatmap, charts) | Major | 2 | 🔄 in progress |

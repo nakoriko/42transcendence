@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/06 12:30:49 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/11 09:09:30 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -57,7 +57,12 @@ class UserListView(APIView):
     def get(self, request):
             users = User.objects.exclude(id=request.user.id)
             data = [
-                {"id": u.id, "nickname": u.nickname}
+                {"id": u.id, 
+                "nickname": u.nickname,
+                "wins": u.wins,
+                "is_online": u.is_online,
+                "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None
+                }
                 for u in users
             ]
             return Response(data)
