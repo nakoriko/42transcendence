@@ -15,9 +15,9 @@ const router = createRouter({
     { path: '/:pathMatch(.*)*', redirect: '/login' }, //every page that does'nt exixt rout to login page
     { path: '/privacy', component: PrivacyPolicy },
     { path: '/terms', component: TermsOfService },
-    { path: '/login', component: LoginView },
+    { path: '/login', component: LoginView, meta: { guestOnly: true} },
     { path: '/profile', component: ProfileView, meta: {requiresAuth: true} },
-    { path: '/register', component: RegisterView},
+    { path: '/register', component: RegisterView, meta: { guestOnly: true}},
     { path: '/game', component:GameView, meta: {requiresAuth: true} },
     { path: '/lobby', component:LobbyView, meta: {requiresAuth: true} },
     { path: '/friends', component: FriendsView, meta:{requiresAuth: true}}, 
@@ -25,8 +25,15 @@ const router = createRouter({
 })
 
 router.beforeEach (function(to, from) {
-  if(to.meta.requiresAuth && !localStorage.getItem('access')) {
+
+  const token = localStorage.getItem('access')
+
+  if(to.meta.requiresAuth && !token) {
     return '/login'
+  }
+
+  if(to.meta.guestOnly && token) {
+    return '/profile'
   }
 
 })

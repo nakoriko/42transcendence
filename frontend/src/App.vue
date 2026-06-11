@@ -1,6 +1,7 @@
 <script setup>
     import { ref, watch } from 'vue'
     import { useRouter, useRoute } from 'vue-router'
+    import AppSidebar from './components/AppSidebar.vue'
 
     const router = useRouter()
     const route = useRoute()
@@ -19,21 +20,21 @@
 </script>
 
 <template>
-    <nav v-if="isLoggedIn">
-      <RouterLink to="/lobby">Lobby</RouterLink>
-      <RouterLink to="/profile">Profile</RouterLink>
-      <RouterLink to="/friends">Friends</RouterLink>
-      <button @click="logout">Logout</button>
-  </nav>
+  <div class="flex min-h-screen bg-navy-900">
+    
+    <AppSidebar v-if="isLoggedIn" @logout="logout" />
+    
+    <div class="flex-1 min-w-0 flex flex-col">
+      <RouterView />
+      <!-- футер переезжает сюда, убираем fixed -->
+      <footer class="py-4 text-center text-xs text-muted/40 mt-auto">
+        <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>
+        <span class="mx-2 text-muted/20"> | </span>
+        <a href="/terms" class="hover:text-muted transition">Terms of Service</a>
+      </footer>
+    </div>
 
-  <RouterView />
-
-  <footer class="fixed bottom-0 w-full py-4 text-center text-xs text-muted/40 bg-navy-900">
-    <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>
-    <span class="mx-2 text-muted/20"> | </span>
-    <a href="/terms" class="hover:text-muted transition">Terms of Service</a>
-  </footer>
-
+  </div>
 </template>
 
 <style scoped>
