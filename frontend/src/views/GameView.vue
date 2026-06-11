@@ -1,11 +1,20 @@
 <script setup>
-    import { ref, onMounted, onUnmounted} from 'vue'
+import AppButton from '@/components/AppButton.vue'
+import AppLogo from '@/components/AppLogo.vue'
+import GameControls from '@/components/GameControls.vue'
+import GameScoreBoard from '@/components/GameScoreBoard.vue'
+import { ref, onMounted, onUnmounted} from 'vue'
 import { routeLocationKey, useRoute } from 'vue-router'
 
     const gameCanvas = ref(null)
     const route = useRoute()
     const player2Id = Number(route.query.player2)
     let animationId = null
+    const score_p1 = ref(0)
+    const score_p2 = ref(0)
+    const gameOver = ref(false)
+    const winnerText = ref('')
+
 
 
     function startGame() {
@@ -41,13 +50,22 @@ import { routeLocationKey, useRoute } from 'vue-router'
             speed: 5
         }
 
-        let score_p1 = 0
-        let score_p2 = 0;
+        // let score_p1 = 0
+        // let score_p2 = 0;
 
         //moves:
         const keys = {}
-        document.addEventListener('keydown', function(e) { keys[e.code] = true})
-        document.addEventListener('keyup', function(e) { keys[e.code] = false})
+        function handleKeyDown(e) {
+            if (['ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault()
+            keys[e.code] = true
+        }
+
+        function handleKeyUp(e) {
+            keys[e.code] = false
+        }
+
+        document.addEventListener('keydown', handleKeyDown)
+        document.addEventListener('keyup', handleKeyUp)
 
         async function initMatch() {
             const token = localStorage.getItem('access')
@@ -96,8 +114,8 @@ import { routeLocationKey, useRoute } from 'vue-router'
                 },
                 body: JSON.stringify({
                     winner: winnerId,
-                    score_player1: score_p1,
-                    score_player2: score_p2,
+                    score_player1: score_p1.value,
+                    score_player2: score_p2.value,
                     ended_at: new Date().toISOString() //convert to ISO 8601: 2026-06-05T14:23:11...., because jangpo is waiting for this format
                 })
             })
@@ -118,16 +136,14 @@ import { routeLocationKey, useRoute } from 'vue-router'
 
             //wall collisions (left wall)
             if (ball.x - ball.radius <= 0) {
-                score_p2++
+                score_p2.value++
                 resetBall()
             }
              //wall collisions (right wall)
             if (ball.x + ball.radius >= canvas.width) {
-                score_p1++
+                score_p1.value++
                 resetBall()
             }
-
-
 
            //wall collisions (top wall)
             if(ball.y - ball.radius <= 0)
@@ -180,26 +196,42 @@ import { routeLocationKey, useRoute } from 'vue-router'
 
 
             //fill field
-            ctx.fillStyle = '#1a1a2e'
+            ctx.fillStyle = '#1a1d2e'
             ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-            //count
-            ctx.fillStyle = 'white'
-            ctx.font = '32px monospace'
-            ctx.textAlign = 'center'
-            ctx.fillText(score_p1 + ':' + score_p2, canvas.width / 2, 40)
+        
+
+            // центральная вертикальная линия (пунктир)
+            ctx.setLineDash([5, 5])
+            ctx.strokeStyle = '#ABC7C3'
+            ctx.lineWidth = 0,5
+
+            ctx.beginPath()
+            ctx.moveTo(canvas.width / 2, 0)
+            ctx.lineTo(canvas.width / 2, canvas.height)
+            ctx.stroke()
+            ctx.setLineDash([]) // сбрасываем пунктир
+
+            // горизонтальная линия по центру
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'
+            ctx.lineWidth = 0.5
+            ctx.beginPath()
+            ctx.moveTo(0, canvas.height / 2)
+            ctx.lineTo(canvas.width, canvas.height / 2)
+            ctx.stroke()
+
+            // ─────────────────────────────────────────────
+           
 
             //Match_result
-            if(score_p1 >= 5 || score_p2 >= 5) {
+            if(score_p1.value >= 5 || score_p2.value >= 5) {
                 cancelAnimationFrame(animationId)
-                ctx.fillStyle = 'white'
-                ctx.font = '48px monospace'
-                ctx.textAlign = 'center'
                 await saveMatch()
-                const winnerId = score_p1 >= 5 ? currentUserId : player2Id
-                //write result
+                const winnerId = score_p1.value >= 5 ? currentUserId : player2Id
                 await finishMatch(winnerId)
-                ctx.fillText(score_p1 >= 5 ? 'Player 1 wins!': 'Player 2 wins!', canvas.width / 2, canvas.height / 2)
+                //write result
+                winnerText.value = score_p1.value >= 5 ? 'Player 1 wins!': 'Player 2 wins!'
+                gameOver.value = true
                 return 
             }
 
@@ -211,8 +243,14 @@ import { routeLocationKey, useRoute } from 'vue-router'
 
             //create paddles
             ctx.fillStyle = 'white'
-            ctx.fillRect(l_paddle.x, l_paddle.y, l_paddle.width, l_paddle.height)
-            ctx.fillRect(r_paddle.x, r_paddle.y, r_paddle.width, r_paddle.height)
+            ctx.beginPath()
+            ctx.roundRect(l_paddle.x, l_paddle.y, l_paddle.width, l_paddle.height, 30)
+            ctx.fill()
+
+            ctx.beginPath()
+            ctx.roundRect(r_paddle.x, r_paddle.y, r_paddle.width, r_paddle.height, 30)
+            ctx.fill()
+
 
 
             //current id = next frame
@@ -224,6 +262,8 @@ import { routeLocationKey, useRoute } from 'vue-router'
 
     function stopGame() {
         cancelAnimationFrame(animationId)
+        document.removeEventListener('keydown', handleKeyDown)
+        document.removeEventListener('keyup', handleKeyUp)
     }
     onMounted(startGame)
     onUnmounted(stopGame)
@@ -231,7 +271,26 @@ import { routeLocationKey, useRoute } from 'vue-router'
 </script>
 
 <template>
-    <div>
-        <canvas ref="gameCanvas" width="800" height="600"></canvas>
+    <div class="min-h-screen bg-navy-900 flex flex-col items-center px-4">
+        <div class="flex-1 flex flex-col items-center justify-center gap-6">
+            <GameScoreBoard :p1="score_p1" :p2="score_p2"></GameScoreBoard>
+
+        <div class="relative">
+            <canvas
+                ref="gameCanvas"
+                width="800" height="600"
+                class="rounded-2xl border border-white/[0.07]"
+            ></canvas>
+
+            <div v-if="gameOver"
+                class="absolute inset-0 flex flex-col items-center justify-center bg-navy-900/80 rounded-2xl gap-8">
+                <p class="text-5xl font-light text-white">{{ winnerText }}</p>
+                <RouterLink to="/lobby">
+                    <AppButton variant="large">Play again</AppButton>
+                </RouterLink>
+            </div>
+        </div>
+        <GameControls></GameControls>            
+        </div>
     </div>
 </template>
