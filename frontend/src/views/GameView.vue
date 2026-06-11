@@ -3,12 +3,13 @@ import AppButton from '@/components/AppButton.vue'
 import AppLogo from '@/components/AppLogo.vue'
 import GameControls from '@/components/GameControls.vue'
 import GameScoreBoard from '@/components/GameScoreBoard.vue'
-import { ref, onMounted, onUnmounted} from 'vue'
+import { ref, reactive, onMounted, onUnmounted} from 'vue'
 import { routeLocationKey, useRoute } from 'vue-router'
 
     const gameCanvas = ref(null)
     const route = useRoute()
-    const player2Id = Number(route.query.player2)
+    const player1 = reactive({id:null, nickname: 'Player 1'})
+    const player2 = reactive({id: Number(route.query.player2), nickname: 'Player 2'})
     let animationId = null
     const score_p1 = ref(0)
     const score_p2 = ref(0)
@@ -22,7 +23,6 @@ import { routeLocationKey, useRoute } from 'vue-router'
         const ctx = canvas.getContext('2d')
 
         let matchId = null
-        let currentUserId = null
         const events = []
 
         //ball position
@@ -70,12 +70,20 @@ import { routeLocationKey, useRoute } from 'vue-router'
         async function initMatch() {
             const token = localStorage.getItem('access')
 
-            //get user ID
-            const profile = await fetch('/api/users/profile/', {
+            //get currnet user ID and nickname
+            const profile = await fetch(`/api/users/profile/`, {
             headers: { 'Authorization': `Bearer ${token}` },
             })
             const profileData = await profile.json()
-            currentUserId = profileData.id
+            player1.id = profileData.id
+            player1.nickname = profileData.nickname
+
+            //get opponent ID and nickname
+            const profile2 = await fetch(`/api/users/${player2.id}/`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            })
+            const profile2Data = await profile2.json()
+            player2.nickname = profile2Data.nickname
 
             const match = await fetch ('/api/game/match/start/', {
                 method: 'POST',
@@ -83,7 +91,7 @@ import { routeLocationKey, useRoute } from 'vue-router'
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ player1: currentUserId, player2: player2Id })
+                body: JSON.stringify({ player1: player1.id, player2: player2.id })
             })
             const matchData = await match.json()
             matchId = matchData.id
@@ -137,13 +145,13 @@ import { routeLocationKey, useRoute } from 'vue-router'
             //wall collisions (left wall)
             if (ball.x - ball.radius <= 0) {
                 if(matchId) events.push({
-                    match: matchId, event_type: 'miss', player: currentUserId,
+                    match: matchId, event_type: 'miss', player: player1.id,
                     pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
                 })
                 if(matchId) events.push({
-                    match: matchId, event_type: 'goal', player: player2Id,
+                    match: matchId, event_type: 'goal', player: player2.id,
                     pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
@@ -154,13 +162,13 @@ import { routeLocationKey, useRoute } from 'vue-router'
              //wall collisions (right wall)
             if (ball.x + ball.radius >= canvas.width) {
                 if(matchId) events.push({
-                    match: matchId, event_type: 'miss', player: player2Id,
+                    match: matchId, event_type: 'miss', player: player2.id,
                     pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
                 })
                 if(matchId) events.push({
-                    match: matchId, event_type: 'goal', player: currentUserId,
+                    match: matchId, event_type: 'goal', player: player1.id,
                     pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
@@ -182,7 +190,7 @@ import { routeLocationKey, useRoute } from 'vue-router'
                 && (ball.y - ball.radius >= l_paddle.y && ball.y - ball.radius <= l_paddle.y + l_paddle.height)) {
                 ball.vx = Math.abs(ball.vx)
                 if(matchId) events.push({
-                    match: matchId, event_type: 'hit', player: currentUserId,
+                    match: matchId, event_type: 'hit', player: player1.id,
                     pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
@@ -193,7 +201,7 @@ import { routeLocationKey, useRoute } from 'vue-router'
                 && (ball.y + ball.radius >= r_paddle.y && ball.y + ball.radius <= r_paddle.y + r_paddle.height)) {
                 ball.vx = -Math.abs(ball.vx)
                 if(matchId) events.push({
-                    match: matchId, event_type: 'hit', player: player2Id,
+                    match: matchId, event_type: 'hit', player: player2.id,
                     pos_x: +(ball.x / canvas.width).toFixed(4),
                     pos_y: +(ball.y / canvas.height).toFixed(4),
                     reaction_time_ms: null
@@ -251,10 +259,10 @@ import { routeLocationKey, useRoute } from 'vue-router'
             if(score_p1.value >= 5 || score_p2.value >= 5) {
                 cancelAnimationFrame(animationId)
                 await saveMatch()
-                const winnerId = score_p1.value >= 5 ? currentUserId : player2Id
+                const winnerId = score_p1.value >= 5 ? player1.id : player2.id
                 await finishMatch(winnerId)
                 //write result
-                winnerText.value = score_p1.value >= 5 ? 'Player 1 wins!': 'Player 2 wins!'
+                winnerText.value = score_p1.value >= 5 ? `${player1.nickname} wins!`: `${player2.nickname} wins!`
                 gameOver.value = true
                 return 
             }
@@ -297,7 +305,7 @@ import { routeLocationKey, useRoute } from 'vue-router'
 <template>
     <div class="min-h-screen bg-navy-900 flex flex-col items-center px-4">
         <div class="flex-1 flex flex-col items-center justify-center gap-6">
-            <GameScoreBoard :p1="score_p1" :p2="score_p2"></GameScoreBoard>
+            <GameScoreBoard :p1="score_p1" :p2="score_p2" :name1="player1.nickname" :name2="player2.nickname"></GameScoreBoard>
 
         <div class="relative">
             <canvas
