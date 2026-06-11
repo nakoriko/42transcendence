@@ -136,11 +136,35 @@ import { routeLocationKey, useRoute } from 'vue-router'
 
             //wall collisions (left wall)
             if (ball.x - ball.radius <= 0) {
+                if(matchId) events.push({
+                    match: matchId, event_type: 'miss', player: currentUserId,
+                    pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
+                    pos_y: +(ball.y / canvas.height).toFixed(4),
+                    reaction_time_ms: null
+                })
+                if(matchId) events.push({
+                    match: matchId, event_type: 'goal', player: player2Id,
+                    pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
+                    pos_y: +(ball.y / canvas.height).toFixed(4),
+                    reaction_time_ms: null
+                })
                 score_p2.value++
                 resetBall()
             }
              //wall collisions (right wall)
             if (ball.x + ball.radius >= canvas.width) {
+                if(matchId) events.push({
+                    match: matchId, event_type: 'miss', player: player2Id,
+                    pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
+                    pos_y: +(ball.y / canvas.height).toFixed(4),
+                    reaction_time_ms: null
+                })
+                if(matchId) events.push({
+                    match: matchId, event_type: 'goal', player: currentUserId,
+                    pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
+                    pos_y: +(ball.y / canvas.height).toFixed(4),
+                    reaction_time_ms: null
+                })
                 score_p1.value++
                 resetBall()
             }
