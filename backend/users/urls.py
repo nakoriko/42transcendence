@@ -6,13 +6,13 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:10:00 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/06 12:39:26 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/11 19:52:07 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from django.urls import path
 from .views import RegisterView, LogoutView, ProfileView, UserListView, AvatarUploadView, \
-FriendRequestView, FriendsListView, FriendDetailView
+FriendRequestView, FriendsListView, FriendDetailView, PublicProfileView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
@@ -26,5 +26,6 @@ urlpatterns = [
     path ('avatar/', AvatarUploadView.as_view(), name='avatar_upload'),
     path('friends/', FriendsListView.as_view(), name='friends_list'),
     path('friends/request/', FriendRequestView.as_view(), name='friend_request'),
-    path('friends/<int:pk>/', FriendDetailView.as_view(), name='friend_detail')
+    path('friends/<int:pk>/', FriendDetailView.as_view(), name='friend_detail'),
+    path('<int:pk>/', PublicProfileView.as_view(), name = 'public_profile'), 
 ]

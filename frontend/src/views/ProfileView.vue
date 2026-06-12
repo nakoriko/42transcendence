@@ -1,4 +1,5 @@
 <script setup>
+import AppAvatar from '@/components/AppAvatar.vue'
 import { ref, onMounted } from 'vue' 
 import { useRouter } from 'vue-router'
 
@@ -56,30 +57,27 @@ async function loadProfile() {
     }
 }
 
-function logout() {
-    localStorage.removeItem('access')
-    router.push('/login')
-}
+
 onMounted(loadProfile)
 
 </script>
 
 <template>
-    <div v-if="user">
-        <h1>Profile</h1>
-        <img
-            :src="user.avatar || '/default-avatar.png'"
-            alt="avatar"
-            width="100"
-        >
-        <input type="file" accept="image/*" @change="handleFileSelect">
-        <!-- <button @click="uploadAvatar">Upload avatar</button> -->
-        <p>Email: {{ user.email }}</p>
-        <p>Nickname: {{ user.nickname }}</p>
-        <p>Wins: {{ user.wins ?? 0 }}</p>
-        <p>Losses {{ user.losses ?? 0 }}</p>
-        <button @click="logout">Logout</button>
+    <div class="min-h-screen bg-navy-900">
+        <div v-if="user">
+            <h1>Profile</h1>
+            <img v-if="user.avatar"
+                :src="user.avatar" alt="avatar" width="100">
+            <AppAvatar v-else :nickname="user.nickname"></AppAvatar>
+            <input type="file" accept="image/*" @change="handleFileSelect">
+            <!-- <button @click="uploadAvatar">Upload avatar</button> -->
+            <p>Email: {{ user.email }}</p>
+            <p>Nickname: {{ user.nickname }}</p>
+            <p>Wins: {{ user.wins ?? 0 }}</p>
+            <p>Losses {{ user.losses ?? 0 }}</p>
+            <!-- <button @click="logout">Logout</button> -->
+        </div>
+        <div v-else-if="error">{{ error }}</div>
+        <div v-else>Loading...</div>
     </div>
-    <div v-else-if="error">{{ error }}</div>
-    <div v-else>Loading...</div>
 </template>

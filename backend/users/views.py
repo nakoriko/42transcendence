@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/11 09:09:30 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/11 19:48:14 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,6 +49,19 @@ class ProfileView(APIView):
             "wins": request.user.wins,
             "losses": request.user.losses,
             "avatar": request.user.avatar.url if request.user.avatar else None,
+        })
+
+class PublicProfileView(APIView):
+    permission_classes = [IsAuthenticated] #define by standart method of rest framaework.permissions (checks token)
+    def get(self, request, pk):
+        user = User.objects.get(pk=pk)
+        return Response({
+            "id": user.id,
+            "email": user.email,
+            "nickname": user.nickname,
+            "wins": user.wins,
+            "losses": user.losses,
+            "avatar": user.avatar.url if user.avatar else None,
         })
 
 

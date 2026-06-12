@@ -11,8 +11,18 @@ class Match(models.Model):
     winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='won_matches')
 
 class MatchEvent(models.Model):
+    class EventType(models.TextChoices):
+        HIT = 'hit', 'Ball hit paddle'
+        MISS = 'miss', 'Ball missed paddle'
+        GOAL = 'goal', 'Goal scored'
+
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
-    event_type = models.CharField(max_length=10)
+
+    event_type = models.CharField(
+        max_length=10,
+        choices=EventType.choices,
+        default=EventType.HIT
+    )
     player = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='match_events')
     timestamp = models.DateTimeField(auto_now_add=True)
 
