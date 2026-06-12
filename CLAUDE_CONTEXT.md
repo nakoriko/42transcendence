@@ -198,10 +198,10 @@ transcend/
 Goal: close 9 pts.
 
 - [x] UI + Custom design system: Button, Card, Avatar, Logo, Input, Badge, Modal, Chart, Leaderboard, Navbar — minimum 10 components
-- [ ] Define color palette (3–5 colors)
-- [ ] Define typography (1–2 fonts)
+- [x] Define color palette (3–5 colors)
+- [x] Define typography (1–2 fonts)
 - [ ] Choose icon set (e.g. lucide-icons or heroicons)
-- [ ] Build 10+ reusable components
+- [x] Build 10+ reusable components
 - [ ] User activity dashboard (wins/losses, match history, leaderboard) — IV.3, 1pt
 - [ ] PATCH /api/users/profile/ — update profile data (nickname, email) (to complete module IV.3)
 
@@ -391,6 +391,16 @@ steps to run locally.
 [x] AppButton — variants: primary / large / cta / ghost
 [x] Fixed memory leak in GameView + arrow key page scroll
 [x] Auth pages updated to match design system
+[x] EventType choices for MatchEvent model (hit/miss/goal) + migration
+[x] Log miss and goal events in game loop with coordinates
+[x] PublicProfileView GET /api/users/<pk>/
+[x] Refactor GameView: player1/player2 objects instead of scattered variables
+[x] Real player nicknames on win screen and scoreboard
+[x] wins/losses are now correctly saved to DB after match ends (FinishMatchView updated)
+[x] AppStatsCard connected to real data from /api/users/profile/
+[x] Memory leak in GameView fixed
+[x] Avatar: initials circle in profile
+
 
 ### Open questions
 *(update as you go)*
@@ -399,9 +409,6 @@ steps to run locally.
 - [known issue] CSP warning "blocks use of eval" in DevTools Issues panel — comes from vite-plugin-vue-devtools, not nginx. Console is clean, functionality not broken. Will disappear in production build. Fix: remove vite-plugin-vue-devtools from vite.config.js before submission.
 - [ ] Sidebar: improve appearance, replace Logout button with a plain link,
       logo links to '/', nav order: Profile → Game → Dashboard → Chat
-- [ ] AppStatsCard and PlayCard: wire up real wins/losses data from API
-- [ ] Verify that wins/losses are correctly saved to DB after match ends
-- [ ] GameView: replace "Player 1 / Player 2" labels with real usernames
 - [ ] Add solo/training mode (one player, one keyboard) —
       no data written to DB, controls hint updates accordingly
 - [ ] Local game with opponent (two browsers, one or two computers):
@@ -416,8 +423,7 @@ steps to run locally.
 - [ ] Surrender button: counts as a loss for current player,
       calls finishMatch() with opponent as winner.
       Decide whether it applies in training mode
-- [ ] Profile: if no avatar uploaded — show initials circle
-      as in AppAvatar, remove default placeholder image
+
 
 ### TODO
 - [ ] Pass player2Id into events.push() for right paddle

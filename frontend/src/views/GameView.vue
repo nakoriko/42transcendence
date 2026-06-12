@@ -16,6 +16,16 @@ import { routeLocationKey, useRoute } from 'vue-router'
     const gameOver = ref(false)
     const winnerText = ref('')
 
+    const keys = {}
+    function handleKeyDown(e) {
+        if (['ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault()
+        keys[e.code] = true
+    }
+
+    function handleKeyUp(e) {
+        keys[e.code] = false
+    }
+
 
 
     function startGame() {
@@ -54,16 +64,6 @@ import { routeLocationKey, useRoute } from 'vue-router'
         // let score_p2 = 0;
 
         //moves:
-        const keys = {}
-        function handleKeyDown(e) {
-            if (['ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault()
-            keys[e.code] = true
-        }
-
-        function handleKeyUp(e) {
-            keys[e.code] = false
-        }
-
         document.addEventListener('keydown', handleKeyDown)
         document.addEventListener('keyup', handleKeyUp)
 

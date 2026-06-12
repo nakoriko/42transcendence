@@ -1,4 +1,5 @@
 <script setup>
+import AppAvatar from '@/components/AppAvatar.vue'
 import { ref, onMounted } from 'vue' 
 import { useRouter } from 'vue-router'
 
@@ -65,11 +66,9 @@ onMounted(loadProfile)
     <div class="min-h-screen bg-navy-900">
         <div v-if="user">
             <h1>Profile</h1>
-            <img
-                :src="user.avatar || '/default-avatar.png'"
-                alt="avatar"
-                width="100"
-            >
+            <img v-if="user.avatar"
+                :src="user.avatar" alt="avatar" width="100">
+            <AppAvatar v-else :nickname="user.nickname"></AppAvatar>
             <input type="file" accept="image/*" @change="handleFileSelect">
             <!-- <button @click="uploadAvatar">Upload avatar</button> -->
             <p>Email: {{ user.email }}</p>
