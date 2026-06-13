@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/06 11:43:37 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/13 12:11:35 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -62,3 +62,12 @@ class FriendRelationSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendRelation
         fields = ['id', 'status', 'friend']
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+            model = User
+            fields = ['nickname', 'email']
+            extra_kwards = {
+                'nickname': {'required': False},
+                'email': {'required': False},
+            }
