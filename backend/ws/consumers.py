@@ -1,13 +1,42 @@
-#importa classe base per consumer
-from channels.generic.websocket import WebsocketConsumer
+import asyncio
+import json
+from channels.generic.websocket import AsyncWebsocketConsumer
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth import get_user_model
 
-#eredita da classe base e cambia alcuni metodi
-class EchoConsumer(WebsocketConsumer):
-    def connect(self):
-        self.accept()#accetta a priori, aggiungere controllo jwt
+User = get_user_model()
 
-    def disconnect(self, close_code):
-        pass#non fare niente, poi cambiare
+class EchoConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.authenticated = False
+        await self.accept()
+        self.auth_timeout = asyncio.create_task(self.close_if_not_authenticated())
 
-    def receive(self, text_data):
-        self.send(text_data=text_data)
+    async def close_if_not_authenticated(self):
+        await asyncio.sleep(5)
+        if not self.authenticated:
+            await self.close()
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'auth_timeout'):
+            self.auth_timeout.cancel()
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+
+        if not self.authenticated:
+            if data.get('type') == 'auth':
+                token_string = data.get('token')
+                try:
+                    token = AccessToken(token_string)
+                    self.user = await User.objects.aget(id=token['user_id'])
+                    self.authenticated = True
+                    self.auth_timeout.cancel()
+                    await self.send(json.dumps({'type': 'auth_success'}))
+                except Exception:
+                    await self.close()
+            else:
+                await self.close()
+            return
+
+        await self.send(text_data=text_data)

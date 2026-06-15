@@ -171,7 +171,18 @@ wss://localhost/ws/presence/
 
 ### Phase 1 timeline
 - Week 1 — echo server works
+- [x] WebSocket setup — Phase 1 complete (echo server)
+     - daphne added to requirements.txt (replaces runserver for ASGI support)
+     - redis==4.6.0 pinned in requirements.txt (compatibility with channels-redis 4.3.0)
+     - Dockerfile updated: runserver → daphne -b 0.0.0.0 -p 8000 core.asgi:application
+     - core/asgi.py updated: ProtocolTypeRouter routes HTTP → Django, WebSocket → Channels
+     - ws/ app created: consumers.py (EchoConsumer) + routing.py (ws/test/)
+     - Echo server tested and working end-to-end:
+       browser → nginx → Daphne → EchoConsumer → browser
+     - Verified in browser console: send 'ciao' → receive 'ciao'
+
 - Week 2 — WebSocket + online status
+
 
 ---
 
