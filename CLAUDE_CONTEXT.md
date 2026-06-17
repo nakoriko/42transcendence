@@ -98,10 +98,10 @@ A new teammate receives:
 |---|---|---|---|
 | IV.1 Framework frontend + backend (Vue + Django) | Major | 2 | ✅ done |
 | IV.1 ORM (Django ORM built-in) | Minor | 1 | ✅ done |
-| IV.1 Custom design system (10+ reusable components) | Minor | 1 | ✅ in progress |
+| IV.1 Custom design system (10+ reusable components) | Minor | 1 | ✅ done |
 | IV.1 User Interaction (chat + profile + friends) | Major | 2 | ⬜ after WebSocket. Profile and friends done |
 | IV.3 Standard User management (profile, avatar, friends) | Major | 2 | ✅ done (add one endpoint) |
-| IV.3 User activity dashboard | Minor | 1 | ⬜ in progress |
+| IV.3 User activity dashboard | Minor | 1 | ✅ in progress |
 | IV.6 Web-based game Pong | Major | 2 | ✅⚠️ needs fixes  |
 | IV.8 Advanced analytics | Major | 2 | ⬜ in progress |
 
@@ -200,10 +200,10 @@ Goal: close 9 pts.
 - [x] UI + Custom design system: Button, Card, Avatar, Logo, Input, Badge, Modal, Chart, Leaderboard, Navbar — minimum 10 components
 - [x] Define color palette (3–5 colors)
 - [x] Define typography (1–2 fonts)
-- [ ] Choose icon set (e.g. lucide-icons or heroicons)
+- [x] Choose icon set 
 - [x] Build 10+ reusable components
-- [ ] User activity dashboard (wins/losses, match history, leaderboard) — IV.3, 1pt
-- [ ] PATCH /api/users/profile/ — update profile data (nickname, email) (to complete module IV.3)
+- [x] User activity dashboard (wins/losses, match history, leaderboard) — IV.3, 1pt
+- [x] PATCH /api/users/profile/ — update profile data (nickname, email) (to complete module IV.3)
 
 ### Weeks 2–4 (June 16–July 6) — Finalization
 Goal: 14+ pts, project ready for submission.
@@ -400,6 +400,20 @@ steps to run locally.
 [x] AppStatsCard connected to real data from /api/users/profile/
 [x] Memory leak in GameView fixed
 [x] Avatar: initials circle in profile
+[x] PATCH /api/users/profile/ : update nickname and email
+    - ProfileUpdateSerializer (partial=True, fields: nickname, email)
+    - ProfileView.patch(), secured via request.user (IDOR-safe)
+    - Tested via DevTools Console 
+- [x] ProfileView full rebuild (Week 2)
+     - ProfileView.vue — 2-column grid, 4 cards
+     - apiFetch everywhere instead of manual fetch (except FormData)
+     - Promise.all for parallel loading of profile/friends/matches
+     - ProfileAvatar.vue — hover overlay for avatar upload, canUpload prop
+     - ProfileStatsCard.vue — wins/losses/winRate computed inside component
+     - RecentMatchesList.vue — WIN/LOSS badge, date formatting
+     - GET /api/game/matches/?limit=N — new match history endpoint
+     - MatchHistorySerializer — computes opponent/score/result relative to request.user
+     - style.css — added .card, .card-label, .online-dot, .badge-win, .badge-loss
 
 
 ### Open questions
@@ -426,12 +440,18 @@ steps to run locally.
 
 
 ### TODO
-- [ ] Pass player2Id into events.push() for right paddle
-- [ ] Court design (tennis style)
+- [x] Court design (tennis style)
 - [ ] Refresh token
-- [ ] Check event_type field in MatchEvent — add types if missing: miss (ball passed the paddle), goal (point scored)
-- [ ] Update game loop in GameView.vue: log miss when ball crosses paddle line without contact, log goal when ball touches left or right wall
-  Without these events, accuracy analytics and heatmaps will be incomplete
+- [ ] Protect /game route — accessible only from lobby with valid match params,
+      direct URL → redirect to /lobby
+- [ ] Advanced analytics — win/loss charts, match history, heatmap (IV.8, 2pt)
+- [ ] Lobby and profile page refactor — align with design system 
+      (apiFetch, card classes, visual consistency across all pages)
+- [ ] UX polish — consistent loading states, empty states, error messages
+- [ ] Responsive design — test on mobile (375px), tablet (768px), desktop (1280px)
+      Pages: login, register, lobby, profile, friends
+      Expected issues: sidebar (needs hamburger or bottom nav),
+      grids (grid-cols-2 → grid-cols-1 on mobile)
 
 ---
 
@@ -449,3 +469,4 @@ steps to run locally.
 | No custom Session model | JWT doesn't need sessions. django.contrib.sessions kept for Admin only. No custom model. |
 | frontend volumes in docker-compose | Without bind mount the container uses image files from build time. Required: ./frontend:/app + /app/node_modules |
 | username in create_user = email | AbstractUser has username field with unique constraint. Set username=email via extra_fields.setdefault() to avoid IntegrityError on second registration |
+| Daphne instead of runserver | Django Channels requires an ASGI server. Replaces manage.py runserver because standard runserver uses WSGI and does not support WebSockets |

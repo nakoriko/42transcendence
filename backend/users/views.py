@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/11 19:48:14 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/13 12:23:29 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ from .models import User, FriendRelation
 from django.db.models import Q
 
 from .serializers import RegisterSerializer, AvatarSerializer,  \
-FriendRelationSerializer, FriendUserSerializer
+FriendRelationSerializer, FriendUserSerializer, ProfileUpdateSerializer
 
 # Complex end-point, a lot of logiic -> class + APIView
 
@@ -50,6 +50,18 @@ class ProfileView(APIView):
             "losses": request.user.losses,
             "avatar": request.user.avatar.url if request.user.avatar else None,
         })
+    def patch(self, request):
+        serializer = ProfileUpdateSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+           serializer.save()
+           return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+            
+
 
 class PublicProfileView(APIView):
     permission_classes = [IsAuthenticated] #define by standart method of rest framaework.permissions (checks token)

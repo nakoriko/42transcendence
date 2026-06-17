@@ -1,10 +1,12 @@
 from django.shortcuts import render
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Match, MatchEvent
-from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer
+from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer, \
+    MatchHistorySerializer
 
 
 class StartMatchView(APIView):
@@ -44,3 +46,15 @@ class FinishMatchView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class MatchHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        limit = int(request.query_params.get('limit', 10))
+        matches = Match.objects.filter(
+            Q(player1=request.user) | Q(player2=request.user),
+            ended_at__isnull=False
+        ).order_by('-ended_at')[:limit]
+
+        serializer = MatchHistorySerializer(matches, many=True, context={'request': request})
+        return Response(serializer.data)

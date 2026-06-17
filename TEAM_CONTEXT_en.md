@@ -87,7 +87,7 @@
 | IV.1 ORM (Django ORM) | Minor | 1 | ✅ done |
 | IV.3 Standard User management (profile, avatar, friends) | Major | 2 | ✅ done |
 | IV.6 Web-based game Pong | Major | 2 | ✅⚠️ needs fixes |
-| IV.1 Custom design system (10+ components) | Minor | 1 | ✅ in progress |
+| IV.1 Custom design system (10+ components) | Minor | 1 | ✅ done |
 | IV.1 User Interaction (chat + profile + friends) | Major | 2 | 🔄 chat waiting for WebSocket |
 | IV.3 User activity dashboard (history, leaderboard) | Minor | 1 | 🔄 in progress |
 | IV.8 Advanced analytics (heatmap, charts) | Major | 2 | 🔄 in progress |
@@ -151,7 +151,7 @@ transcend/
 |---|---|---|
 | User | nickname, email, avatar, wins, losses, is_online | users/ |
 | Match | player1, player2, score_player1, score_player2, winner, started_at, ended_at | game/ |
-| MatchEvent | match, event_type, player, pos_x, pos_y, reaction_time_ms, timestamp | game/ |
+| MatchEvent | match, event_type(hit/miss/goal), player, pos_x, pos_y, reaction_time_ms, timestamp | game/ |
 | FriendRelation | from_user, to_user, status, created_at | users/ |
 
 ---
@@ -164,7 +164,7 @@ transcend/
 | POST | /api/users/login/ | Login → access + refresh tokens |
 | POST | /api/users/logout/ | Logout |
 | GET | /api/users/profile/ | Current user profile (JWT) |
-| PATCH | /api/users/profile/ | Update nickname, email — **TODO** |
+| PATCH | /api/users/profile/ | Update nickname, email |
 | PATCH | /api/users/avatar/ | Upload avatar |
 | GET | /api/users/list/ | User list (lobby) |
 | GET | /api/users/friends/ | Friends list + requests |
@@ -173,6 +173,9 @@ transcend/
 | POST | /api/game/match/start/ | Start a match |
 | POST | /api/game/match/events/ | Log match events |
 | PATCH | /api/game/match/<match_id>/finish/ | Finish a match |
+| GET | /api/users/<pk>/ | Public profile (any user) |
+| GET | /api/game/matches/ | Match history (?limit=N) |
+
 
 ---
 
@@ -184,9 +187,11 @@ transcend/
 - Protected routes (frontend + backend)
 - Pong: game loop on canvas, local multiplayer, match result saved to DB
 - Every hit and ball position logged to MatchEvent (data for analytics)
-- User profile, avatar upload
 - Friends list, incoming/outgoing requests
 - Privacy Policy and Terms of Service pages
+- Profile page: view/edit profile info, avatar upload
+- Match history with opponent, score and result
+- Custom design system: 10+ reusable components, color palette, typography
 
 ---
 
@@ -201,3 +206,4 @@ transcend/
 | JWT for auth | Token-based auth, no custom session model. Django's built-in sessions kept for Admin only |
 | PostgreSQL | Reliability, support for complex analytics queries |
 | Redis as separate container | Broker isolation, standard practice with Django Channels |
+| Daphne instead of runserver | Django Channels requires an ASGI server. Replaces manage.py runserver because standard runserver uses WSGI and does not support WebSockets |
