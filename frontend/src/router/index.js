@@ -18,7 +18,7 @@ const router = createRouter({
     { path: '/login', component: LoginView, meta: { guestOnly: true} },
     { path: '/profile', component: ProfileView, meta: {requiresAuth: true} },
     { path: '/register', component: RegisterView, meta: { guestOnly: true}},
-    { path: '/game', component:GameView, meta: {requiresAuth: true} },
+    { path: '/game', component:GameView, meta: { requiresAuth: true, requiresGame: true } },
     { path: '/lobby', component:LobbyView, meta: {requiresAuth: true} },
     { path: '/friends', component: FriendsView, meta:{requiresAuth: true}}, 
   ],
@@ -32,10 +32,12 @@ router.beforeEach (function(to, from) {
     return '/login'
   }
 
+   if(to.meta.requiresGame && !to.query.player2 ) {
+    return '/lobby'
+  }
   if(to.meta.guestOnly && token) {
     return '/profile'
   }
-
 })
 
 export default router

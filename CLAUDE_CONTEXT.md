@@ -442,7 +442,7 @@ steps to run locally.
 ### TODO
 - [x] Court design (tennis style)
 - [ ] Refresh token
-- [ ] Protect /game route — accessible only from lobby with valid match params,
+- [x] Protect /game route — accessible only from lobby with valid match params,
       direct URL → redirect to /lobby
 - [ ] Advanced analytics — win/loss charts, match history, heatmap (IV.8, 2pt)
 - [ ] Lobby and profile page refactor — align with design system 
