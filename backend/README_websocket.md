@@ -169,20 +169,20 @@ wss://localhost/ws/presence/
 { "type": "user_offline", "user_id": 5 }
 ```
 
+### Phase 1 — Implementation Log
+
+> Backend setup, echo server, authentication, and online status are done and tested. Frontend integration (Vue side opening the connection automatically) is still pending.
+
+- Backend now runs on Daphne instead of `runserver`, so it can handle both HTTP and WebSocket traffic.
+- `ws/` app created with `consumers.py` (the WebSocket handler) and `routing.py` (maps `/ws/test/` to it).
+- Echo server tested end-to-end: browser → nginx → backend → browser. Confirmed working.
+- Authentication implemented: client sends the JWT access token as the first message after connecting; server validates it, looks up the user, and closes the connection if the token is missing or invalid within 5 seconds. Tested and working with a real token from `localStorage` (key: `access`).
+- Online status implemented: on successful authentication, `is_online` is set to `True` on the user; on disconnect, it's set back to `False`. Verified both directions in Django Admin.
+- Next planned step (per team decision): remote players (Phase 2) before chat.
+
 ### Phase 1 timeline
 - Week 1 — echo server works
-- [x] WebSocket setup — Phase 1 complete (echo server)
-     - daphne added to requirements.txt (replaces runserver for ASGI support)
-     - redis==4.6.0 pinned in requirements.txt (compatibility with channels-redis 4.3.0)
-     - Dockerfile updated: runserver → daphne -b 0.0.0.0 -p 8000 core.asgi:application
-     - core/asgi.py updated: ProtocolTypeRouter routes HTTP → Django, WebSocket → Channels
-     - ws/ app created: consumers.py (EchoConsumer) + routing.py (ws/test/)
-     - Echo server tested and working end-to-end:
-       browser → nginx → Daphne → EchoConsumer → browser
-     - Verified in browser console: send 'ciao' → receive 'ciao'
-
 - Week 2 — WebSocket + online status
-
 
 ---
 

@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class EchoConsumer(AsyncWebsocketConsumer):
+class AuthConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.authenticated = False
         await self.accept()
@@ -21,6 +21,10 @@ class EchoConsumer(AsyncWebsocketConsumer):
         if hasattr(self, 'auth_timeout'):
             self.auth_timeout.cancel()
 
+        if self.authenticated:
+            self.user.is_online = False
+            await self.user.asave()
+
     async def receive(self, text_data):
         data = json.loads(text_data)
 
@@ -32,6 +36,10 @@ class EchoConsumer(AsyncWebsocketConsumer):
                     self.user = await User.objects.aget(id=token['user_id'])
                     self.authenticated = True
                     self.auth_timeout.cancel()
+
+                    self.user.is_online = True
+                    await self.user.asave()
+
                     await self.send(json.dumps({'type': 'auth_success'}))
                 except Exception:
                     await self.close()
@@ -40,3 +48,6 @@ class EchoConsumer(AsyncWebsocketConsumer):
             return
 
         await self.send(text_data=text_data)
+
+
+class GameConsumer():
