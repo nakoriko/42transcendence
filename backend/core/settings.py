@@ -151,9 +151,10 @@ REST_FRAMEWORK = {
     )
 }
 
-#tempoarary solution, remove  
+#settings for jwt 
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7)
 }
