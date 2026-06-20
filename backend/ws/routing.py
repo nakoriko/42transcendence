@@ -3,5 +3,5 @@ from . import consumers
 
 #nome convenzionale per channels quando imposta in asgi.py
 websocket_urlpatterns = [
-    path('ws/test/', consumers.AuthConsumer.as_asgi()),
+    path('ws/test/', consumers.PresenceConsumer.as_asgi()),
 ]

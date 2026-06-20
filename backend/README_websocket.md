@@ -195,6 +195,16 @@ wss://localhost/ws/presence/
 
 **Done when:** two browsers, two different users, play against each other in real time.
 
+### Additional requirements: invite
+
+**to play online users need to send invites**
+A → server:        invite (sfida B)
+server → B:        invite_received (notifica della sfida)
+B → server:        invite_accept  oppure  invite_decline
+server → A:        invite_accepted  oppure  invite_declined
+[automatico]:       invite_expired (timeout, nessuna risposta)
+[automatico]:       invite_cancelled (uno dei due si disconnette prima della risposta)
+
 ### Important: game loop moves to the server
 
 Right now ball physics are calculated in the browser (`frontend/src/views/GameView.vue`).

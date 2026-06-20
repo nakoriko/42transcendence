@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class AuthConsumer(AsyncWebsocketConsumer):
+class PresenceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.authenticated = False
         await self.accept()
@@ -49,5 +49,3 @@ class AuthConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=text_data)
 
-
-class GameConsumer():
