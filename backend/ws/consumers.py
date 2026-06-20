@@ -22,6 +22,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             self.auth_timeout.cancel()
 
         if self.authenticated:
+            await self.channel_layer.group_discard(f"user_{self.user.id}", self.channel_name)
             self.user.is_online = False
             await self.user.asave()
 
@@ -40,12 +41,18 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                     self.user.is_online = True
                     await self.user.asave()
 
+                    #iscrizione a gruppo personale
+                    await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
+
                     await self.send(json.dumps({'type': 'auth_success'}))
                 except Exception:
                     await self.close()
             else:
                 await self.close()
             return
+        elif data.get('type') == 'game_invite':
+            match_id = data.get('match_id')
+            to_user_id = data.get('to_user_id')
 
         await self.send(text_data=text_data)
 
