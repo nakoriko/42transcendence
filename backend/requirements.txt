@@ -7,3 +7,5 @@ djangorestframework-simplejwt
 # for websocket:
 channels
 channels-redis
+daphne
+redis==4.6.0

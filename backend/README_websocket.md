@@ -169,6 +169,17 @@ wss://localhost/ws/presence/
 { "type": "user_offline", "user_id": 5 }
 ```
 
+### Phase 1 — Implementation Log
+
+> Backend setup, echo server, authentication, and online status are done and tested. Frontend integration (Vue side opening the connection automatically) is still pending.
+
+- Backend now runs on Daphne instead of `runserver`, so it can handle both HTTP and WebSocket traffic.
+- `ws/` app created with `consumers.py` (the WebSocket handler) and `routing.py` (maps `/ws/test/` to it).
+- Echo server tested end-to-end: browser → nginx → backend → browser. Confirmed working.
+- Authentication implemented: client sends the JWT access token as the first message after connecting; server validates it, looks up the user, and closes the connection if the token is missing or invalid within 5 seconds. Tested and working with a real token from `localStorage` (key: `access`).
+- Online status implemented: on successful authentication, `is_online` is set to `True` on the user; on disconnect, it's set back to `False`. Verified both directions in Django Admin.
+- Next planned step (per team decision): remote players (Phase 2) before chat.
+
 ### Phase 1 timeline
 - Week 1 — echo server works
 - Week 2 — WebSocket + online status
@@ -183,6 +194,16 @@ wss://localhost/ws/presence/
 - A match between two browsers
 
 **Done when:** two browsers, two different users, play against each other in real time.
+
+### Additional requirements: invite
+
+**to play online users need to send invites**
+A → server:        invite (sfida B)
+server → B:        invite_received (notifica della sfida)
+B → server:        invite_accept  oppure  invite_decline
+server → A:        invite_accepted  oppure  invite_declined
+[automatico]:       invite_expired (timeout, nessuna risposta)
+[automatico]:       invite_cancelled (uno dei due si disconnette prima della risposta)
 
 ### Important: game loop moves to the server
 
