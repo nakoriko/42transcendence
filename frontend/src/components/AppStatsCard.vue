@@ -1,4 +1,5 @@
 <script setup>
+
 defineProps({
     wins: Number,
     losses: Number

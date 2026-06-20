@@ -28,6 +28,7 @@ async function handleLogin() {
 
     if(response.ok) {
         localStorage.setItem('access', data.access) //saves jwt
+        localStorage.setItem('refresh', data.refresh) //refresh jwt
         router.push('/profile') //redirect to profile
     } else {
         error.value = data.detail || 'Login error' // shows error

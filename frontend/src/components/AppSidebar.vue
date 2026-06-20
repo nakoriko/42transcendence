@@ -1,7 +1,36 @@
 <script setup>
-import AppButton from './AppButton.vue';
 import AppLogo from './AppLogo.vue';
-defineEmits(['logout'])
+import { ref } from 'vue'
+import {
+  User, Gamepad2, BarChart2, MessageSquare, Bell, LogOut, Check, X
+} from 'lucide-vue-next'
+
+defineProps ({
+  user: {
+    type: Object,
+    default: () => ({username: 'Player'})
+  }, 
+  incomingRequests: {
+    type: Array,
+    default: () =>[]
+  }
+})
+
+
+//??
+const emit = defineEmits(['logout', 'accept-request', 'decline-request'])
+
+//array for routerLink istead of  all links in template
+const navLinks= [
+  { to: '/profile', label: 'Profile', icon: User},
+  { to: '/lobby', label: 'Game', icon: Gamepad2 },
+  { to: '/dashboard', label: 'Dashboard', icon: BarChart2 }, 
+  { to: '/chat', label: 'Chat', icon: MessageSquare} ,
+]
+
+const showRequests = ref(false)
+
+
 
 </script>
 
@@ -9,26 +38,121 @@ defineEmits(['logout'])
   <aside class="w-80 flex-shrink-0 bg-navy-800 border-r border-white/[0.07]
                 flex flex-col sticky top-0 h-screen">
 
-    <!-- Лого сверху -->
-    <div class="p-6 pb-4">
+    <!-- Logo gouse to home(/) -->
+    <RouterLink to="/" class="p-6 pb-4 block">
       <AppLogo />
-    </div>
+    </RouterLink>
 
-    <!-- Ссылки по центру -->
+    <!-- Links from array-->
     <nav class="flex-1 flex flex-col gap-1 px-3 pt-2">
-      <RouterLink to="/lobby" class="sidebar-link">Game</RouterLink>
-      <RouterLink to="/profile" class="sidebar-link">Profile</RouterLink>
-      <RouterLink to="/dashboard" class="sidebar-link">Dashboard</RouterLink>
-      <RouterLink to="/chat" class="sidebar-link">Chat</RouterLink>
+      <RouterLink 
+      v-for="link in navLinks"
+      :key="link.to"
+      :to="link.to"
+      class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-light text-muted transition
+            hover:bg-white/[0.04] hover:text-white
+            [&.router-link-exact-active]:bg-teal/[0.12] [&.router-link-exact-active]:text-teal"
+      >
+      <component :is="link.icon" :size="17" aria-hidden="true" />
+      {{ link.label }}
+    </RouterLink>
     </nav>
 
-    <!-- Logout снизу -->
+    <!--Devider-->
+    <div class="mx-4 my-2 border-t border-white/[0.07]"></div>
+    
+    <!--Friend income invites-->
+    <div class="px-3 pb-2">
+      <button
+        @click="showRequests = !showRequests"
+        class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-light transition"
+        :class="incomingRequests.length
+        ? 'text-sand hover:bg-white/[0.04]'
+        : 'text-muted hover:bg-white/[0.04] hover:text-white'"
+      >
+
+      <Bell :size="17" aria-hiden="true"></Bell>
+      <span>Requests</span>
+      <!--Badge shows only if thereis incoming request-->
+      <span
+        v-if="incomingRequests.length"
+        class="ml-auto bg-coral text-white text-[9px] font-semibold
+              min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1" 
+      >
+      {{ incomingRequests.length }}
+    </span>
+    </button>
+
+    <!--dropdown o list of incoming invites-->
+    <Transition name="fade">
+      <div
+        v-if="showRequests && incomingRequests.length"
+        class="mt-1 mx-1 bg-navy-900 border border-white/[0.07] rounded-xl overflow-hidden"
+      >
+        <div
+          v-for="req in incomingRequests"
+          :key="req.id"
+          class="flex items-center gap-3 px-4 py-2.5 border-b border-white/[0.04]"
+        >
+          <div class="w-7 h-7 rounded-full bg-teal/20 flex items-center justify-center text-sage text-xs flex-shrink-0">
+            {{ req.username[0].toUpperCase()}}
+          </div>
+          <span class="text-xs text-white flex-1 truncate">{{ req.username }}</span>
+          <button @click="emit('accept-request', req.id)" class="text-sage hover:text-white transition p-1" title="Accept">
+            <Check :size="13"></Check>
+          </button>
+          <button @click="emit('decline-request', req.id)" class="text-muted hover:text-coral transition  p-1" title="Decline">
+            <X :size="13"></X>
+          </button>
+        </div>
+      </div>
+      </Transition>  
+  </div>
+
+  <!--devider-->
+  <div class="mx-4 mb-4 border-t border-white/[0.07]"></div>
+
+  <!--USer footer-->
+  <div class="px-3 pb-5">
+    <div class="group flex items-center gap-3 px-4 py-3 rounded-xl
+              border border-white/[0.07] hover:bg-white/[0.03] transition cursor-default">
+    <!--Avatar with green point-->
+    <div class="relative flex-shrink-0">
+      <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-sage text-sm font-light">
+        {{ user.nickname?.[0]?.toUpperCase() ?? 'P' }}
+      </div>
+      <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-navy-800"></div>
+    </div>
+
+    <!--NAME-->
+    <div class="flex-1 min-w-0">
+      <p classs="text-white text-xs truncate">{{ user.nickname }}</p>
+      <p class="text-muted text-[10px]">Player</p>
+    </div>
+
+    <!--Loguot-->
+    <button @click="emit('logout')"
+            class="p-1 text-muted/40 hover:text-coral transition
+            opacity-0 group-hover:opacity-100"
+            title="Logout"
+    >
+      <LogOut :size="15"></LogOut>
+    </button>
+  </div>
+</div>
+
+    <!-- Logout снизу
     <div class="p-4 border-t border-white/[0.07]">
       <AppButton variant="ghost" @click="$emit('logout')" class="w-full">
         Logout
       </AppButton>
-    </div>
-  </aside>
+    </div> -->
+</aside>
 </template>
+
+<style>
+  .fade-enter-active, .fade-leave-active {transition: opacoty 0.15s, transfomr 0.15s;}
+  .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-4px);}
+</style>
 
 
