@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/16 11:51:25 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/21 15:26:39 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,8 +16,17 @@ from .models import Match, MatchEvent
 class MatchCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = ['id', 'player1', 'player2', 'started_at']
-        read_only_fields = ['id', 'started_at']
+        fields = ['id', 'status', 'mode', 'player1', 'player2', 'started_at']
+        read_only_fields = ['id', 'status', 'mode', 'started_at']
+
+class MatchInviteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
+        fields = ['id', 'status', 'mode', 'player1', 'player2', 'started_at']
+        read_only_fields = ['id', 'status', 'mode', 'player1', 'player2', 'started_at']
+
+
+
 
 class MatchEventSerializer(serializers.ModelSerializer):
     class Meta:
