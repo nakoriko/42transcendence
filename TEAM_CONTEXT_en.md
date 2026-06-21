@@ -150,7 +150,7 @@ transcend/
 | Model | Fields | App |
 |---|---|---|
 | User | nickname, email, avatar, wins, losses, is_online | users/ |
-| Match | player1, player2, score_player1, score_player2, winner, started_at, ended_at | game/ |
+| Match | player1, player2, score_player1, score_player2, winner, started_at, ended_at, status (pending/active/finished), mode (local/remote/ai) | game/ |
 | MatchEvent | match, event_type(hit/miss/goal), player, pos_x, pos_y, reaction_time_ms, timestamp | game/ |
 | FriendRelation | from_user, to_user, status, created_at | users/ |
 
@@ -173,6 +173,8 @@ transcend/
 | POST | /api/game/match/start/ | Start a match |
 | POST | /api/game/match/events/ | Log match events |
 | PATCH | /api/game/match/<match_id>/finish/ | Finish a match |
+| POST   | /api/game/match/invite/            | Create pending remote match (opponent_id) |
+| PATCH  | /api/game/match/<match_id>/status/ | Update match status (used by WS consumer) |
 | GET | /api/users/<pk>/ | Public profile (any user) |
 | GET | /api/game/matches/ | Match history (?limit=N) |
 
