@@ -1,18 +1,35 @@
 <script setup>
 
-    import AppButton from '@/components/AppButton.vue'
+import AppButton from '@/components/AppButton.vue'
 import AppStatsCard from '@/components/AppStatsCard.vue'
 import GameModeCard from '@/components/GameModeCard.vue'
 import PlayCard from '@/components/PlayCard.vue'
-import { ref, onMounted } from 'vue'
-    import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import LobbyVsRow from '@/components/lobby/LobbyVsRow.vue'
+import AppFilterTabs from '@/components/AppFilterTabs.vue'
 
     const router = useRouter()
     const user = ref([])
     const error = ref('')
     const selectPlayer2 = ref(null)
     const currentUser = ref(null)
-    const selectedMode = ref(null) // add after mode variable for 'local' | 'ai' | 'remote'
+    const selectedMode = ref('local')
+    const selectedOpponentUser = computed(() =>
+        user.value.find(u=>u.id === selectPlayer2.value) ?? null
+    )
+
+    // for game modes
+    const modeSubtitles = { local: 'Same keyboard', remote: 'Play online' }
+    const selectedModeSubtitle = computed(() => modeSubtitles[selectedMode.value] ?? '')
+
+    // for filters
+    const activeFilter = ref('All Players')
+    const filteredUsers = computed(() =>
+        activeFilter.value === 'Friends'
+            ? user.value.filter(u => u.is_friend)
+            : user.value
+    )
 
     async function fetchUsers() {
         const token = localStorage.getItem('access')
@@ -73,50 +90,62 @@ onMounted(fetchUsers)
 </script>
 
 <template>
-    <div class="min-h-screen px-12 py-14 pb-24" >
-        <div v-if="currentUser" class="lg:w-80 mb-8"> <!--protection while assync fetchUsers finish his a request-->
-            <h1 class="page-title">Welcome back, <br>{{ currentUser.nickname }}</h1>
+    <div class="min-h-screen px-12 py-14 pb-24 flex flex-col items-center gap-7">
+
+        <div v-if="currentUser" class="w-full max-w-7xl">
+            <p class="input-label">Welcome back</p>
+            <h1 class="page-title">{{ currentUser.nickname }}</h1>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-8 w-full items-start">
+        <div class="grid grid-cols-[2fr_1fr] gap-16 w-full max-w-7xl mt-10">
 
-            <!--Left column-->
-            <div class="flex flex-col gap-5 lg:w-80 w-full flex-shrink-0">
-                <div v-if="currentUser" class="flex flex-col gap-2"> <!--protection while assync fetchUsers finish his a request-->
-                    <span class="input-label">Your stats</span>
-                    <AppStatsCard :wins="currentUser.wins" :losses="currentUser.losses"></AppStatsCard>
-                </div>
+            <!-- Левая колонка: режим + оппоненты -->
+            <div class="flex flex-col gap-8">
 
-                
+                <!-- Режим -->
                 <div class="flex flex-col gap-3">
                     <span class="input-label">Choose game mode</span>
-                    <GameModeCard icon="🎮" title="Local" subtitle="Same keyboard"
-                    :selected="selectedMode === 'local'"
-                    @select="tooggleMode('local')"></GameModeCard>
-                    <GameModeCard icon="🎮" title="vs AI"  :disabled="true" ></GameModeCard>
-                    <GameModeCard icon="🌐" title="Remote"  :disabled="true" ></GameModeCard>
+                    <div class="flex items-center gap-3">
+                        <GameModeCard title="Local"
+                            :selected="selectedMode === 'local'"
+                            @select="tooggleMode('local')" />
+                        <GameModeCard title="Remote"
+                            :selected="selectedMode === 'remote'"
+                            @select="tooggleMode('remote')" />
+                        <GameModeCard title="vs AI" :disabled="true" />
+                        <span v-if="selectedModeSubtitle"
+                            class="text-base font-light text-muted/50 ml-auto">
+                            {{ selectedModeSubtitle }}
+                        </span>
+                    </div>
                 </div>
-                
 
-                <p v-if="error" class="text-xs text-coral text-center">{{ error }}</p>
+                <!-- Оппоненты -->
+                <div class="flex flex-col gap-3">
+                    <div class="border-t border-white/[0.07] pb-3 pt-8 flex items-center justify-between">
+                        <span class="input-label">Choose an opponent</span>
+                        <AppFilterTabs :options="['All Players', 'Friends']" v-model="activeFilter" />
+                    </div>
+                    <div class="flex flex-col overflow-y-auto max-h-[420px] scroll-thin">
+                        <PlayCard v-for="u in filteredUsers"
+                            :key="u.id"
+                            :user="u"
+                            :selected="selectPlayer2 === u.id"
+                            @select="toogglePlayer($event)" />
+                    </div>
+                </div>
+
             </div>
 
+            <!-- Правая колонка: матч -->
+            <LobbyVsRow
+                v-if="currentUser"
+                :currentUser="currentUser"
+                :opponent="selectedOpponentUser">
+                <p v-if="error" class="text-xs text-coral mt-1">{{ error }}</p>
+                <AppButton variant="compact" @click="startMatch">Start game</AppButton>
+            </LobbyVsRow>
 
-            <!--- Right columnr -->
-            <div class="flex-1 min-w-0 flex flex-col gap-3">
-                <span class="input-label">Choose an opponent</span>
-                <div class="flex flex-col gap-2 overflow-y-auto">
-                    <PlayCard v-for="u in user"
-                        :key="u.id"
-                        :user="u"
-                        :selected="selectPlayer2 === u.id"
-                        @select="toogglePlayer ($event)"
-                        ></PlayCard>
-                </div>
-            </div>
-        </div>
-        <div class="flex justify-center mt-10">
-            <AppButton variant="cta" @click="startMatch">Start game</AppButton>
         </div>
     </div>
 </template>
