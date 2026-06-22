@@ -194,6 +194,8 @@ transcend/
 - Profile page: view/edit profile info, avatar upload
 - Match history with opponent, score and result
 - Custom design system: 10+ reusable components, color palette, typography
+- Lobby: redesigned UI — game mode pills, two-column layout,
+  opponent list with filter tabs, match card with slot for CTA
 
 ---
 
