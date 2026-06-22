@@ -1,5 +1,5 @@
 <script setup>
-import AppBadge from './AppBadge.vue';
+import ArrowsBadge from './game/ArrowsBadge.vue';
 
 </script>
 
@@ -9,16 +9,16 @@ import AppBadge from './AppBadge.vue';
         <div class="flex flex-col items-center gap-2">
             <span class="text-xs text-muted uppercase tracking-widest">Player 1</span>
             <div class="flex gap-2">
-                <AppBadge label="W"></AppBadge>
-                <AppBadge label="S"></AppBadge>
+                <ArrowsBadge label="W"></ArrowsBadge>
+                <ArrowsBadge label="S"></ArrowsBadge>
             </div>
         </div>
 
         <div class="flex flex-col items-center gap-2">
             <span class="text-xs text-muted uppercase tracking-widest">Player 2</span>
             <div class="flex gap-2">
-                <AppBadge label="↑"></AppBadge>
-                <AppBadge label="↓"></AppBadge>
+                <ArrowsBadge label="↑"></ArrowsBadge>
+                <ArrowsBadge label="↓"></ArrowsBadge>
             </div>
         </div>
     </div>

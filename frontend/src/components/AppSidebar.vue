@@ -35,7 +35,7 @@ const showRequests = ref(false)
 </script>
 
 <template>
-  <aside class="w-80 flex-shrink-0 bg-navy-800 border-r border-white/[0.07]
+  <aside class="w-80 flex-shrink-0 bg-navy-800/20 border-r border-white/[0.07]
                 flex flex-col sticky top-0 h-screen">
 
     <!-- Logo gouse to home(/) -->

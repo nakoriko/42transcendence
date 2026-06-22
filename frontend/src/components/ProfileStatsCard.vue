@@ -1,16 +1,19 @@
 <script setup>
 import {computed } from 'vue' 
+import { calcWinRate } from '@/utils/stats'
 
 const props = defineProps({
     wins: Number,
     losses: Number
 })
 
-const winRate = computed(()=> {
-    const total = (props.wins ?? 0 ) + (props.losses ?? 0)
-    if( total == 0) return 0
-    return Math.round(props.wins / total * 100)
-})
+// const winRate = computed(()=> {
+//     const total = (props.wins ?? 0 ) + (props.losses ?? 0)
+//     if( total == 0) return 0
+//     return Math.round(props.wins / total * 100)
+// })
+
+const winRate = computed(()=> calcWinRate(props.wins, props.losses))
 
 </script>
 
