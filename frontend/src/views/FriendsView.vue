@@ -105,7 +105,7 @@
         </ul>
     </div>
     <div>
-        <h2>Invite to play</h2>
+        <h2>Add friend</h2>
         <p v-if="allUsers.length === 0">Oh, there's nobody yet</p>
         <ul v-else>
             <li v-for="user in allUsers" :key="user.id">

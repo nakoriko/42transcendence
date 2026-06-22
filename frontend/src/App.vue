@@ -80,8 +80,10 @@
       @accept-request="acceptRequest"
       @decline-request="declineRequest" />
     
-    <div class="flex-1 min-w-0 flex flex-col">
-      <RouterView />
+    <div class="flex-1 min-w-0 flex flex-col h-screen overflow-y-scroll scroll-thin">
+        <div class="max-w-[1700px] mx-auto w-full px-10 py-10 flex-1">
+          <RouterView />
+        </div>
       <!-- футер переезжает сюда, убираем fixed -->
       <footer class="py-4 text-center text-xs text-muted/40 mt-auto">
         <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>

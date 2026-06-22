@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/13 12:23:29 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/22 22:04:05 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -86,7 +86,12 @@ class UserListView(APIView):
                 "nickname": u.nickname,
                 "wins": u.wins,
                 "is_online": u.is_online,
-                "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None
+                "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None,
+                "is_friend": FriendRelation.objects.filter (
+                    Q(from_user=request.user, to_user=u) | #Q permits to check both directions: from to and to from
+                    Q(from_user=u, to_user=request.user),
+                    status='accepted'
+                ).exists() #bolean exists - returns TRUE o FAlse
                 }
                 for u in users
             ]
@@ -143,12 +148,20 @@ class FriendsListView(APIView):
             to_user=request.user,
             status='pending'
         )
+
+        outgoing = FriendRelation.objects.filter(
+            from_user=request.user,
+            status='pending'
+        )
         return Response({
             'friends': FriendRelationSerializer (
                 friends, many=True, context={'request': request}
             ).data, 
             'incoming': FriendRelationSerializer(
                 incoming, many=True, context={'request': request}
+            ).data,
+            'outgoing': FriendRelationSerializer(
+                outgoing, many=True, context={'request': request}
             ).data,
         })
 
