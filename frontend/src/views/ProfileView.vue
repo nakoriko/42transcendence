@@ -1,20 +1,29 @@
 <script setup>
-import AppAvatar from '@/components/AppAvatar.vue'
 import ProfileAvatar from '@/components/ProfileAvatar.vue'
 import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
 import RecentMatchesList from '@/components/RecentMatchesList.vue'
 import { ref, onMounted, computed } from 'vue' 
-import { RouterLink, useRouter } from 'vue-router'
 import { apiFetch } from '@/utils/apiFetch'
 import AppInput from '@/components/AppInput.vue'
 import AppButton from '@/components/AppButton.vue'
+import ProfileFriendsBlock from '@/components/profile/ProfileFriendsBlock.vue'
 
 const user = ref(null)
 const error = ref('')
-const friends = ref([])
 const matches = ref([])
 const isEditing = ref(false)
 const editForm = ref({ nickname: '', email: '' })
+
+//for filters:
+const activeFilter = ref('all')
+const filteredMatches = computed(() => {
+    console.log('result values:', matches.value.map(m => m.result))
+    if(activeFilter.value === 'wins') return matches.value.filter(m => m.result === 'win')
+    if(activeFilter.value === 'losses') return matches.value.filter(m => m.result === 'loss')
+    return matches.value
+
+})
+
 
 
 //editing
@@ -70,10 +79,9 @@ async function loadProfile() {
     }
 }
 
-
 async function loadMatches() {
     try {
-        const response = await apiFetch('/api/game/matches/?limit=3')
+        const response = await apiFetch('/api/game/matches/?limit=5')
         if(!response) return
         if(!response.ok) { matches.value = []; return}
         const data = await response.json()
@@ -83,27 +91,14 @@ async function loadMatches() {
     }
 }
 
-async function loadFriends() {
-    try {
-        const response = await apiFetch('/api/users/friends/')
-        if(!response) return
-        if(!response.ok) { friends.value = []; return}
-        const data = await response.json()
-        friends.value = data.friends ?? data
-    } catch (err) {
-        error.value = 'Connection error'
-    }
-}
-
-
 onMounted(async() => {
-    await Promise.all([loadProfile(), loadFriends(), loadMatches()])
+    await Promise.all([loadProfile(), loadMatches()])
 })
 
 </script>
 
 <template>
-    <div class="px-10 py-10">
+    <div>
         <div v-if="error" class="text-coral text-sm"> {{ error }}</div>
         <div v-if="user">
             <div class="flex items-center justify-between mb-6">
@@ -111,7 +106,8 @@ onMounted(async() => {
                 <span class="text-[10px] text-muted">@{{ user.nickname }}</span>
             </div>
 
-            <div class="grid grid-cols-[1fr_240px] gap-4">
+
+            <div class="grid grid-cols-[2fr_1fr] gap-6 ">
 
                 <!--Profile card-->
                 <div class="card">
@@ -143,24 +139,15 @@ onMounted(async() => {
                 <ProfileStatsCard :wins="user.wins ?? 0" :losses="user.losses ?? 0"></ProfileStatsCard>
 
                 <!--recent matches-->
-                <RecentMatchesList :matches="matches"></RecentMatchesList>
+                <RecentMatchesList 
+                    :matches="filteredMatches"
+                    :activeFilter="activeFilter"
+                    @filter-change="activeFilter = $event">
+                </RecentMatchesList>
 
                 <!--Friends preview-->
-                <div class="card">
-                    <div class="card-label">Friends</div>
-                    <div class="flex flex-col gap-2">
-                        <div v-for="f in friends.slice(0, 3)" :key="f.id"
-                            class="flex items-center gap-2">
-                            <AppAvatar :nickname="f.friend.nickname" :isOnline="f.friend.is_online"></AppAvatar>
-                            <div class="text-[11px] text-white">{{ f.friend.nickname }}</div>
-                            <div class="text-[9px]" :class="f.friend.is_online ? 'text-green-400' : 'text-muted'">
-                                {{ f.friend.is_online ? 'online' : 'offline' }}
-                            </div>
-                        </div>
-                        <RouterLink to="/friends"
-                            class="text-[10px] text-teal mt-3 flex items-center gap-1">See all friends</RouterLink>
-                    </div>
-                </div>
+                <!--Friends-->
+                <ProfileFriendsBlock />
             </div>
 
         </div>

@@ -2,6 +2,16 @@ from django.db import models
 from django.conf import settings
 
 class Match(models.Model):
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Waiting for opponent'
+        ACTIVE = 'active', 'Match in progress'
+        FINISHED = 'finished', 'Mathc finished'
+    class Mode(models.TextChoices):
+        LOCAL = 'local', 'Local match (same keyboard)'
+        REMOTE = 'remote', 'Remote (two browsers)'
+        AI = 'ai', 'AI opponent'
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    mode = models.CharField(max_length=10, choices=Mode.choices, default=Mode.LOCAL)
     player1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='matches_as_player1')
     player2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='matches_as_player2')
     score_player1 = models.IntegerField(default=0)

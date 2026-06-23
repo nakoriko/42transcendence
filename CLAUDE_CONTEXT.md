@@ -404,7 +404,7 @@ steps to run locally.
     - ProfileUpdateSerializer (partial=True, fields: nickname, email)
     - ProfileView.patch(), secured via request.user (IDOR-safe)
     - Tested via DevTools Console 
-- [x] ProfileView full rebuild (Week 2)
+[x] ProfileView full rebuild (Week 2)
      - ProfileView.vue — 2-column grid, 4 cards
      - apiFetch everywhere instead of manual fetch (except FormData)
      - Promise.all for parallel loading of profile/friends/matches
@@ -414,6 +414,48 @@ steps to run locally.
      - GET /api/game/matches/?limit=N — new match history endpoint
      - MatchHistorySerializer — computes opponent/score/result relative to request.user
      - style.css — added .card, .card-label, .online-dot, .badge-win, .badge-loss
+[x] /game route protection
+      - meta: { requiresAuth: true, requiresGame: true } on /game route
+      - router.beforeEach: if no to.query.player2 → redirect to /lobby
+      - direct URL /game without params → /lobby
+
+[x] Refresh token — full cycle
+      - LoginView.vue: saves data.refresh to localStorage
+      - users/urls.py: TokenRefreshView at token/refresh/
+      - apiFetch.js: tryRefresh() on 401 — fetches new access token,
+        retries original request
+      - user does not notice token refresh
+      - after 7 days refresh expires → redirect to /login
+- [x] Remote Players — backend ready (Week 3)
+      - Match model: added status field (pending/active/finished) and mode field (local/remote/ai)
+      - Migration 0003_match_mode_match_status applied
+      - StartMatchView updated: explicitly sets status=ACTIVE, mode=LOCAL
+      - MatchCreateSerializer: status, mode — read_only
+      - MatchInviteSerializer: all fields read_only (logic handled in view)
+      - POST /api/game/match/invite/ — creates pending match, accepts opponent_id
+      - PATCH /api/game/match/<id>/status/ — updates match status (for teammate's WS consumer)
+      - User imported via get_user_model()
+      - API contract for teammate — REMOTE_PLAYERS_CONTRACT_IT.md delivered
+- [x] Lobby — full UI redesign (June 22)
+    - Layout: two columns (opponents + filter left, match card right)
+    - GameModeCard → pills with dot indicator, default mode: local
+    - PlayCard — style unified with GameModeCard (height, dividers, selection)
+    - LobbyVsRow — vertical player layout, slot for button and error message
+    - AppFilterTabs — reusable filter component (used in lobby, ready for dashboard)
+    - AppAvatar — added lg size (w-12 h-12)
+    - AppButton — added compact variant (px-6 py-2 rounded-xl)
+    - Opponent list scroll: max-h-[420px], custom scrollbar (.scroll-thin)
+    - Default states: mode = local, filter = All Players
+- [x] Friends block in profile (ProfileFriendsBlock.vue)
+      - Created self-contained component src/components/profile/ProfileFriendsBlock.vue
+      - Logic: loadFriends, removeFriend, sendRequest, toggleDropdown
+      - Filters: all / online / pending (pending = outgoing requests)
+      - "+" dropdown to add friends with filtering of already added users
+      - Delete: click on card → X appears
+      - Auto-refresh via CustomEvent 'friends-updated' (App.vue → ProfileFriendsBlock)
+      - AppAvatar: online status dot (teal = online, muted = offline)
+      - Backend: added outgoing to FriendsListView
+      - /friends route removed from router, FriendsView.vue kept as dead code
 
 
 ### Open questions
@@ -437,13 +479,10 @@ steps to run locally.
 - [ ] Surrender button: counts as a loss for current player,
       calls finishMatch() with opponent as winner.
       Decide whether it applies in training mode
+- [ ] Lobby frontend: connect InviteMatchView, handle game_start → /game
 
 
 ### TODO
-- [x] Court design (tennis style)
-- [ ] Refresh token
-- [x] Protect /game route — accessible only from lobby with valid match params,
-      direct URL → redirect to /lobby
 - [ ] Advanced analytics — win/loss charts, match history, heatmap (IV.8, 2pt)
 - [ ] Lobby and profile page refactor — align with design system 
       (apiFetch, card classes, visual consistency across all pages)
@@ -452,6 +491,13 @@ steps to run locally.
       Pages: login, register, lobby, profile, friends
       Expected issues: sidebar (needs hamburger or bottom nav),
       grids (grid-cols-2 → grid-cols-1 on mobile)
+- [ ] Add seed-script to fill database for dashboard
+
+     
+### Lobby (current priority)
+- [ ] Remote tab: Challenge button → POST /api/game/match/invite/ → waiting screen
+- [ ] Listen to WS event game_start → redirect /game?match_id=42&role=player1
+- [ ] Opponent online status via WebSocket (currently static)
 
 ---
 
