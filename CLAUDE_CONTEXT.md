@@ -436,6 +436,26 @@ steps to run locally.
       - PATCH /api/game/match/<id>/status/ — updates match status (for teammate's WS consumer)
       - User imported via get_user_model()
       - API contract for teammate — REMOTE_PLAYERS_CONTRACT_IT.md delivered
+- [x] Lobby — full UI redesign (June 22)
+    - Layout: two columns (opponents + filter left, match card right)
+    - GameModeCard → pills with dot indicator, default mode: local
+    - PlayCard — style unified with GameModeCard (height, dividers, selection)
+    - LobbyVsRow — vertical player layout, slot for button and error message
+    - AppFilterTabs — reusable filter component (used in lobby, ready for dashboard)
+    - AppAvatar — added lg size (w-12 h-12)
+    - AppButton — added compact variant (px-6 py-2 rounded-xl)
+    - Opponent list scroll: max-h-[420px], custom scrollbar (.scroll-thin)
+    - Default states: mode = local, filter = All Players
+- [x] Friends block in profile (ProfileFriendsBlock.vue)
+      - Created self-contained component src/components/profile/ProfileFriendsBlock.vue
+      - Logic: loadFriends, removeFriend, sendRequest, toggleDropdown
+      - Filters: all / online / pending (pending = outgoing requests)
+      - "+" dropdown to add friends with filtering of already added users
+      - Delete: click on card → X appears
+      - Auto-refresh via CustomEvent 'friends-updated' (App.vue → ProfileFriendsBlock)
+      - AppAvatar: online status dot (teal = online, muted = offline)
+      - Backend: added outgoing to FriendsListView
+      - /friends route removed from router, FriendsView.vue kept as dead code
 
 
 ### Open questions
@@ -459,8 +479,6 @@ steps to run locally.
 - [ ] Surrender button: counts as a loss for current player,
       calls finishMatch() with opponent as winner.
       Decide whether it applies in training mode
-- [x] Remote Players architecture agreed with teammate:
-      invite flow (not matchmaking), WS notification to specific player
 - [ ] Lobby frontend: connect InviteMatchView, handle game_start → /game
 
 
@@ -473,13 +491,13 @@ steps to run locally.
       Pages: login, register, lobby, profile, friends
       Expected issues: sidebar (needs hamburger or bottom nav),
       grids (grid-cols-2 → grid-cols-1 on mobile)
+- [ ] Add seed-script to fill database for dashboard
+
      
 ### Lobby (current priority)
-- [ ] LobbyView.vue: 3 tabs — Local / Online / AI (coming soon)
-- [ ] Online tab: show only online players (GET /api/users/list/?online=true)
-- [ ] Challenge button → POST /api/game/match/invite/ → waiting screen
-- [ ] Listen for WS event game_start → redirect /game?match_id=42&role=player1
-- [ ] Local tab: existing lobby (already works, just move into tab)
+- [ ] Remote tab: Challenge button → POST /api/game/match/invite/ → waiting screen
+- [ ] Listen to WS event game_start → redirect /game?match_id=42&role=player1
+- [ ] Opponent online status via WebSocket (currently static)
 
 ---
 
