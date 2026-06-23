@@ -53,6 +53,5 @@ const emit = defineEmits(['filter-change'])
 
             </div>
         </div>
-        <div class="text-[10px] text-teal mt-3 cursor-pointer">See full history</div>
     </div>
 </template>
