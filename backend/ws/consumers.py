@@ -54,5 +54,25 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             match_id = data.get('match_id')
             to_user_id = data.get('to_user_id')
 
-        await self.send(text_data=text_data)
+            await self.channel_layer.group_send(f"user_{to_user_id}", {
+                "type": "game_invite_event",
+                "match_id": match_id,
+                "from_user_id": self.user.id,
+                "from_user_nickname": self.user.nickname,
+            })
 
+    async def game_invite_event(self, event):
+        await self.send(json.dumps({
+            "type": "game_invite",
+            "match_id": event["match_id"],
+            "from_user": {
+                "id": event["from_user_id"],
+                "nickname": event["from_user_nickname"],
+            }
+        }))
+
+""" class GameConsumer() 
+match_42
+paddle_move
+game_state
+game_over """

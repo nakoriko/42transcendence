@@ -246,3 +246,14 @@ wss://localhost/ws/game/<match_id>/
 ### Phase 2 timeline
 - Week 3 — Remote players works
 - Week 4 — bugs + defense prep
+
+
+### Appunti per documentazione
+
+
+Il flusso completo di invito a una partita è:
+
+A → server:        game_invite       { match_id, to_user_id }
+server → B:          game_invite       { match_id, from_user: {id, nickname} }
+B → server:        game_accept       { match_id }
+server → entrambi: game_start        { match_id, your_role }
