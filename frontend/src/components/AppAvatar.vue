@@ -22,5 +22,7 @@
         class="relative rounded-full flex items-center justify-center text-navy-900 flex-shrink-0">
             {{ initial(nickname) }}
             <div v-if="isOnline" class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-teal border-2 border-navy-800"></div>
+            <div v-else class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-gray-500 border-2 border-navy-800"></div>
+
     </div>
 </template>

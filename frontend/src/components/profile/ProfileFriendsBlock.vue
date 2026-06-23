@@ -7,6 +7,8 @@ import AppFilterTabs from '../AppFilterTabs.vue'
 import { X } from 'lucide-vue-next'
     const friends=ref([])
     const outgoing=ref([])
+    const incoming=ref([])
+
     const allUsers=ref([])
     const showDropdown= ref(false)
     const selectedId = ref(null)
@@ -24,11 +26,17 @@ import { X } from 'lucide-vue-next'
         const data = await res.json()
         friends.value = data.friends ?? []
         outgoing.value = data.outgoing ?? []
+        incoming.value = data.incoming ?? []
+        
     }
 
     async function removeFriend(relationId) {
         const res = await apiFetch(`/api/users/friends/${relationId}/`, { method: 'DELETE'})
-        if(res?.ok) await loadFriends()
+        if(res?.ok) {
+            allUsers.value = []
+            await loadFriends()
+        }
+
     }
 
     async function sendRequest(userID) {
@@ -43,6 +51,19 @@ import { X } from 'lucide-vue-next'
         }
     }
 
+    const availableUsers = computed(() => {
+        const friendIds = friends.value.map(f => f.friend.id)
+        const outgoingIds = outgoing.value.map (f => f.friend.id)
+        const incomingIds = incoming.value.map(f => f.friend.id)
+
+        return allUsers.value.filter ( u =>
+            !friendIds.includes(u.id) &&
+            !outgoingIds.includes(u.id) &&
+            !incomingIds.includes(u.id) && 
+            !u.is_friend
+        )
+    })
+
     async function toggleDropdown() {
 
         showDropdown.value = !showDropdown.value
@@ -50,12 +71,13 @@ import { X } from 'lucide-vue-next'
                 const res = await apiFetch('/api/users/list/')
                 if(!res?.ok) return
                 allUsers.value = await res.json()
-                console.log('allUsers:', allUsers.value)
-
             }
     }
 
-    onMounted(loadFriends)
+    onMounted(() => {
+        loadFriends()
+        window.addEventListener('friends-updated', loadFriends)
+    })
 
 </script>
 
@@ -77,7 +99,7 @@ import { X } from 'lucide-vue-next'
             </div>
         </div>
         <div v-if="showDropdown" class="flex flex-col gap-1 mb-1">
-            <div v-for="u in allUsers" :key="u.id"
+            <div v-for="u in availableUsers" :key="u.id"
                 class="flex items-center gap-3 px-3 py-2 rounded-xl
                     bg-white/[0.02] hover:bg-white/[0.04] transition">
                 <span class="text-sm text-white flex-1">{{ u.nickname }}</span>
