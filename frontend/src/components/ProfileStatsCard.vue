@@ -1,6 +1,8 @@
 <script setup>
 import {computed } from 'vue' 
 import { calcWinRate } from '@/utils/stats'
+import { Trophy, ThumbsDown, PieChart } from 'lucide-vue-next'
+
 
 const props = defineProps({
     wins: Number,
@@ -19,26 +21,44 @@ const winRate = computed(()=> calcWinRate(props.wins, props.losses))
 
 
 <template>
-<div class="card">
-    <div class="input-label mb-4"> Stats</div>
+<div>
+    <!-- <hr class="border-white/[0.08] my-4" /> -->
 
-    <div class="flex flex-col gap-2">
-        <div class="flex justify-between items-center bg-white/[0.03] rounded-xl px-3 py-2.5">
-            <span class="text-xs text-muted">Wins</span>
-            <span class="text-2xl font-light text-sage">{{ wins }}</span>
+    <!-- <div class="input-label mb-4"> Your Stats</div> -->
+
+    <div class="flex gap-8 items-center mb-8">
+        <div class="card flex-1 flex justify-between items-center">
+            <div class="flex items-center gap-5">
+                <div class="w-15 h-15 bg-white/[0.03] rounded-xl flex items-center justify-center">
+                    <Trophy class="w-6 h-6 text-sage" />
+                </div>
+                <span class="text-xs text-muted">Wins</span>
+            </div>
+            <span class="text-4xl font-light text-sage px-4">{{ wins }}</span>
         </div>
 
-        <div class="flex justify-between items-center bg-white/[0.03] rounded-xl px-3 py-2.5">
-            <span class="text-xs text-muted">Losses</span>
-            <span class="text-2xl font-light text-sage">{{ losses }}</span>
+        <div class="card flex-1 flex justify-between items-center">
+            <div class="flex items-center gap-5">
+                <div class="w-15 h-15 bg-white/[0.03] rounded-xl flex items-center justify-center">
+                    <ThumbsDown class="w-6 h-6 text-sage" />
+                </div>
+                <span class="text-xs text-muted">Losses</span>
+            </div>
+            <span class="text-4xl font-light text-sage px-4">{{ losses }}</span>
         </div>
 
-        <div class="flex justify-between items-center bg-white/[0.03] rounded-xl px-3 py-2.5">
-            <span class="text-xs text-muted">Win Rate</span>
-            <span class="text-2xl font-light text-sage">{{ winRate }}%</span>
+        <div class="card flex-1 flex justify-between items-center">
+            <div class="flex items-center gap-5">
+                <div class="w-15 h-15 bg-white/[0.03] rounded-xl flex items-center justify-center">
+                    <PieChart class="w-6 h-6 text-sage" />
+                </div>
+                <span class="text-xs text-muted">Win Rate</span>
+            </div>
+            <span class="text-4xl font-light text-sage px-4">{{ winRate }}%</span>
         </div>
 
-        <div class="mt-1">
+
+        <!-- <div class="mt-1">
             <div class="h-1 bg-white/[0.06] rounded-full overflow-hidden">
                 <div class="h-full bg-teal rounded-full transition-all"
                     :style="{ width: winRate + '%'}"></div>
@@ -48,7 +68,7 @@ const winRate = computed(()=> calcWinRate(props.wins, props.losses))
                 <span class="text-[9px] text-muted">100%</span>
             </div>
 
-        </div>
+        </div> -->
 
     </div>
 
