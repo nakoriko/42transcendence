@@ -41,15 +41,22 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                     self.user.is_online = True
                     await self.user.asave()
 
-                    #iscrizione a gruppo personale
+                    # iscrizione a gruppo personale
                     await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
 
                     await self.send(json.dumps({'type': 'auth_success'}))
-                except Exception:
+                # except da mettere in versione finale
+                # except Exception:
+                #     await self.close()
+
+                #except per debug
+                except Exception as e:
+                    print("AUTH ERROR:", e)
                     await self.close()
             else:
                 await self.close()
             return
+
         elif data.get('type') == 'game_invite':
             match_id = data.get('match_id')
             to_user_id = data.get('to_user_id')
@@ -61,6 +68,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 "from_user_nickname": self.user.nickname,
             })
 
+    # --- handler chiamati da Channels quando arriva un messaggio dal Group ---
+
     async def game_invite_event(self, event):
         await self.send(json.dumps({
             "type": "game_invite",
@@ -70,9 +79,3 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 "nickname": event["from_user_nickname"],
             }
         }))
-
-""" class GameConsumer() 
-match_42
-paddle_move
-game_state
-game_over """

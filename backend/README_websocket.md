@@ -248,6 +248,11 @@ wss://localhost/ws/game/<match_id>/
 - Week 4 — bugs + defense prep
 
 
+### stato attuale
+
+utenti possono mandare invito e riceverlo.
+Prossimo passo: accettare invito
+
 ### Appunti per documentazione
 
 
