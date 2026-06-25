@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -80,6 +80,18 @@ class FinishMatchView(APIView):
             loser.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MatchEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, match_id):
+        match = get_object_or_404(Match, id=match_id)
+
+        if request.user != match.player1 and request.user != match.player2:
+            return Response(status=403)
+        events = MatchEvent.objects.filter (match=match).order_by('timestamp')
+        serializer = MatchEventSerializer(events, many=True)
+        return Response(serializer.data)
 
 class MatchHistoryView(APIView):
     permission_classes = [IsAuthenticated]

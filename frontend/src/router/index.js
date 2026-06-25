@@ -7,7 +7,7 @@ import RegisterView from '../views/RegisterView.vue'
 import GameView from '../views/GameView.vue' 
 import LobbyView from '../views/LobbyView.vue'
 import FriendsView from '@/views/FriendsView.vue'
-// import DashboardView from '@/views/DashboardView.vue'
+import DashboardView from '@/views/DashboardView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,7 +22,7 @@ const router = createRouter({
     { path: '/game', component:GameView, meta: { requiresAuth: true, requiresGame: true } },
     { path: '/lobby', component:LobbyView, meta: {requiresAuth: true} },
     // { path: '/friends', component: FriendsView, meta:{requiresAuth: true}}, 
-    // { path: '/dashboard', component: DashboardView, meta:{requiresAuth: true}}, 
+    { path: '/dashboard', component: DashboardView, meta:{requiresAuth: true}}, 
 
   ],
 })
