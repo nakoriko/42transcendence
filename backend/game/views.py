@@ -105,3 +105,17 @@ class MatchHistoryView(APIView):
 
         serializer = MatchHistorySerializer(matches, many=True, context={'request': request})
         return Response(serializer.data)
+
+class AllUserEventsView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        matches = Match.objects.filter(
+            Q(player1=request.user) | Q(player2=request.user),
+            ended_at__isnull=False
+        )
+        events = MatchEvent.objects.filter(
+            match__in=matches
+        ).order_by('match_id', 'timestamp')
+
+        serializer = MatchEventSerializer(events, many=True)
+        return Response(serializer.data)

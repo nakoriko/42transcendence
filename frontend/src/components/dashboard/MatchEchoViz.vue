@@ -1,18 +1,25 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, reactive } from 'vue'
+import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
-import { apiFetch } from '@/utils/apiFetch'
+import AppTooltip from '../AppTooltip.vue'
+// import { apiFetch } from '@/utils/apiFetch'
 
 const props = defineProps({
     match:  { type: Object, default: null },
     events: { type: Array,  default: () => [] }
 })
 
-const tooltip  = ref(null)
-const ttName   = ref(null)
-const ttIndex  = ref(null)
-const ttReact  = ref(null)
-const ttPlayer = ref(null)
+const userStore = useUserStore()
+const tt = ref(null)
+const ttData = reactive(({ type: '', index: '', player: '', react: '', color: ''}))
+
+
+// const tooltip  = ref(null)
+// const ttName   = ref(null)
+// const ttIndex  = ref(null)
+// const ttReact  = ref(null)
+// const ttPlayer = ref(null)
 const container = ref(null)
 let simulation = null
 
@@ -25,10 +32,10 @@ async function renderViz(match, events) {
     const W = container.value.clientWidth - 50
     const H = (container.value.clientHeight || 400) - 50
 
-    const profileResponse = await apiFetch('/api/users/profile/')
-    const profile = await profileResponse.json()
-    const currentUserId   = profile.id
-    const currentUserName = profile.nickname ?? profile.username ?? 'You'
+    // const profileResponse = await apiFetch('/api/users/profile/')
+    // const profile = await profileResponse.json()
+    const currentUserId   =  userStore.currentUser.id
+    const currentUserName = userStore.currentUser.nickname ?? userStore.currentUser.username ?? 'You'
 
     const nodes = events.map((e, i) => ({
         id: i,
@@ -100,9 +107,9 @@ async function renderViz(match, events) {
         })
         .on('end', function(event, d) {
             if (!event.active) simulation.alphaTarget(0)
-            // d.fx = null   // отпускаем — симуляция утянет обратно
+            // d.fx = null  
             // d.fy = null
-            simulation.alpha(0.3).restart()  // ← добавить: будим симуляцию после отпускания
+            simulation.alpha(0.3).restart()
             d3.select(this).style('cursor', 'grab')
         })
 
@@ -139,12 +146,14 @@ async function renderViz(match, events) {
                 (l.source.id === d.id && l.target.id === next) ? 1.2 : 0.5
             )
 
-        ttName.value.textContent   = TYPE_NAMES[d.type]
-        ttName.value.style.color   = d.color
-        ttIndex.value.textContent  = `#${d.id + 1}`
-        ttPlayer.value.textContent = d.playerName
-        ttReact.value.textContent  = d.react ? `${d.react} ms` : '—'
-        tooltip.value.style.opacity = 1
+            
+        ttData.type   = TYPE_NAMES[d.type]
+        ttData.color   = d.color
+        ttData.index = `#${d.id + 1}`
+        ttData.player = d.playerName
+        ttData.react  = d.react ? `${d.react} ms` : '—'
+        tt.value.show(W-220, 16)
+        // tooltip.value.style.opacity = 1
     })
     .on('mouseout', function() {
         nodeEls
@@ -157,7 +166,8 @@ async function renderViz(match, events) {
             .attr('stroke-opacity', 0.15)
             .attr('stroke-width', 0.5)
 
-        tooltip.value.style.opacity = 0
+        tt.value.hide()
+        // tooltip.value.style.opacity = 0
     })
 
     function curvePath(d) {
@@ -171,8 +181,8 @@ async function renderViz(match, events) {
         return `M${sx} ${sy} Q${cx} ${cy} ${tx} ${ty}`
     }
 
-    tooltip.value.style.left = (W - 220) + 'px'
-    tooltip.value.style.top  = '16px'
+    // tooltip.value.style.left = (W - 220) + 'px'
+    // tooltip.value.style.top  = '16px'
 
     simulation = d3.forceSimulation(nodes)
         .force('link',    d3.forceLink(links).id(d => d.id).distance(60))
@@ -191,7 +201,7 @@ async function renderViz(match, events) {
                 .attr('cx', nodes[0].x)
                 .attr('cy', nodes[0].y)
         })
-}
+    }
 
 let resizeTimer = null
 const resizeObserver = new ResizeObserver(() => {
@@ -215,7 +225,21 @@ onUnmounted(() => {
 <template>
 <div class="relative w-full min-h-[400px]">
     <div ref="container" class="w-full min-h-[400px]"></div>
-    <div ref="tooltip"
+    <AppTooltip ref="tt">
+        <div class="flex justify-between items-center mb-2">
+            <div class="text-xs font-medium" :style="{ color: ttData.color }">{{ ttData.type }}</div>
+            <span class="text-[10px] text-muted ml-2">{{ ttData.index }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-1">
+            <span class="text-[10px] text-muted">Player</span>
+            <span class="text-[10px]">{{ ttData.player }}</span>
+        </div>
+        <div class="flex justify-between gap-4">
+            <span class="text-[10px] text-muted">Reaction</span>
+            <span class="text-[10px]">{{ ttData.react }}</span>
+        </div>
+    </AppTooltip>
+    <!-- <div ref="tooltip"
         class="absolute pointer-events-none opacity-0 transition-opacity duration-100 z-20"
         style="top:0;left:0">
         <div class="bg-[rgba(15,22,41,0.97)] border border-white/[0.11] rounded-xl px-4 py-3 min-w-[160px]">
@@ -232,6 +256,6 @@ onUnmounted(() => {
                 <span ref="ttReact" class="text-[10px]"></span>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 </template>

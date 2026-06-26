@@ -2,14 +2,18 @@
 import { ref, computed, onMounted, watch } from 'vue'  // ← добавили watch
 import RecentMatchesList from '../RecentMatchesList.vue'
 import MatchEchoViz from './MatchEchoViz.vue'
-import AppMetric from '@/components/AppMetric.vue'      // ← добавили
+import AppMetric from '@/components/AppMetric.vue'     
 import { apiFetch } from '@/utils/apiFetch.js'
 
 const matches       = ref([])
 const activeFilter  = ref('all')
 const selectedMatch = ref(null)
-const events        = ref([])          // ← добавили
-const currentUserId = ref(null)        // ← добавили
+const events        = ref([])         
+const currentUserId = ref(null)       
+
+const props = defineProps({
+    activeMatchId: { type: Number, default: null }
+})
 
 onMounted(async () => {
     const [matchRes, profileRes] = await Promise.all([
@@ -20,7 +24,16 @@ onMounted(async () => {
     if (profileRes) currentUserId.value = (await profileRes.json()).id
 })
 
-// ← добавили watch
+watch(() => props.activeMatchId, (id) => {
+    console.log('DashMatchHistory получил activeMatchId:', id)
+
+    if(!id) return
+    const match = matches.value.find(m =>m.id === id)
+    console.log('найден матч:', match)
+
+    if(match) selectedMatch.value = match
+})
+
 watch(selectedMatch, async (match) => {
     if (!match) { events.value = []; return }
     const res = await apiFetch(`/api/game/match/${match.id}/events/`)

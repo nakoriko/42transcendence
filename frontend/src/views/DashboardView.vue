@@ -1,13 +1,34 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+// import { useUserStore } from '@/stores/user';
+import { apiFetch } from '@/utils/apiFetch';
 import DashMatchHistory from '@/components/dashboard/DashMatchHistory.vue';
 import DashPlayerStats from '@/components/dashboard/DashPlayerStats.vue';
 import DashRallyTimeline from '@/components/dashboard/DashRallyTimeline.vue';
 import DashUniverse from '@/components/dashboard/DashUniverse.vue';
-//store
-// import { userUserStore } from '@/stores/user'
 
-//
-const currentUser = true
+// const userStore = useUserStore()
+const lastMatch = ref([null])
+const lastEvents = ref([])
+
+const activeMatchId = ref(null)
+
+function onMatchSelected(matchId) {
+    console.log('DashboardView получил matchId:', matchId)
+    activeMatchId.value = matchId
+}
+
+onMounted(async () => {
+    const [matchRes, eventsRes ] = await Promise.all([
+        apiFetch('/api/game/matches/'),
+        apiFetch('/api/game/events/')
+    ])
+    if(matchRes) lastMatch.value = (await (matchRes.json()))[0]//last match
+    if(eventsRes) lastEvents.value = (await(eventsRes.json()))
+})
+
+
+
 </script>
 <template>
     <div class="min-h-screen px-12 py-14 pb-24">
@@ -28,9 +49,12 @@ const currentUser = true
 
         <!--PLayer Stats + Rally timeline-->
         <section class="py-6 border-b border-white/[0.04]">
-            <div class="grid grid-cols-[2fr_3fr] gap-6">
+            <div class="grid grid-cols-[2fr_3fr] gap-6 items-stretch">
                 <DashPlayerStats></DashPlayerStats>
-                <DashRallyTimeline></DashRallyTimeline>
+                <DashRallyTimeline 
+                :match="lastMatch" 
+                :events="lastEvents"
+                @matchSelected="onMatchSelected"></DashRallyTimeline>
             </div>
         </section>
 
@@ -38,7 +62,7 @@ const currentUser = true
         <!--Match history-->
         <section class="py-6">
             <!--DashMatch Stats-->
-            <DashMatchHistory></DashMatchHistory>
+            <DashMatchHistory :activeMatchId></DashMatchHistory>
         </section>
     </div>
 </template>
