@@ -68,6 +68,30 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 "from_user_nickname": self.user.nickname,
             })
 
+        elif data.get('type') == 'game_accept':
+            match_id = data.get('match_id')
+            
+            try:
+                from game.models import Match
+                match = await Match.objects.aget(id=match_id)
+                
+                match.status = 'active'
+                await match.asave()
+
+                for player_id, role in [(match.player1_id, 'player1'), (match.player2_id, 'player2')]:
+                    await self.channel_layer.group_send(f"user_{player_id}", {
+                        "type": "game_start_event",
+                        "match_id": match_id,
+                        "your_role": role,
+                    })
+            except Exception as e:
+                print(f"GAME_ACCEPT ERROR: {e}")
+                await self.send(json.dumps({
+                    "type": "error",
+                    "message": "Match not found or error processing accept"
+                }))
+                return
+
     # --- handler chiamati da Channels quando arriva un messaggio dal Group ---
 
     async def game_invite_event(self, event):
@@ -78,4 +102,11 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 "id": event["from_user_id"],
                 "nickname": event["from_user_nickname"],
             }
+        }))
+
+    async def game_start_event(self, event):
+        await self.send(json.dumps({
+            "type": "game_start",
+            "match_id": event["match_id"],
+            "your_role": event["your_role"],
         }))

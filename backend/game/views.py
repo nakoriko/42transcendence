@@ -68,7 +68,7 @@ class FinishMatchView(APIView):
         try: #not necessary in outr case, but good practice: check if object exists
             match = Match.objects.get(id=match_id)
         except Match.DoesNotExist:
-            return Response({'error': 'Match not found'}, status=status_HTTP_404_NOT_FOUND)
+            return Response({'error': 'Match not found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = MatchFinishSerializer(match, data=request.data, partial=True) #without partial - jango wants all fields
         if serializer.is_valid():
             serializer.save()
