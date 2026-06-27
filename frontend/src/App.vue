@@ -3,6 +3,9 @@
     import { useRouter, useRoute } from 'vue-router'
     import AppSidebar from './components/AppSidebar.vue'
     import { apiFetch } from './utils/apiFetch.js'
+    import { useUserStore } from './stores/user.js'
+
+    const userStore = useUserStore()
 
     const router = useRouter()
     const route = useRoute()
@@ -48,6 +51,7 @@
         isLoggedIn.value = false
         user.value = {nickname: 'Player' }
         incomingRequests.value = []
+        userStore.clear() //for correction updates uf currentUser in userStore
         router.push('/login')
     }
 

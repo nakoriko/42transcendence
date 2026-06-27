@@ -50,6 +50,8 @@ class UpdateMatchStatusView(APIView):
             match = Match.objects.get(id=match_id) #takes id from database and creates object match
         except Match.DoesNotExist:
             return Response({'error': 'Match not found'}, status=status.HTTP_404_NOT_FOUND)
+        if(request.user != match.player1 and request.user != match.player2):
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         match.status=request.data.get('status') #saves actual status for match
         match.save()
         return Response({'id': match.id, 'status':match.status})
@@ -57,7 +59,14 @@ class UpdateMatchStatusView(APIView):
 class LogMatchEventView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        opponent_id = request.data
+        # opponent_id = request.data
+        match_id = request.data.get('match')
+        try:
+            match = Match.objects.get(id=match_id) #takes id from database and creates object match
+        except Match.DoesNotExist:
+            return Response({'error': 'Match not found'}, status=status.HTTP_404_NOT_FOUND)
+        if(request.user != match.player1 and request.user != match.player2):
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         serializer = MatchEventSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -71,6 +80,9 @@ class FinishMatchView(APIView):
             match = Match.objects.get(id=match_id)
         except Match.DoesNotExist:
             return Response({'error': 'Match not found'}, status=status.HTTP_404_NOT_FOUND)
+        #protection from changing match status by other users
+        if(request.user != match.player1 and request.user != match.player2):
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         serializer = MatchFinishSerializer(match, data=request.data, partial=True) #without partial - jango wants all fields
         if serializer.is_valid():
             serializer.save()
