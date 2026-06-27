@@ -25,7 +25,7 @@ class StartMatchView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #Use for websocket (invites people top game)
-class InvitetMatchView(APIView):
+class InviteMatchView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         opponent_id = request.data.get ('opponent_id')
