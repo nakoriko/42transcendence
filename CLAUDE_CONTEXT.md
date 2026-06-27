@@ -456,6 +456,31 @@ steps to run locally.
       - AppAvatar: online status dot (teal = online, muted = offline)
       - Backend: added outgoing to FriendsListView
       - /friends route removed from router, FriendsView.vue kept as dead code
+- [x] Refactor(profile): extract ProfileInfoCard, redesign profile header layout
+     - extract profile info + edit form into ProfileInfoCard component
+     - emit 'updated' to parent on save and avatar upload
+     - redesign Edit button to match app filter tabs style
+     - fix page top padding to match dashboard/lobby
+- [x] MatchEchoViz.vue — D3 force simulation visualization of match events (June 25)
+      - Component accepts props: match (Object), events (Array)
+      - events are fetched in parent (MatchHistoryDashboard), not inside component
+      - D3 force simulation: forceLink, forceManyBody, forceCenter, forceCollide, forceX (player separation)
+      - Nodes: goal = blue (#4A8C9B, r=14), miss = coral (#F8856D, r=7), hit = sage (#ABC7C3, r=7)
+      - Links: curved lines (quadratic bezier via curvePath function)
+      - Dashed ring around first node (start-ring) — match start marker
+      - Hover: highlight current + neighbor nodes, dim others, highlight neighbor links
+      - Drag behavior: grab and drag nodes, return to position on release (fx/fy = null + alpha restart)
+      - Tooltip: fixed position (top right corner), shows event type, player, reaction time
+      - overflow: visible on SVG — nodes not clipped when scaled up
+      - ResizeObserver — redraws on container resize
+      - Start animation: nodes spawn from center with random 80px spread
+
+- [x] MatchHistoryDashboard.vue — match history dashboard (June 25)
+      - Two blocks: RecentMatchesList left, MatchEchoViz right
+      - Fetches events when match is selected (watch on selectedMatch)
+      - Computes stats from events: myGoals, oppGoals, hits, misses
+      - AppMetric component already exists — value/label/color props
+      - currentUserId fetched in parallel with matches via Promise.all
 
 
 ### Open questions
@@ -492,6 +517,9 @@ steps to run locally.
       Expected issues: sidebar (needs hamburger or bottom nav),
       grids (grid-cols-2 → grid-cols-1 on mobile)
 - [ ] Add seed-script to fill database for dashboard
+- [ ] reaction_time_ms in MatchEchoViz always null — logic not implemented in GameView
+- [ ] pos_y used in forceY but data may be null — default 0.5
+- [ ] MatchEchoViz: profile fetched inside component — can be moved to parent as currentUserId prop
 
      
 ### Lobby (current priority)

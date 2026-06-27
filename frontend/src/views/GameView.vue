@@ -26,8 +26,6 @@ import { routeLocationKey, useRoute } from 'vue-router'
         keys[e.code] = false
     }
 
-
-
     function startGame() {
         const canvas = gameCanvas.value
         const ctx = canvas.getContext('2d')
@@ -43,6 +41,9 @@ import { routeLocationKey, useRoute } from 'vue-router'
             vy: 3,
             radius: 12
         }
+
+        let leftPaddlehit = false
+        let RightPaddleHit = false
 
         const l_paddle = {
             x: 10,
@@ -187,25 +188,34 @@ import { routeLocationKey, useRoute } from 'vue-router'
                 
             //paddle_collisions (left paddle)
             if((ball.x - ball.radius <= l_paddle.x + l_paddle.width) 
-                && (ball.y - ball.radius >= l_paddle.y && ball.y - ball.radius <= l_paddle.y + l_paddle.height)) {
-                ball.vx = Math.abs(ball.vx)
-                if(matchId) events.push({
-                    match: matchId, event_type: 'hit', player: player1.id,
-                    pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
-                    pos_y: +(ball.y / canvas.height).toFixed(4),
-                    reaction_time_ms: null
-                })
+                    && (ball.y - ball.radius >= l_paddle.y && ball.y - ball.radius <= l_paddle.y + l_paddle.height)) {
+                if(!leftPaddlehit) {
+                    ball.vx = Math.abs(ball.vx)
+                    leftPaddlehit = true
+                    if(matchId) events.push({
+                        match: matchId, event_type: 'hit', player: player1.id,
+                        pos_x: +(ball.x / canvas.width).toFixed(4), //trasform s to float and leave 4 signs after point
+                        pos_y: +(ball.y / canvas.height).toFixed(4),
+                        reaction_time_ms: null })
+                }
+            } else {
+                leftPaddlehit = false
             }
             //paddle_collisions (right paddle)
             if((ball.x + ball.radius >= r_paddle.x) 
                 && (ball.y + ball.radius >= r_paddle.y && ball.y + ball.radius <= r_paddle.y + r_paddle.height)) {
-                ball.vx = -Math.abs(ball.vx)
-                if(matchId) events.push({
-                    match: matchId, event_type: 'hit', player: player2.id,
-                    pos_x: +(ball.x / canvas.width).toFixed(4),
-                    pos_y: +(ball.y / canvas.height).toFixed(4),
-                    reaction_time_ms: null
-                })
+            if(!RightPaddleHit) {
+                    ball.vx = -Math.abs(ball.vx)
+                    RightPaddleHit = true
+                    if(matchId) events.push({
+                        match: matchId, event_type: 'hit', player: player2.id,
+                        pos_x: +(ball.x / canvas.width).toFixed(4),
+                        pos_y: +(ball.y / canvas.height).toFixed(4),
+                        reaction_time_ms: null
+                    })
+                }
+            } else {
+                RightPaddleHit = false
             }
 
             if(keys['KeyW'] == true)
