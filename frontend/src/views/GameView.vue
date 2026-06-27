@@ -29,7 +29,7 @@ import { apiFetch } from '@/utils/apiFetch'
     }
 
     async function finishMatch(winnerId) {
-        await apiFetch(`/api/game/match/${matchId}/finish/`, {
+        await apiFetch(`/api/game/matches/${matchId}/finish/`, {
             method: 'PATCH',
             body: JSON.stringify({
                 winner: winnerId,
@@ -98,7 +98,7 @@ import { apiFetch } from '@/utils/apiFetch'
             const profile2Data = await profile2.json()
             player2.nickname = profile2Data.nickname
 
-            const match = await fetch ('/api/game/match/start/', {
+            const match = await fetch ('/api/game/matches/start/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ import { apiFetch } from '@/utils/apiFetch'
         async function saveMatch() {
             const token = localStorage.getItem('access')
             for (const event of events) {
-                await fetch ('/api/game/match/events/', {
+                await fetch ('/api/game/matches/events/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

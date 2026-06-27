@@ -170,13 +170,16 @@ transcend/
 | GET | /api/users/friends/ | Friends list + requests |
 | POST | /api/users/friends/request/ | Send friend request |
 | PATCH/DELETE | /api/users/friends/<pk>/ | Accept / reject / remove |
-| POST | /api/game/match/start/ | Start a match |
-| POST | /api/game/match/events/ | Log match events |
-| PATCH | /api/game/match/<match_id>/finish/ | Finish a match |
-| POST   | /api/game/match/invite/            | Create pending remote match (opponent_id) |
-| PATCH  | /api/game/match/<match_id>/status/ | Update match status (used by WS consumer) |
+| POST | /api/game/matches/start/ | Start a match |
+| POST | /api/game/matches/events/ | Log match events |
+| PATCH | /api/game/matches/<match_id>/finish/ | Finish a match |
+| POST   | /api/game/matches/invite/            | Create pending remote match (opponent_id) |
+| PATCH  | /api/game/matches/<match_id>/status/ | Update match status (used by WS consumer) |
 | GET | /api/users/<pk>/ | Public profile (any user) |
 | GET | /api/game/matches/ | Match history (?limit=N) |
+| GET | /api/game/matches/<match_id>/events/ | Match events (hit/miss/goal) |
+| GET | /api/game/events/ | All user events |
+| GET | /api/game/analytics/universe/?period=7d|30d|all | Dashboard analytics |
 
 
 ---

@@ -9,6 +9,7 @@ defineProps({
 const colorMap ={
     white: 'text-white',
     coral: 'text-coral',
+    biege: 'text-biege',
     teal: 'text-teal',
     sage: 'text-sage',
     muted: 'text-muted' 
