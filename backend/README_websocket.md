@@ -250,8 +250,15 @@ wss://localhost/ws/game/<match_id>/
 
 ### stato attuale
 
-utenti possono mandare invito e riceverlo.
-Prossimo passo: accettare invito
+A e B aprono una connessione WebSocket.
+Entrambi si autenticano.
+A invia un invito.
+B riceve l'invito.
+B accetta.
+Il database viene aggiornato (pending → active).
+Entrambi ricevono game_start con il ruolo corretto.
+
+Questa è tutta la fase di "negoziazione" della partita.
 
 ### Appunti per documentazione
 
