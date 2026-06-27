@@ -83,7 +83,7 @@ import { X } from 'lucide-vue-next'
 
 <template>
     <div class="flex flex-col gap-3">
-        <div class="border-t border-white/[0.07] pb-3 pt-8 flex items-center justify-between">
+        <div class="flex items-center justify-between">
             <span class="input-label">Friends</span>
             <div class="flex items-center gap-2">
                 <AppFilterTabs

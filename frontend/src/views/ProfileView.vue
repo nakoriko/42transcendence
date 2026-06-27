@@ -56,7 +56,7 @@ onMounted(async() => {
         <div v-if="user">
             <p class="input-label mb-1">Transcend · Player info</p>
             <h1 class="page-title">Profile page </h1>
-            <div class="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-[1.3fr_1fr] gap-6 mb-8 border-b border-white/[0.07] pb-8">
                          <ProfileInfoCard class="mt-8"  :user="user" @updated="loadProfile" />
                     <ProfileStatsCard :wins="user.wins ?? 0" :losses="user.losses ?? 0"></ProfileStatsCard>
                 
