@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/13 12:11:35 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/28 12:02:32 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,7 +67,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
             model = User
             fields = ['nickname', 'email']
-            extra_kwards = {
+            extra_kwargs = {
                 'nickname': {'required': False},
                 'email': {'required': False},
             }

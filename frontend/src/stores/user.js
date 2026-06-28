@@ -7,7 +7,7 @@ export const useUserStore = defineStore('user', () => {
 
     async function fetchUser() {
         if(currentUser.value) return
-        const res = await apiFetch('/api/users/profile')
+        const res = await apiFetch('/api/users/profile/') 
         const data = await res.json()
         currentUser.value = {
             id: data.id,

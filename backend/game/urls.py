@@ -6,14 +6,14 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:46:05 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/27 20:54:38 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/28 15:18:30 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from django.urls import path
 from .views import StartMatchView, LogMatchEventView, FinishMatchView, \
         MatchHistoryView, InviteMatchView, UpdateMatchStatusView, MatchEventsView, \
-        AllUserEventsView, PongUniverseView
+        AllUserEventsView, PongUniverseView, BulkMatchEventView
 
 urlpatterns = [
     path ('matches/start/', StartMatchView.as_view(), name='start_match'),
@@ -21,6 +21,7 @@ urlpatterns = [
     path('matches/<int:match_id>/status/', UpdateMatchStatusView.as_view(), name='update_match_status'),
 
     path('matches/events/', LogMatchEventView.as_view(), name='log_match_event'),
+    path('matches/events/bulk/', BulkMatchEventView.as_view(), name='bulk_events'),
     path('matches/<int:match_id>/events/', MatchEventsView.as_view(), name='match_events'),
 
     path('matches/<int:match_id>/finish/', FinishMatchView.as_view(), name='finish_match'),
