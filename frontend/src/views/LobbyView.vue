@@ -69,14 +69,13 @@ function toogglePlayer(id) {
 }
 
 function tooggleMode(mode) {
-    if(selectedMode.value == mode) {
-        selectedMode.value = null
-    } else {
-        selectedMode.value = mode
-    }
+    selectedMode.value = mode
 }
 
 function startMatch() {
+    if(!selectedMode.value) {
+        error.value = "Sleect a gamr mode first"
+    }
     const opponent = selectPlayer2.value
     if(opponent == null) {
         error.value = "Select an opponent first"

@@ -1,78 +1,83 @@
 <script setup>
-    import { ref, watch, onMounted } from 'vue'
-    import { useRouter, useRoute } from 'vue-router'
-    import AppSidebar from './components/AppSidebar.vue'
-    import { apiFetch } from './utils/apiFetch.js'
-    import { useUserStore } from './stores/user.js'
+  import { ref, watch, onMounted } from 'vue'
+  import { useRouter, useRoute } from 'vue-router'
+  import AppSidebar from './components/AppSidebar.vue'
+  import { apiFetch } from './utils/apiFetch.js'
+  import { useUserStore } from './stores/user.js'
 
-    const userStore = useUserStore()
 
-    const router = useRouter()
-    const route = useRoute()
+  const userStore = useUserStore()
 
-    const isLoggedIn = ref(!!localStorage.getItem('access'))
-    const user = ref({nickname: 'Player'})
-    const incomingRequests=ref([])
+  const router = useRouter()
+  const route = useRoute()
 
-    async function loadSideBarData() {
-      if(!isLoggedIn.value) return
+  const isLoggedIn = ref(!!localStorage.getItem('access'))
+  const user = ref({nickname: 'Player'})
+  const incomingRequests=ref([])
 
-      try{
-        const [profileRes, friendsRes] = await Promise.all([
-          apiFetch('/api/users/profile/'),
-          apiFetch('/api/users/friends/')
-        ])
-        const profileData = await profileRes.json()
-        const friendsData = await friendsRes.json()
 
-        user.value = profileData
+  async function loadProfile() {
+      await userStore.fetchUser() //can takes from cache, instead of extra API calls
+      user.value = userStore.currentUser
+  }
 
-        incomingRequests.value = (friendsData.incoming ?? []).map( r=> ({
+  async function  loadIncoming() {
+    if(!isLoggedIn.value) return
+    try {
+      const friendsRes = await apiFetch('/api/users/friends/')
+      const friendsData = await friendsRes.json()
+
+      incomingRequests.value = (friendsData.incoming ?? []).map( r=> ({
           id: r.id,
           username: r.friend.nickname
         }))
 
-      } catch(e) {
-        console.error('Sidebar data load failed', e)
-      }
+    } catch (e) {
+      console.error('Sidebar friends data load failed')
     }
+    
+  }
 
-    onMounted(() => {
-      if(isLoggedIn.value) loadSideBarData()
+
+  onMounted(() => {
+    if(isLoggedIn.value) {
+      loadProfile()
+      loadIncoming()
+    }
+  })
+
+  watch(route, () => {
+      isLoggedIn.value = !!localStorage.getItem('access')
+      if(isLoggedIn.value) loadIncoming()
+  })
+
+  function logout() {
+      localStorage.removeItem('access')
+      isLoggedIn.value = false
+      user.value = {nickname: 'Player' }
+      incomingRequests.value = []
+      userStore.clear() //for correction updates uf currentUser in userStore
+      router.push('/login')
+  }
+
+
+  async function acceptRequest(id) {
+    await apiFetch(`/api/users/friends/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'accept'})
     })
+    window.dispatchEvent(new CustomEvent('friends-updated'))
+    await loadIncoming()
+  }
 
-    watch(route, () => {
-        isLoggedIn.value = !!localStorage.getItem('access')
-        if(isLoggedIn.value) loadSideBarData()
+  async function declineRequest(id) {
+    await apiFetch(`/api/users/friends/${id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({action: 'reject'})
     })
-
-    function logout() {
-        localStorage.removeItem('access')
-        isLoggedIn.value = false
-        user.value = {nickname: 'Player' }
-        incomingRequests.value = []
-        userStore.clear() //for correction updates uf currentUser in userStore
-        router.push('/login')
-    }
-
-
-    async function acceptRequest(id) {
-      await apiFetch(`/api/users/friends/${id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({ action: 'accept'})
-      })
-      window.dispatchEvent(new CustomEvent('friends-updated'))
-      await loadSideBarData()
-    }
-
-    async function declineRequest(id) {
-      await apiFetch(`/api/users/friends/${id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({action: 'reject'})
-      })
-      window.dispatchEvent(new CustomEvent('friends-updated'))
-      await loadSideBarData()
-    }
+    window.dispatchEvent(new CustomEvent('friends-updated'))
+    await loadIncoming()
+  }
 
     
 </script>
