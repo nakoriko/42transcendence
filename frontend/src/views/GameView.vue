@@ -103,12 +103,11 @@ import { apiFetch } from '@/utils/apiFetch'
         }
 
         async function saveMatch() {
-            for (const event of events) {
-                await apiFetch ('/api/game/matches/events/', {
-                    method: 'POST',
-                    body: JSON.stringify(event)
-                })
-            }
+            //bulk instead of for cycle for every event
+            await apiFetch ('/api/game/matches/events/bulk/', {
+                method: 'POST',
+                body: JSON.stringify(events)
+            })
         }
 
         function resetBall() {
