@@ -482,6 +482,51 @@ steps to run locally.
       - AppMetric component already exists — value/label/color props
       - currentUserId fetched in parallel with matches via Promise.all
 
+- [x] Pinia userStore (June 26)
+      - src/stores/user.js — currentUser (id, nickname, avatar)
+      - fetchUser() — single request, cached (if currentUser return)
+      - clear() — called on logout
+      - connected in router/index.js (beforeEach, async, requiresAuth only)
+      - main.js: app.use(createPinia()) before app.use(router)
+
+- [x] AppTooltip.vue — reusable tooltip wrapper (June 26)
+      - slot-based: content passed from outside
+      - defineExpose: show(x, y) / hide()
+      - style: bg-[rgba(15,22,41,0.97)] border border-white/[0.11] rounded-xl
+      - used in MatchEchoViz and DashRallyTimeline
+
+- [x] MatchEchoViz refactor (June 26)
+      - removed internal apiFetch('/api/users/profile/') → userStore
+      - tooltip replaced with AppTooltip + reactive ttData object
+
+- [x] DashRallyTimeline.vue — canvas spike chart (June 26)
+      - props: match (Object), events (Array)
+      - computeRallies() — groups MatchEvent into rallies (HITs until GOAL/MISS)
+      - filter: hits > 1 (zero rallies hidden), slice(-100)
+      - canvas: spikes, dots along spike, baseline
+      - colors: coral = won (tip dot), sage = lost (hollow), teal = exchanges
+      - animation: staggered grow from bottom (animProgress per spike)
+      - hover: tooltip with rally number, opponent, exchanges, result, score
+      - click on spike: emit('matchSelected', matchId) → DashboardView
+      - hint "Click to view match ↓" in tooltip
+
+- [x] AllUserEventsView — GET /api/game/events/ (June 26)
+      - returns all events from all finished matches of current user
+      - ordered by: match_id, timestamp
+
+- [x] DashboardView coordinator (June 26)
+      - fetches lastMatch + all events in parallel (Promise.all)
+      - activeMatchId ref — passed to DashMatchHistory
+      - onMatchSelected() — receives matchId from DashRallyTimeline
+
+- [x] DashMatchHistory updated (June 26)
+      - accepts activeMatchId prop (Number)
+      - watch on activeMatchId → finds match in list → activates selectedMatch
+
+- [x] GameView collision fix (June 26)
+      - added leftPaddleHit / rightPaddleHit flags
+      - one HIT event per paddle touch (was: duplicate on every frame ~60fps)
+
 
 ### Open questions
 *(update as you go)*
@@ -519,7 +564,6 @@ steps to run locally.
 - [ ] Add seed-script to fill database for dashboard
 - [ ] reaction_time_ms in MatchEchoViz always null — logic not implemented in GameView
 - [ ] pos_y used in forceY but data may be null — default 0.5
-- [ ] MatchEchoViz: profile fetched inside component — can be moved to parent as currentUserId prop
 
      
 ### Lobby (current priority)

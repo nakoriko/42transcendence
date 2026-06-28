@@ -4,13 +4,15 @@ import AppLogo from '@/components/AppLogo.vue'
 import GameControls from '@/components/GameControls.vue'
 import GameScoreBoard from '@/components/GameScoreBoard.vue'
 import { ref, reactive, onMounted, onUnmounted} from 'vue'
-import { routeLocationKey, useRoute } from 'vue-router'
+import { routeLocationKey, useRoute, onBeforeRouteLeave } from 'vue-router'
+import { apiFetch } from '@/utils/apiFetch'
 
     const gameCanvas = ref(null)
     const route = useRoute()
     const player1 = reactive({id:null, nickname: 'Player 1'})
     const player2 = reactive({id: Number(route.query.player2), nickname: 'Player 2'})
     let animationId = null
+    let matchId = null // moved here. Need to be acceible from onBeforeRouteLeave (end of script)
     const score_p1 = ref(0)
     const score_p2 = ref(0)
     const gameOver = ref(false)
@@ -26,11 +28,21 @@ import { routeLocationKey, useRoute } from 'vue-router'
         keys[e.code] = false
     }
 
+    async function finishMatch(winnerId) {
+        await apiFetch(`/api/game/matches/${matchId}/finish/`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                winner: winnerId,
+                score_player1: score_p1.value,
+                score_player2: score_p2.value,
+                ended_at: new Date().toISOString() //convert to ISO 8601: 2026-06-05T14:23:11...., because jangpo is waiting for this format
+            })
+        })
+    }
+
     function startGame() {
         const canvas = gameCanvas.value
         const ctx = canvas.getContext('2d')
-
-        let matchId = null
         const events = []
 
         //ball position
@@ -86,7 +98,7 @@ import { routeLocationKey, useRoute } from 'vue-router'
             const profile2Data = await profile2.json()
             player2.nickname = profile2Data.nickname
 
-            const match = await fetch ('/api/game/match/start/', {
+            const match = await fetch ('/api/game/matches/start/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -102,7 +114,7 @@ import { routeLocationKey, useRoute } from 'vue-router'
         async function saveMatch() {
             const token = localStorage.getItem('access')
             for (const event of events) {
-                await fetch ('/api/game/match/events/', {
+                await fetch ('/api/game/matches/events/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -112,24 +124,6 @@ import { routeLocationKey, useRoute } from 'vue-router'
                 })
             }
         }
-
-        async function finishMatch(winnerId) {
-            const token = localStorage.getItem('access')
-            await fetch(`/api/game/match/${matchId}/finish/`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    winner: winnerId,
-                    score_player1: score_p1.value,
-                    score_player2: score_p2.value,
-                    ended_at: new Date().toISOString() //convert to ISO 8601: 2026-06-05T14:23:11...., because jangpo is waiting for this format
-                })
-            })
-        }
-
 
         function resetBall() {
             ball.x = canvas.width / 2
@@ -309,6 +303,27 @@ import { routeLocationKey, useRoute } from 'vue-router'
     }
     onMounted(startGame)
     onUnmounted(stopGame)
+    onBeforeRouteLeave(async () => {
+        if(gameOver.value) return true
+
+        const confirmed = confirm('Leave the game? This will count as a loss')
+        if(!confirmed) return false
+        stopGame()
+
+        if(matchId) {
+            try {
+                const winnerId = score_p1.value >= score_p2.value
+                ? player2.id
+                : player1.id
+                await finishMatch(winnerId)
+            } catch(e) {
+                console.error('Failed to save abandoned mathc', e)
+            }
+        }
+        winnerText.value = 'Game abandoned'
+        gameOver.value = true
+        return true
+    })
 
 </script>
 

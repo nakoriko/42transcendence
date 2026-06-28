@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/27 12:25:22 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/06/27 18:52:34 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -47,7 +47,7 @@ class MatchHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Match
-        fields = ['id', 'opponent_nickname', 'score', 'result', 'ended_at']
+        fields = ['id', 'opponent_nickname', 'score', 'result', 'ended_at', 'status']
     
     def get_opponent_nickname(self, obj):
         request_user = self.context['request'].user
