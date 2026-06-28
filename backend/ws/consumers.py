@@ -42,6 +42,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         handlers = {
             'game_invite': self.handle_game_invite,
             'game_accept': self.handle_game_accept,
+            'join_match': self.handle_join_match,
+            'ping_match': self.handle_ping_match,
             # altri handler qui quando ne aggiungiamo
         }
         
@@ -127,4 +129,38 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             "type": "game_start",
             "match_id": event["match_id"],
             "your_role": event["your_role"],
+        }))
+
+    async def handle_join_match(self, data):
+        match_id = data.get("match_id")
+
+        await self.channel_layer.group_add(
+            f"match_{match_id}",
+            self.channel_name
+        )
+
+        await self.send(json.dumps({
+            "type": "joined_match",
+            "match_id": match_id
+        }))
+
+    async def handle_ping_match(self, data):
+        match_id = data.get("match_id")
+
+        print(f"PING inviato al gruppo match_{match_id}")
+
+        await self.channel_layer.group_send(
+            f"match_{match_id}",
+            {
+                "type": "ping_event",
+                "from_user": self.user.nickname,
+            }
+        )
+
+    async def ping_event(self, event):
+        print(f"PING ricevuto da {self.user.nickname}")
+        
+        await self.send(json.dumps({
+            "type": "ping",
+            "from": event["from_user"],
         }))
