@@ -1,10 +1,9 @@
 <script setup>
 import AppButton from '@/components/AppButton.vue'
-import AppLogo from '@/components/AppLogo.vue'
 import GameControls from '@/components/GameControls.vue'
 import GameScoreBoard from '@/components/GameScoreBoard.vue'
 import { ref, reactive, onMounted, onUnmounted} from 'vue'
-import { routeLocationKey, useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { apiFetch } from '@/utils/apiFetch'
 
     const gameCanvas = ref(null)
@@ -81,29 +80,21 @@ import { apiFetch } from '@/utils/apiFetch'
         document.addEventListener('keyup', handleKeyUp)
 
         async function initMatch() {
-            const token = localStorage.getItem('access')
+            // const token = localStorage.getItem('access')
 
             //get currnet user ID and nickname
-            const profile = await fetch(`/api/users/profile/`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            })
+            const profile = await apiFetch(`/api/users/profile/`)
             const profileData = await profile.json()
             player1.id = profileData.id
             player1.nickname = profileData.nickname
 
             //get opponent ID and nickname
-            const profile2 = await fetch(`/api/users/${player2.id}/`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            })
+            const profile2 = await apiFetch(`/api/users/${player2.id}/`)
             const profile2Data = await profile2.json()
             player2.nickname = profile2Data.nickname
 
-            const match = await fetch ('/api/game/matches/start/', {
+            const match = await apiFetch ('/api/game/matches/start/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
                 body: JSON.stringify({ player1: player1.id, player2: player2.id })
             })
             const matchData = await match.json()
@@ -112,14 +103,9 @@ import { apiFetch } from '@/utils/apiFetch'
         }
 
         async function saveMatch() {
-            const token = localStorage.getItem('access')
             for (const event of events) {
-                await fetch ('/api/game/matches/events/', {
+                await apiFetch ('/api/game/matches/events/', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
                     body: JSON.stringify(event)
                 })
             }
@@ -240,7 +226,7 @@ import { apiFetch } from '@/utils/apiFetch'
             // центральная вертикальная линия (пунктир)
             ctx.setLineDash([5, 5])
             ctx.strokeStyle = '#ABC7C3'
-            ctx.lineWidth = 0,5
+            ctx.lineWidth = 0.5
 
             ctx.beginPath()
             ctx.moveTo(canvas.width / 2, 0)
@@ -312,9 +298,10 @@ import { apiFetch } from '@/utils/apiFetch'
 
         if(matchId) {
             try {
-                const winnerId = score_p1.value >= score_p2.value
-                ? player2.id
-                : player1.id
+                const winnerId = player2.id
+                // const winnerId = score_p1.value >= score_p2.value
+                // ? player2.id
+                // : player1.id
                 await finishMatch(winnerId)
             } catch(e) {
                 console.error('Failed to save abandoned mathc', e)
