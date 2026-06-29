@@ -246,3 +246,46 @@ wss://localhost/ws/game/<match_id>/
 ### Phase 2 timeline
 - Week 3 — Remote players works
 - Week 4 — bugs + defense prep
+
+
+### stato attuale
+
+✅ autenticazione via JWT sul websocket
+✅ gruppi personali (user_4, user_6)
+✅ invio inviti
+✅ accettazione inviti
+✅ cambio stato del Match a active
+✅ ingresso nel gruppo della partita (match_18)
+
+Questa è tutta la fase di "negoziazione" della partita.
+Da qui controlliamo la partita vera e propria:
+
+✅ broadcast ai membri del gruppo (ping per ora, poi stato di gioco)
+
+to do: sostituzione con costante per handlers, Ad esempio
+
+MESSAGE_HANDLERS = {
+    "game_invite": "handle_game_invite",
+    "game_accept": "handle_game_accept",
+    "join_match": "handle_join_match",
+    "ping_match": "handle_ping_match",
+}
+
+e poi
+
+handler_name = MESSAGE_HANDLERS.get(message_type)
+
+if handler_name:
+    await getattr(self, handler_name)(data)
+
+È una piccola cosa, ma il codice rimane molto più ordinato.
+
+### Appunti per documentazione
+
+
+Il flusso completo di invito a una partita è:
+
+A → server:        game_invite       { match_id, to_user_id }
+server → B:          game_invite       { match_id, from_user: {id, nickname} }
+B → server:        game_accept       { match_id }
+server → entrambi: game_start        { match_id, your_role }
