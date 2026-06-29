@@ -17,12 +17,24 @@
     }
 </script>
 
-<template>
+<!-- <template>
     <div :class="size === 'sm' ? 'w-7 h-7 text-xs' :size === 'lg' ? 'w-16 h-16 text-base' : 'w-9 h-9 text-sm', avatarColor(nickname)"
         class="relative rounded-full flex items-center justify-center text-navy-900 flex-shrink-0">
             {{ initial(nickname) }}
             <div v-if="isOnline" class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-teal border-2 border-navy-800"></div>
             <div v-else class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-gray-500 border-2 border-navy-800"></div>
 
+    </div>
+</template> -->
+
+<template>
+    <div :class="[size === 'sm' ? 'w-7 h-7 text-xs' : size === 'lg' ? 'w-16 h-16 text-base' : 'w-9 h-9 text-sm', avatarColor(nickname)]"
+        class="relative rounded-full flex items-center justify-center text-navy-900 flex-shrink-0">
+            {{ initial(nickname) }}
+            <div :class="[
+                size === 'lg' ? 'w-3 h-3 bottom-0.5 right-0.5' : 'w-2 h-2 bottom-0 right-0',
+                isOnline ? 'bg-teal' : 'bg-gray-500'
+            ]"
+            class="absolute rounded-full border-2 border-navy-800"></div>
     </div>
 </template>

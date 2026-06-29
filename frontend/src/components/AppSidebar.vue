@@ -16,6 +16,7 @@ defineProps ({
   }
 })
 
+const showRequests = ref(false)
 
 //??
 const emit = defineEmits(['logout', 'accept-request', 'decline-request'])
@@ -27,11 +28,6 @@ const navLinks= [
   { to: '/dashboard', label: 'Dashboard', icon: BarChart2 }, 
   { to: '/chat', label: 'Chat', icon: MessageSquare} ,
 ]
-
-const showRequests = ref(false)
-
-
-
 </script>
 
 <template>
@@ -46,10 +42,10 @@ const showRequests = ref(false)
     <!-- Links from array-->
     <nav class="flex-1 flex flex-col gap-1 px-3 pt-2">
       <RouterLink 
-      v-for="link in navLinks"
-      :key="link.to"
-      :to="link.to"
-      class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-light text-muted transition
+        v-for="link in navLinks"
+        :key="link.to"
+        :to="link.to"
+        class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-light text-muted transition
             hover:bg-white/[0.04] hover:text-white
             [&.router-link-exact-active]:bg-teal/[0.12] [&.router-link-exact-active]:text-teal"
       >
@@ -151,7 +147,7 @@ const showRequests = ref(false)
 </template>
 
 <style>
-  .fade-enter-active, .fade-leave-active {transition: opacoty 0.15s, transfomr 0.15s;}
+  .fade-enter-active, .fade-leave-active {transition: opacity 0.15s, transform 0.15s;}
   .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-4px);}
 </style>
 
