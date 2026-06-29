@@ -29,6 +29,8 @@ class InviteMatchView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         opponent_id = request.data.get ('opponent_id')
+        if str(opponent_id) == str(request.user.id):
+            return Response({'error': 'Cannot invite yourself'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             opponent = User.objects.get(id=opponent_id)
         except User.DoesNotExist:
@@ -138,50 +140,50 @@ class AllUserEventsView(APIView):
         serializer = MatchEventSerializer(events, many=True)
         return Response(serializer.data)
 
-class PongUniverseView(APIView):
-    permission_classes = [IsAuthenticated]
+# class PongUniverseView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        period = request.query_params.get('period', 'all') #7 days /30 d/ all, readds from ?period=7d from url
-        since = None
-        if(period == '7d'):
-            since = timezone.now() - timedelta(days=7)
-        elif (period == '30d'):
-            since = timezone.now() - timedelta(days=30)
+#     def get(self, request):
+#         period = request.query_params.get('period', 'all') #7 days /30 d/ all, readds from ?period=7d from url
+#         since = None
+#         if(period == '7d'):
+#             since = timezone.now() - timedelta(days=7)
+#         elif (period == '30d'):
+#             since = timezone.now() - timedelta(days=30)
 
-        users = User.objects.all().order_by('date_joined')
-        result = []
+#         users = User.objects.all().order_by('date_joined')
+#         result = []
 
-        for user in users:
-            match_qs = Match.objects.filter(
-                Q(player1=user) | Q(player2=user),
-                status=Match.Status.FINISHED
-            )
-            if since:
-                match_qs = match_qs.filter(ended_at__gte=since)
-            total = match_qs.count()
-            wins = match_qs.filter(winner=user).count()
-            event_qs = MatchEvent.objects.filter(match__in=match_qs, player=user)
-            hits = event_qs.filter(event_type=MatchEvent.EventType.HIT).count()
-            misses = event_qs.filter(event_type=MatchEvent.EventType.MISS).count()
+#         for user in users:
+#             match_qs = Match.objects.filter(
+#                 Q(player1=user) | Q(player2=user),
+#                 status=Match.Status.FINISHED
+#             )
+#             if since:
+#                 match_qs = match_qs.filter(ended_at__gte=since)
+#             total = match_qs.count()
+#             wins = match_qs.filter(winner=user).count()
+#             event_qs = MatchEvent.objects.filter(match__in=match_qs, player=user)
+#             hits = event_qs.filter(event_type=MatchEvent.EventType.HIT).count()
+#             misses = event_qs.filter(event_type=MatchEvent.EventType.MISS).count()
 
-            avg_reaction = event_qs.filter(
-                event_type=MatchEvent.EventType.HIT,
-                reaction_time_ms__isnull=False
-            ).aggregate(avg=Avg('reaction_time_ms'))['avg']
+#             avg_reaction = event_qs.filter(
+#                 event_type=MatchEvent.EventType.HIT,
+#                 reaction_time_ms__isnull=False
+#             ).aggregate(avg=Avg('reaction_time_ms'))['avg']
 
-            result.append({
-                'id': user.id,
-                'nickname': user.nickname or user.email,
-                'date_joined': user.date_joined.isoformat(),
-                'total_matches': total,
-                'wins': wins,
-                'losses': total - wins,
-                'win_rate': round(wins / total, 2) if total > 0 else 0,
-                'avg_reaction_ms': round(avg_reaction) if avg_reaction else None,
-                'hit_accuracy': round(hits / (hits + misses), 2) if (hits + misses) > 0 else None,
-            })
-        return Response(result)
+#             result.append({
+#                 'id': user.id,
+#                 'nickname': user.nickname or user.email,
+#                 'date_joined': user.date_joined.isoformat(),
+#                 'total_matches': total,
+#                 'wins': wins,
+#                 'losses': total - wins,
+#                 'win_rate': round(wins / total, 2) if total > 0 else 0,
+#                 'avg_reaction_ms': round(avg_reaction) if avg_reaction else None,
+#                 'hit_accuracy': round(hits / (hits + misses), 2) if (hits + misses) > 0 else None,
+#             })
+#         return Response(result)
 
 class BulkMatchEventView(APIView):
         permission_classes = [IsAuthenticated]
