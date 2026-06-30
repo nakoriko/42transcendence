@@ -44,6 +44,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             'game_accept': self.handle_game_accept,
             'join_match': self.handle_join_match,
             'ping_match': self.handle_ping_match,
+            "player_input": self.handle_player_input,
             # altri handler qui quando ne aggiungiamo
         }
         
@@ -164,3 +165,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             "type": "ping",
             "from": event["from_user"],
         }))
+
+    async def handle_player_input(self, data):
+        print(
+            f"{self.user.nickname} -> {data['direction']}"
+        )
