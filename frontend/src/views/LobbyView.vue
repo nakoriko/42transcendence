@@ -1,7 +1,7 @@
 <script setup>
 
 import AppButton from '@/components/AppButton.vue'
-import AppStatsCard from '@/components/AppStatsCard.vue'
+import { apiFetch } from '@/utils/apiFetch'
 import GameModeCard from '@/components/GameModeCard.vue'
 import PlayCard from '@/components/PlayCard.vue'
 import { ref, onMounted, computed } from 'vue'
@@ -32,31 +32,22 @@ import AppFilterTabs from '@/components/AppFilterTabs.vue'
     )
 
     async function fetchUsers() {
-        const token = localStorage.getItem('access')
-        if(!token) {
-            router.push('/login')
-        return
-    }
     try {
-        const profileRes = await fetch('/api/users/profile/', {
-            headers: {'Authorization' : `Bearer ` + token}
-        })
-        if(profileRes.ok) currentUser.value = await profileRes.json()
+            const profileRes = await apiFetch('/api/users/profile/')
+            if(!profileRes) return
+            if(profileRes.ok) currentUser.value = await profileRes.json()
 
-        const response = await fetch('/api/users/list/', {
-            headers: {
-                'Authorization': 'Bearer ' + token
+            const response = await apiFetch('/api/users/list/')
+            if(!response) return
+            if(response.ok) {
+                const data = await response.json()
+                user.value = data
+            } else {
+                router.push('/login')
             }
-        })
-        if(response.ok) {
-            const data = await response.json()
-            user.value = data
-        } else {
-            router.push('/login')
+        } catch (err) {
+            error.value = "Connection error "
         }
-    } catch (err) {
-        error.value = "Connection error "
-    }
 }
 
 function toogglePlayer(id) {
@@ -72,16 +63,31 @@ function tooggleMode(mode) {
     selectedMode.value = mode
 }
 
-function startMatch() {
+async function startMatch() {
     if(!selectedMode.value) {
         error.value = "Sleect a gamr mode first"
+        return
     }
     const opponent = selectPlayer2.value
     if(opponent == null) {
         error.value = "Select an opponent first"
         return
     }
-    router.push({ path: '/game', query: { player2: opponent, mode:selectedMode.value} })
+    if(selectedMode.value === 'local') {
+        router.push({ path: '/game', query: { player2: opponent, mode:selectedMode.value} })
+        return
+    }
+
+    const res = await apiFetch('/api/game/matches/invite/', {
+        method: 'POST',
+        body: JSON.stringify({ opponent_id: opponent })
+    })
+    if(!res || !res.ok) {
+        error.value = "Failed to create match"
+        return
+    }
+    const data = await res.json()
+    router.push ({ path: '/game/remote', query: { player2: opponent, match_id: data.id }})
 }
 
 onMounted(fetchUsers)
