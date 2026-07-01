@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, watch } from 'vue'  // ← добавили watch
 import RecentMatchesList from '../RecentMatchesList.vue'
 import MatchEchoViz from './MatchEchoViz.vue'
-import AppMetric from '@/components/AppMetric.vue'     
 import { apiFetch } from '@/utils/apiFetch.js'
 
 const matches       = ref([])
@@ -17,7 +16,7 @@ const props = defineProps({
 
 onMounted(async () => {
     const [matchRes, profileRes] = await Promise.all([
-        apiFetch('/api/game/matches/'),
+        apiFetch('/api/game/matches/?limit=200'),
         apiFetch('/api/users/profile/')
     ])
     if (matchRes)   matches.value = await matchRes.json()
@@ -35,9 +34,14 @@ watch(() => props.activeMatchId, (id) => {
 })
 
 watch(selectedMatch, async (match) => {
+    console.log('selectedMatch changed:', match?.id)
+    events.value = []
+
     if (!match) { events.value = []; return }
     const res = await apiFetch(`/api/game/matches/${match.id}/events/`)
+    
     if (res) events.value = await res.json()
+    console.log('fetched events:', events.value.length)
 })
 
 const filteredMatches = computed(() => {
