@@ -21,20 +21,10 @@ import { apiFetch } from '@/utils/apiFetch'
     function handleKeyDown(e) {
         if (['ArrowUp', 'ArrowDown'].includes(e.key)) e.preventDefault()
         keys[e.code] = true
-        ws.send(JSON.stringify({
-            type: "player_input",
-            key: e.code,
-            pressed: true
-        }))
     }
 
     function handleKeyUp(e) {
         keys[e.code] = false
-        ws.send(JSON.stringify({
-            type: "player_input",
-            key: e.code,
-            pressed: false
-        }))
     }
 
     async function finishMatch(winnerId) {
