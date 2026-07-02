@@ -246,3 +246,89 @@ wss://localhost/ws/game/<match_id>/
 ### Phase 2 timeline
 - Week 3 — Remote players works
 - Week 4 — bugs + defense prep
+
+
+### stato attuale
+
+✅ autenticazione via JWT sul websocket
+✅ gruppi personali (user_4, user_6)
+✅ invio inviti
+✅ accettazione inviti
+✅ cambio stato del Match a active
+✅ ingresso nel gruppo della partita (match_18)
+
+Questa è tutta la fase di "negoziazione" della partita.
+Da qui controlliamo la partita vera e propria:
+
+✅ broadcast ai membri del gruppo (ping per ora, poi stato di gioco)
+
+to do: sostituzione con costante per handlers, Ad esempio
+
+MESSAGE_HANDLERS = {
+    "game_invite": "handle_game_invite",
+    "game_accept": "handle_game_accept",
+    "join_match": "handle_join_match",
+    "ping_match": "handle_ping_match",
+}
+
+e poi
+
+handler_name = MESSAGE_HANDLERS.get(message_type)
+
+if handler_name:
+    await getattr(self, handler_name)(data)
+
+È una piccola cosa, ma il codice rimane molto più ordinato.
+
+### Appunti per documentazione
+
+
+Il flusso completo di invito a una partita è:
+
+A → server:        game_invite       { match_id, to_user_id }
+server → B:          game_invite       { match_id, from_user: {id, nickname} }
+B → server:        game_accept       { match_id }
+server → entrambi: game_start        { match_id, your_role }
+
+## Phase 3 — Chat (DM 1:1)
+
+**Cosa implementa:**
+- Messaggistica diretta 1:1 tra due utenti, in tempo reale
+- Nessuna persistenza nel DB (i messaggi non sopravvivono se un utente non è connesso)
+- Riuso del `PresenceConsumer` esistente (stesso dispatcher a `handlers = {...}`)
+
+**Done when:** due browser, due utenti diversi, autenticati sullo stesso WebSocket, si scambiano messaggi in tempo reale; se il destinatario è offline il mittente riceve un errore esplicito.
+
+### API contract — Phase 3
+
+> Numeri/valori sotto sono esempi di formato, non valori reali.
+
+**Client → Server:**
+```json
+{ "type": "chat_message", "to_user_id": 7, "content": "ciao!" }
+```
+
+**Server → Client (destinatario online, messaggio consegnato):**
+```json
+{
+  "type": "chat_message",
+  "from_user": { "id": 3, "nickname": "alice" },
+  "content": "ciao!"
+}
+```
+
+**Server → Client (errore, torna al mittente):**
+```json
+{ "type": "chat_error", "reason": "user_offline", "to_user_id": 7 }
+{ "type": "chat_error", "reason": "user_not_found", "to_user_id": 7 }
+{ "type": "chat_error", "reason": "invalid_message", "to_user_id": 7 }
+```
+
+### Phase 3 — Implementation Log
+
+- Aggiunto `handle_chat_message` e `chat_message_event` a `consumers.py`, seguendo lo stesso pattern già usato per `game_invite`/`game_accept`.
+- Nessun nuovo modello DB: decisione presa per tenere lo scope minimo (solo DM 1:1, no storico).
+- Prima di inoltrare il messaggio, il server controlla `to_user.is_online` (campo già mantenuto da `PresenceConsumer.handle_auth` / `disconnect`). Se `False`, il mittente riceve subito `chat_error` con `reason: "user_offline"` invece che un fallimento silenzioso.
+- Testato end-to-end con due tab autenticate come utenti diversi: invio, ricezione, ed errore su utente offline — tutti confermati funzionanti.
+- ⚠️ **Noto, non bloccante**: il logout (endpoint REST + rimozione token da `localStorage`) non chiude la connessione WebSocket lato frontend. Di conseguenza `is_online` resta `True` finché il tab non viene chiuso fisicamente, anche dopo il logout. Il backend si comporta correttamente in ogni caso (la connessione WS è la fonte di verità, non lo stato REST) — va sistemato lato frontend chiamando `ws.close()` al momento del logout. Segnalato a Natalia.
+- Edge case noto e accettato: piccola finestra di race condition tra il controllo `is_online` e il `group_send` se il destinatario si disconnette in quel preciso istante — il messaggio andrebbe nel gruppo ormai vuoto, senza notifica di errore al mittente. Accettabile per lo scope del progetto.
