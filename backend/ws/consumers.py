@@ -44,6 +44,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             'game_accept': self.handle_game_accept,
             'join_match': self.handle_join_match,
             'ping_match': self.handle_ping_match,
+            "player_input": self.handle_player_input,
+            'chat_message': self.handle_chat_message,
             # altri handler qui quando ne aggiungiamo
         }
         
@@ -134,6 +136,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
     async def handle_join_match(self, data):
         match_id = data.get("match_id")
 
+        self.match_id = match_id
+
         await self.channel_layer.group_add(
             f"match_{match_id}",
             self.channel_name
@@ -163,4 +167,63 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         await self.send(json.dumps({
             "type": "ping",
             "from": event["from_user"],
+        }))
+
+    async def handle_player_input(self, data):
+        direction = data["direction"]
+
+        await self.channel_layer.group_send(
+            f"match_{self.match_id}",
+            {
+                "type": "player_input_event",
+                "player": self.user.nickname,
+                "direction": direction,
+            }
+        )
+
+    async def handle_chat_message(self, data):
+        to_user_id = data.get('to_user_id')
+        content = (data.get('content') or '').strip()
+
+        if not to_user_id or not content:
+            await self.send(json.dumps({
+                "type": "chat_error",
+                "reason": "invalid_message",
+                "to_user_id": to_user_id
+            }))
+            return
+
+        try:
+            to_user = await User.objects.aget(id=to_user_id)
+        except User.DoesNotExist:
+            await self.send(json.dumps({
+                "type": "chat_error",
+                "reason": "user_not_found",
+                "to_user_id": to_user_id
+            }))
+            return
+
+        if not to_user.is_online:
+            await self.send(json.dumps({
+                "type": "chat_error",
+                "reason": "user_offline",
+                "to_user_id": to_user_id
+            }))
+            return
+
+        await self.channel_layer.group_send(f"user_{to_user_id}", {
+            "type": "chat_message_event",
+            "from_user_id": self.user.id,
+            "from_user_nickname": self.user.nickname,
+            "content": content,
+        })
+
+    async def chat_message_event(self, event):
+        await self.send(json.dumps({
+            "type": "chat_message",
+            "from_user": {
+                "id": event["from_user_id"],
+                "nickname": event["from_user_nickname"],
+            },
+            "content": event["content"],
         }))
