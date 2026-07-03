@@ -5,8 +5,10 @@ import AppButton from '../AppButton.vue';
 import { ref } from 'vue'
 import { apiFetch } from '@/utils/apiFetch.js';
 import { Pencil } from 'lucide-vue-next'
+import { useUserStore } from '@/stores/user.js';
 
 
+const userStore =  useUserStore()
 const props = defineProps ({ user: Object})
 const emit = defineEmits (['updated'])
 
@@ -32,6 +34,7 @@ async function saveProfile() {
     })
     if(response?.ok) {
         isEditing.value = false
+        await userStore.refreshUser()
         emit('updated')
     }
 }
@@ -49,10 +52,12 @@ async function uploadAvatar(file) {
         method: 'PATCH', //updates user tha already exist
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
-
     })
 
-    if(response.ok) emit('updated')
+    if(response.ok) {
+        await userStore.refreshUser()
+        emit('updated')
+    } 
 }
 
 </script>

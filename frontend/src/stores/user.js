@@ -45,7 +45,12 @@ export const useUserStore = defineStore('user', () => {
         clear()
     }
 
-    return { currentUser, fetchUser, clear, login, logout }
+    async function refreshUser() {
+        currentUser.value = null
+        await fetchUser()
+    }
+
+    return { currentUser, fetchUser, clear, login, logout, refreshUser }
 })
 
 
