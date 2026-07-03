@@ -6,14 +6,15 @@ import GameModeCard from '@/components/GameModeCard.vue'
 import PlayCard from '@/components/PlayCard.vue'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import LobbyVsRow from '@/components/lobby/LobbyVsRow.vue'
 import AppFilterTabs from '@/components/AppFilterTabs.vue'
 
+    const userStore = useUserStore()
     const router = useRouter()
     const user = ref([])
     const error = ref('')
     const selectPlayer2 = ref(null)
-    const currentUser = ref(null)
     const selectedMode = ref('local')
     const selectedOpponentUser = computed(() =>
         user.value.find(u=>u.id === selectPlayer2.value) ?? null
@@ -33,21 +34,17 @@ import AppFilterTabs from '@/components/AppFilterTabs.vue'
 
     async function fetchUsers() {
     try {
-            const profileRes = await apiFetch('/api/users/profile/')
-            if(!profileRes) return
-            if(profileRes.ok) currentUser.value = await profileRes.json()
-
-            const response = await apiFetch('/api/users/list/')
-            if(!response) return
-            if(response.ok) {
-                const data = await response.json()
-                user.value = data
-            } else {
-                router.push('/login')
-            }
-        } catch (err) {
-            error.value = "Connection error "
+        const response = await apiFetch('/api/users/list/')
+        if(!response) return
+        if(response.ok) {
+            const data = await response.json()
+            user.value = data
+        } else {
+            router.push('/login')
         }
+    } catch (err) {
+        error.value = "Connection error "
+    }
 }
 
 function toogglePlayer(id) {
@@ -97,9 +94,9 @@ onMounted(fetchUsers)
 <template>
     <div class="min-h-screen px-12 py-14 pb-24 flex flex-col items-center gap-7">
 
-        <div v-if="currentUser" class="w-full max-w-7xl">
+        <div v-if="userStore.currentUser" class="w-full max-w-7xl">
             <p class="input-label">Welcome back</p>
-            <h1 class="page-title">{{ currentUser.nickname }}</h1>
+            <h1 class="page-title">{{ userStore.currentUser.nickname }}</h1>
         </div>
 
         <div class="grid grid-cols-[2fr_1fr] gap-16 w-full max-w-7xl mt-10">
@@ -144,8 +141,8 @@ onMounted(fetchUsers)
 
             <!-- Правая колонка: матч -->
             <LobbyVsRow
-                v-if="currentUser"
-                :currentUser="currentUser"
+                v-if="userStore.currentUser"
+                :currentUser="userStore.currentUser"
                 :opponent="selectedOpponentUser">
                 <p v-if="error" class="text-xs text-coral mt-1">{{ error }}</p>
                 <AppButton variant="compact" @click="startMatch">Start game</AppButton>

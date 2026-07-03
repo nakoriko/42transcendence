@@ -4,8 +4,10 @@ import GameControls from '@/components/GameControls.vue'
 import GameScoreBoard from '@/components/GameScoreBoard.vue'
 import { ref, reactive, onMounted, onUnmounted} from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { apiFetch } from '@/utils/apiFetch'
 
+    const userStore = useUserStore()
     const gameCanvas = ref(null)
     const route = useRoute()
     const player1 = reactive({id:null, nickname: 'Player 1'})
@@ -93,10 +95,8 @@ import { apiFetch } from '@/utils/apiFetch'
             // const token = localStorage.getItem('access')
 
             //get currnet user ID and nickname
-            const profile = await apiFetch(`/api/users/profile/`)
-            const profileData = await profile.json()
-            player1.id = profileData.id
-            player1.nickname = profileData.nickname
+            player1.id = userStore.currentUser.id
+            player1.nickname = userStore.currentUser.nickname
 
             //get opponent ID and nickname
             const profile2 = await apiFetch(`/api/users/${player2.id}/`)
