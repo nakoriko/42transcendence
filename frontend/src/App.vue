@@ -1,5 +1,5 @@
 <script setup>
-  import { ref, watch, onMounted } from 'vue'
+  import { ref, watch, onMounted, computed } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
   import AppSidebar from './components/AppSidebar.vue'
   import { apiFetch } from './utils/apiFetch.js'
@@ -11,15 +11,11 @@
   const router = useRouter()
   const route = useRoute()
 
-  const isLoggedIn = ref(!!localStorage.getItem('access'))
-  const user = ref({nickname: 'Player'})
+  const isLoggedIn =  computed(() =>!!userStore.currentUser)
+  const user =  computed(() => userStore.currentUser ?? {nickname: 'Player'})
   const incomingRequests=ref([])
 
 
-  async function loadProfile() {
-      await userStore.fetchUser() //can takes from cache, instead of extra API calls
-      user.value = userStore.currentUser
-  }
 
   async function  loadIncoming() {
     if(!isLoggedIn.value) return
@@ -39,24 +35,20 @@
   }
 
 
-  onMounted(() => {
+  onMounted(async () => {
     if(isLoggedIn.value) {
-      loadProfile()
+      await userStore.fetchUser()
       loadIncoming()
     }
   })
 
   watch(route, () => {
-      isLoggedIn.value = !!localStorage.getItem('access')
       if(isLoggedIn.value) loadIncoming()
   })
 
   function logout() {
-      localStorage.removeItem('access')
-      isLoggedIn.value = false
-      user.value = {nickname: 'Player' }
+      userStore.logout()
       incomingRequests.value = []
-      userStore.clear() //for correction updates uf currentUser in userStore
       router.push('/login')
   }
 

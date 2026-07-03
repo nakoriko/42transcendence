@@ -19,8 +19,37 @@ export const useUserStore = defineStore('user', () => {
     function clear() {
         currentUser.value = null
     }
-    return { currentUser, fetchUser, clear }
+
+    async function login (email, password) {
+        try {
+            const res = await fetch('/api/users/login/', {
+                method: 'POST',
+                headers: {'Content-type': 'application/json'}, 
+                body: JSON.stringify({email, password})
+            })
+            const data = await res.json()
+            if (!res.ok) return { success: false, error: data.detail || 'login error'}
+
+            localStorage.setItem('access', data.access)
+            localStorage.setItem('refresh', data.refresh)
+            await fetchUser()
+            return { success: true}
+        } catch(err) {
+            return {success: false, error: 'Connecton eror'}
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('access')
+        localStorage.removeItem('refresh')
+        clear()
+    }
+
+    return { currentUser, fetchUser, clear, login, logout }
 })
+
+
+
 
 //const userStore = useUserStore()
 //userStore.currentUser.nickname
