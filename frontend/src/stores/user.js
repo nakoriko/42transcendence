@@ -1,6 +1,7 @@
 import  { defineStore } from 'pinia'
 import  { ref } from 'vue'
 import { apiFetch } from '@/utils/apiFetch'
+import  * as wsService from '@/services/wsService.js'
 
 export const useUserStore = defineStore('user', () => {
     const currentUser = ref(null)
@@ -33,6 +34,7 @@ export const useUserStore = defineStore('user', () => {
             localStorage.setItem('access', data.access)
             localStorage.setItem('refresh', data.refresh)
             await fetchUser()
+            wsService.connect(data.access)
             return { success: true}
         } catch(err) {
             return {success: false, error: 'Connecton eror'}
@@ -42,6 +44,7 @@ export const useUserStore = defineStore('user', () => {
     function logout() {
         localStorage.removeItem('access')
         localStorage.removeItem('refresh')
+        wsService.disconnect()
         clear()
     }
 
