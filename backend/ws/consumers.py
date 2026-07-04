@@ -24,7 +24,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         if self.authenticated:
             await self.channel_layer.group_discard(f"user_{self.user.id}", self.channel_name)
             self.user.is_online = False
-            await self.user.asave()
+            await self.user.asave(update_fields=['is_online']) #NAT: added to fix error with profile update after F5 
+            # await self.user.asave() 
 
     #nuova versione di receive
     async def receive(self, text_data):
@@ -66,7 +67,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             self.auth_timeout.cancel()
 
             self.user.is_online = True
-            await self.user.asave()
+            await self.user.asave(update_fields=['is_online']) #NAT: added to fix error: ws rewrited all fields. Cioe: se utente cambia il suo profilo, ws li rescrive tutti dentro DB (bug), acnhe se non sono piu attuali         # await self.user.asave()
+
 
             # iscrizione a gruppo personale
             await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
