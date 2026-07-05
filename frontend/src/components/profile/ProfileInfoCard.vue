@@ -94,7 +94,7 @@ async function uploadAvatar(file) {
         </div>
 
         <div v-if="isEditing" class="mt-4 flex flex-col gap-3">
-            <AppInput v-model="editForm.nickname" label="Nickname" type="text" />
+            <AppInput v-model="editForm.nickname" label="Nickname" type="text" maxlength="15" />
             <AppInput v-model="editForm.email" label="Email" type="email" />
             <p v-if="errorMsg" class="text-[11px] text-coral"> {{  errorMsg }}</p>
             <div class="flex gap-2 mt-1">

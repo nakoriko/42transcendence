@@ -42,7 +42,7 @@ function handleFileSelect(event) {
         <div class="flex-1 min-w-0">
 
             <div class="test-base font-light text-white">{{ user.nickname }}</div>
-            <div class="text-sm text-muted mt-0.5">{{ user.email }}</div>
+            <div class="text-sm text-muted mt-0.5 break-all">{{ user.email }}</div>
         </div>
 
     </div>

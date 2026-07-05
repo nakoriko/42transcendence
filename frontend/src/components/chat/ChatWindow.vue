@@ -77,6 +77,8 @@
         max-width: 60%;
         padding: 8px 12px;
         border-radius: 12px;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     .chat-message.mine{

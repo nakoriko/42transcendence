@@ -56,7 +56,7 @@ async function handleRegister() {
             <div class="space-y-4">
             <AppInput v-model="email" label="Email" type="email" placeholder="Email"/>
             <AppInput v-model="password" label="Password" type="password" placeholder="Password"/>
-            <AppInput v-model="nickname" label="Nickname" type="text" placeholder="Nickname"/>
+            <AppInput v-model="nickname" label="Nickname" type="text" placeholder="Nickname" maxlength="15"/>
             </div>
 
 

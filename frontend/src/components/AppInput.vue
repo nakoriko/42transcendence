@@ -6,7 +6,8 @@
             default: 'text',
         },
         placeholder: String,
-        autocomplete: String
+        autocomplete: String, 
+        maxlength: String
     })
 
     const model = defineModel()
@@ -24,6 +25,7 @@
             :type="type"
             :placeholder="placeholder"
             :autocomplete="autocomplete"
+            :maxlength="maxlength"
             class="w-full bg-navy-900 border border-white/[0.07] rounded-xl px-4 py-3
                     text-white placeholder:text-muted/50
                     focus:outline-none focus:border-teal/50 transition"
