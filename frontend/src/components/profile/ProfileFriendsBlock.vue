@@ -116,7 +116,7 @@ import { X } from 'lucide-vue-next'
             <!-- карточки сюда -->
              <div v-for="f in filteredList" :key="f.id"
                 class="flex items-center gap-2">
-                <div class="flex-1 min-w-0" @click="selectedId = f.id">
+                <div class="flex-1 min-w-0" @click="selectedId = selectedId === f.id ? null : f.id">
                     <PlayCard :user="f.friend" :selected="selectedId === f.id" />
                 </div>
                 <button v-if="selectedId === f.id"

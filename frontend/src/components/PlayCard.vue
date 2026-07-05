@@ -25,7 +25,7 @@ import AppBadge from './AppBadge.vue';
             :class="selected ? 'bg-teal/[0.06]' : 'hover:bg-white/[0.04]'"
             class="rounded-[12px] px-4 py-5 flex items-center gap-3 cursor-pointer transition">
 
-            <AppAvatar size="sm" :nickname="user.nickname" :isOnline="user.is_online" />
+            <AppAvatar :nickname="user.nickname" :isOnline="user.is_online" />
 
             <span class="text-base font-light text-white flex-1 min-w-0 truncate">
                 {{ user.nickname }}
