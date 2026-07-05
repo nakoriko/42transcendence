@@ -67,7 +67,7 @@ const navLinks= [
         : 'text-muted hover:bg-white/[0.04] hover:text-white'"
       >
 
-      <Bell :size="17" aria-hiden="true"></Bell>
+      <Bell :size="17" aria-hidden="true"></Bell>
       <span>Requests</span>
       <!--Badge shows only if thereis incoming request-->
       <span
@@ -122,7 +122,7 @@ const navLinks= [
 
     <!--NAME-->
     <div class="flex-1 min-w-0">
-      <p classs="text-white text-xs truncate">{{ user.nickname }}</p>
+      <p class="text-white text-xs truncate">{{ user.nickname }}</p>
       <p class="text-muted text-[10px]">Player</p>
     </div>
 
