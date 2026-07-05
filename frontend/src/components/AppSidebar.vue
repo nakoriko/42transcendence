@@ -91,9 +91,9 @@ const navLinks= [
           class="flex items-center gap-3 px-4 py-2.5 border-b border-white/[0.04]"
         >
           <div class="w-7 h-7 rounded-full bg-teal/20 flex items-center justify-center text-sage text-xs flex-shrink-0">
-            {{ req.username[0].toUpperCase()}}
+            {{ req.username?.[0]?.toUpperCase() ?? 'P'}}
           </div>
-          <span class="text-xs text-white flex-1 truncate">{{ req.username }}</span>
+          <span class="text-xs text-white flex-1 truncate">{{ req.username || 'Unknown' }}</span>
           <button @click="emit('accept-request', req.id)" class="text-sage hover:text-white transition p-1" title="Accept">
             <Check :size="13"></Check>
           </button>

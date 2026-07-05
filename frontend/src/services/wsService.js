@@ -6,10 +6,11 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/04 11:20:54 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/04 13:36:41 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+import { useChatStore } from "@/stores/chat"
 
 export { connect, disconnect, send}
 
@@ -17,8 +18,16 @@ let socket = null
 
 const messageHandlers = {
     auth_success: () => console.log('WS: authenticated'),
-    chat_message: (data) => console.log('WS: chat_message', data),
-    chat_error: (data) => console.warn('WS: chat error', data),
+    chat_message: (data) =>  {
+        const chatStore = useChatStore()
+        chatStore.receiveMessage(data)
+    },
+
+    chat_error: (data) =>  {
+        const chatStore = useChatStore()
+        chatStore.receiveError(data)
+        // console.warn('WS: chat error', data),
+    }
 }
 
 function connect(token) {
@@ -57,7 +66,7 @@ function disconnect() {
 
 
 function send(payload) {
-    if(!socket) {
+    if(!socket || socket.readyState !== WebSocket.OPEN) {
         console.warn('WS: cannot send, ws not connected')
         return
     }

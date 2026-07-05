@@ -7,7 +7,8 @@ import AppBadge from './AppBadge.vue';
 
     const props = defineProps({
         user: Object,
-        selected: Boolean
+        selected: Boolean,
+        showStats: { type: Boolean, default: true}
     })
 
     defineEmits(['select'])
@@ -30,7 +31,7 @@ import AppBadge from './AppBadge.vue';
                 {{ user.nickname }}
             </span>
 
-            <div class="flex items-center gap-2 flex-shrink-0">
+            <div v-if="showStats" class="flex items-center gap-2 flex-shrink-0">
                 <span class="text-xs text-muted">{{ totalMatches }} matches</span>
                 <AppBadge :label="winRate + '%'" />
             </div>
