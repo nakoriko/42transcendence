@@ -33,7 +33,7 @@ async function handleRegister() {
         if(response.ok) {
             router.push('/login') //redirect to profile
         } else {
-            error.value = data.detail || 'Login error' // shows error
+            error.value = Object.values(data).flat().join(' ') || 'Registration error' // shows error
         }
     
     } catch(err) {
