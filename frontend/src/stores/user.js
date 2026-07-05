@@ -37,7 +37,7 @@ export const useUserStore = defineStore('user', () => {
             wsService.connect(data.access)
             return { success: true}
         } catch(err) {
-            return {success: false, error: 'Connecton eror'}
+            return {success: false, error: 'Connection eror'}
         }
     }
 
