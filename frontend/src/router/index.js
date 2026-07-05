@@ -8,8 +8,10 @@ import ProfileView from '../views/ProfileView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import GameView from '../views/GameView.vue' 
 import LobbyView from '../views/LobbyView.vue'
-import FriendsView from '@/views/FriendsView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import RemoteGameView from '@/views/RemoteGameView.vue'
+import ChatView from '@/views/ChatView.vue'
+import * as wsService from '../services/wsService.js'
 
 
 const router = createRouter({
@@ -23,9 +25,11 @@ const router = createRouter({
     { path: '/profile', component: ProfileView, meta: {requiresAuth: true} },
     { path: '/register', component: RegisterView, meta: { guestOnly: true}},
     { path: '/game', component:GameView, meta: { requiresAuth: true, requiresGame: true } },
+    { path: '/game/remote', component: RemoteGameView, meta: { requiresAuth: true, requiresGame: true}},
     { path: '/lobby', component:LobbyView, meta: {requiresAuth: true} },
     // { path: '/friends', component: FriendsView, meta:{requiresAuth: true}}, 
     { path: '/dashboard', component: DashboardView, meta:{requiresAuth: true}}, 
+    { path: '/chat', component: ChatView, meta: {requiresAuth: true}}
 
   ],
 })
@@ -41,6 +45,7 @@ router.beforeEach (async function(to, from) {
   if(to.meta.requiresAuth && token) {
     const userStore = useUserStore()
     await userStore.fetchUser()
+    wsService.connect(localStorage.getItem('access'))
   }
 })
 

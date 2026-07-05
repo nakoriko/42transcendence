@@ -22,22 +22,37 @@ const ttData = reactive(({ type: '', index: '', player: '', react: '', color: ''
 // const ttPlayer = ref(null)
 const container = ref(null)
 let simulation = null
+const isEmpty = ref(false)
 
 async function renderViz(match, events) {
-    if (!match || !container.value || !events.length) return
 
-    d3.select(container.value).selectAll('*').remove()
-    if (simulation) simulation.stop()
-
-    const W = container.value.clientWidth - 50
-    const H = (container.value.clientHeight || 400) - 50
+    if (!match || !container.value) return
 
     // const profileResponse = await apiFetch('/api/users/profile/')
     // const profile = await profileResponse.json()
     const currentUserId   =  userStore.currentUser.id
     const currentUserName = userStore.currentUser.nickname ?? userStore.currentUser.username ?? 'You'
+    //avoid double event (miss for player1 = goal for player2)
+    const vizEvents = events.filter(e => e.event_type === 'hit' || e.player === currentUserId)
 
-    const nodes = events.map((e, i) => ({
+
+
+    isEmpty.value = vizEvents.length === 0
+    if(!vizEvents.length) {
+        d3.select(container.value).selectAll('*').remove()
+        return
+    }
+
+    d3.select(container.value).selectAll('*').remove()
+
+
+    if (simulation) simulation.stop()
+
+    const W = container.value.clientWidth - 50
+    const H = (container.value.clientHeight || 400) - 50
+
+
+    const nodes = vizEvents.map((e, i) => ({
         id: i,
         type: e.event_type,
         player: e.player,
@@ -50,7 +65,7 @@ async function renderViz(match, events) {
         radius: e.event_type === 'goal' ? 14 : 7,
     }))
 
-    const links = events.slice(0, -1).map((_, i) => ({
+    const links = vizEvents.slice(0, -1).map((_, i) => ({
         source: i,
         target: i + 1
     }))
@@ -225,6 +240,9 @@ onUnmounted(() => {
 <template>
 <div class="relative w-full min-h-[400px]">
     <div ref="container" class="w-full min-h-[400px]"></div>
+    <div v-if="isEmpty" class="absolute inset-0 flex items-center justify-center">
+        <span class="text-sm text-muted"> No events recorded - match was stopped early</span>
+    </div>
     <AppTooltip ref="tt">
         <div class="flex justify-between items-center mb-2">
             <div class="text-xs font-medium" :style="{ color: ttData.color }">{{ ttData.type }}</div>

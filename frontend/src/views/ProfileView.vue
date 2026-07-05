@@ -13,7 +13,6 @@ const matches = ref([])
 //for filters:
 const activeFilter = ref('all')
 const filteredMatches = computed(() => {
-    console.log('result values:', matches.value.map(m => m.result))
     if(activeFilter.value === 'wins') return matches.value.filter(m => m.result === 'win')
     if(activeFilter.value === 'losses') return matches.value.filter(m => m.result === 'loss')
     return matches.value

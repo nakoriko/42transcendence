@@ -2,31 +2,34 @@
 import  { ref, onMounted, onUnmounted, watch, computed, reactive } from 'vue'
 import  { useUserStore } from '@/stores/user'
 import AppToolTip from '@/components/AppTooltip.vue'
-import { Popsicle } from 'lucide-vue-next'
-import { UserStarIcon } from 'lucide-vue-next'
-import { ChartScatter } from 'lucide-vue-next'
-import { ChartNoAxesColumn } from 'lucide-vue-next'
-import MatchEchoViz from './MatchEchoViz.vue'
+import AppFilterTabs from '../AppFilterTabs.vue'
+import { useResizeObserver } from '@/composables/useResizeObserver.js'
+import { filterByPeriod } from '@/utils/period.js'
+import { formatShortDate } from '@/utils/date.js'
 
 const props = defineProps({
-    match: { type: Object, default: null},
+    matches: { type: Array, default: () => []},
     events: { type: Array, default: () => []}
 })
 
-const emit = defineEmits(['matchSelected'])
+const period = ref('All')
+const filteredMatches = computed (() => 
+    filterByPeriod(props.matches, 'ended_at', period.value)
+) 
 
+const emit = defineEmits(['matchSelected'])
+const canvas = ref(null)
+const container = ref(null)
+const tt = ref(null)
 const ttData = reactive ({
     num: 0,
     total: 0,
     hits: 0,
     won: false,
     score: '',
-    opponent: ''
+    opponent: '',
+    date: '',
 })
-
-const canvas = ref(null)
-const container = ref(null)
-const tt = ref(null)
 
 const COLORS = {
     coral: '#F8856D',
@@ -38,34 +41,56 @@ let animProgress = []
 let rafId = null 
 const userStore = useUserStore()
 
-//compute ralli
+
+//computed ralli (recalcolute every call)
 const rallies = computed(() => {
-    if (!props.events.length || !userStore.currentUser) return []
+    if (!filteredMatches.value.length|| !userStore.currentUser) return []
 
     const uid = userStore.currentUser.id
     const result = []
-    let hits = 0
-    let score = [0, 0]
+    const ordered = [...filteredMatches.value].reverse() //reverse order for inter array
 
-    for(const e of props.events) {
-        if (e.event_type === 'hit') {
-            hits++
-        } else if (e.event_type === 'goal' || e.event_type === 'miss') {
-            const won = e.player === uid 
-            won ? score[0]++ : score[1]++
+    for(const m of ordered) {
+            const matchEvents = props.events.filter(e => e.match === m.id)
+            let hits = 0;
+            let score = [0, 0]
 
-            result.push ({
-                num: result.length + 1,
-                hits: hits || 1,
-                won,
-                score: `${score[0]} - ${score[1]}`,
-                matchId: e.match
-            })
-            hits = 0
+            for(const e of matchEvents) {
+                if(e.event_type === 'hit') {
+                    hits++
+                } else if (e.event_type === 'goal') {
+                        const won = e.player === uid
+                        won ? score[0]++ : score[1]++
+                        result.push({
+                            hits: hits || 1,
+                            won,
+                            score: `${score[0]} - ${score[1]}`,
+                            matchId: m.id,
+                            matchDate: m.ended_at,
+                            opponent:  m.opponent_nickname,
+                        })
+                        hits = 0
+                    }
+                }
+            }
+        const filtered = result.filter(r => r.hits > 1)
+        return filtered.map((r, i) => ({...r, num: i + 1}))
+    })
+
+//limits for bottom timeline
+
+
+const matchGroups = computed(() => {
+    const groups = []
+    rallies.value.forEach((r, i) => {
+        const last = groups[groups.length - 1]
+        if(last && last.matchId === r.matchId) {
+            last.endIndex = i
+        } else {
+            groups.push({ matchId: r.matchId, matchDate: r.matchDate, startIndex: i, endIndex: i})
         }
-    }
-    return result.filter(r => r.hits > 1)
-
+    })
+    return groups
 })
 
 //draw graph on canvas
@@ -77,7 +102,7 @@ function draw() {
     const W = canvas.value.width
     const H = canvas.value.height
 
-    const PL = 12, PR = 12, PT = 12, PB = 0
+    const PL = 12, PR = 12, PT = 12, PB = 18
     
     //woekspace
     const CW = W - PL - PR
@@ -96,15 +121,28 @@ function draw() {
 
     //draw spikes
     rallies.value.forEach((r, i) => {
+        //30/06: added dividers beteen groups of matches
+        if(i > 0 && r.matchId !== rallies.value[i - 1].matchId) {
+            const sepX = PL + i * GAP 
+            ctx.save()
+            ctx.globalAlpha = 1
+            ctx.beginPath()
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'
+            ctx.lineWidth = 0.5
+            ctx.setLineDash([2, 2])
+            ctx.moveTo(sepX, PT)
+            ctx.lineTo(sepX, H - PB)
+            ctx.stroke()
+            ctx.restore()
+        }
+
+
         const prog = animProgress[i] ?? 0
         const x = PL + ( i + 0.5) * GAP
         const baseY = H - PB
         const fullH = (r.hits / maxH) * CH
-
         const tipY = baseY - fullH * prog
-
         ctx.globalAlpha = Math.min(1, prog * 2)
-
 
         //vertical line
         ctx.beginPath()
@@ -143,6 +181,20 @@ function draw() {
         }
         ctx.globalAlpha = 1
     })
+
+    const MAX_LABELS = 10 //add fast solution to avoid a mess with dates on timeline
+    if(matchGroups.value.length <= MAX_LABELS) { //just for 10 matches
+        matchGroups.value.forEach(g => {
+            const centerX = PL + ((g.startIndex + g.endIndex) / 2 + 0.5) * GAP
+            ctx.save()
+            ctx.globalAlpha = 1
+            ctx.fillStyle = 'rgba(255,255,255,0.35)'
+            ctx.font = '9px sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText (formatShortDate(g.matchDate), centerX, H - 4)
+            ctx.restore() 
+        }
+    )}
 }
 
 function animate() {
@@ -196,10 +248,15 @@ function onMouseMove(e) {
     ttData.hits = r.hits
     ttData.won = r.won
     ttData.score = r.score
-    ttData.opponent = props.match?.opponent_nickname ?? '-'
+    ttData.opponent = r.opponent ?? '-'
+    ttData.date = formatShortDate(r.matchDate)
 
     const x = 12 + (idx + 0.5) * GAP
-    tt.value?.show(x + 12, 20)
+    const tooltipWidth = 170
+    const xPos = x + tooltipWidth + 12 > W
+        ? x - tooltipWidth - 12
+        : x + 12
+    tt.value?.show(xPos, 20)
 }
 
 function onCanvasClick(e) {
@@ -217,21 +274,16 @@ function onMouseLeave() {
 }
 
 //control of containers resize
-let resizeTimer = null
-const ro = new ResizeObserver(() => {
-    clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(setupCanvas, 150) // 150ms
-})
+useResizeObserver(container, setupCanvas, 150)
+
 
 onMounted (() => {
-    ro.observe(container.value)
     setupCanvas()
 })
 
-watch(() => props.events, () =>setupCanvas())
+watch(rallies, () =>setupCanvas())
 
 onUnmounted(() => {
-    ro.disconnect()
     if(rafId) cancelAnimationFrame(rafId)
 })
 
@@ -240,7 +292,10 @@ onUnmounted(() => {
 
 <template>
     <div class="flex flex-col h-full">  <!--DashRally timeline-->
-        <div class="input-label mb-4">Ralli timeline</div>
+        <div class="flex items-center justify-between mb-4">
+            <div class="input-label">Ralli timeline</div>
+            <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" />
+        </div>
         <div class="flex-1 relative" ref="container">
                 <canvas ref="canvas"
                     @mousemove="onMouseMove"
@@ -262,6 +317,10 @@ onUnmounted(() => {
                     <div class="flex justify-between mb-1">
                         <span class="text-[10px] text-muted">vs</span>
                         <span class="text-[10px]">{{ ttData.opponent }}</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-[10px] text-muted">Match date</span>
+                        <span class="text-[10px]">{{ ttData.date }}</span>
                     </div>
                     <div class="flex justify-between mb-1">
                         <span class="text-[10px] text-muted">Exchanges</span>

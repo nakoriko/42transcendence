@@ -32,8 +32,8 @@
         class="relative rounded-full flex items-center justify-center text-navy-900 flex-shrink-0">
             {{ initial(nickname) }}
             <div :class="[
-                size === 'lg' ? 'w-3 h-3 bottom-0.5 right-0.5' : 'w-2 h-2 bottom-0 right-0',
-                isOnline ? 'bg-teal' : 'bg-gray-500'
+                size === 'lg' ? 'w-3 h-3 bottom-0.5 right-0.5' : 'w-2.5 h-2.5 bottom-0 right-0',
+                isOnline ? 'bg-green-400' : 'bg-gray-400'
             ]"
             class="absolute rounded-full border-2 border-navy-800"></div>
     </div>

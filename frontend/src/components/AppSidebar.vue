@@ -67,7 +67,7 @@ const navLinks= [
         : 'text-muted hover:bg-white/[0.04] hover:text-white'"
       >
 
-      <Bell :size="17" aria-hiden="true"></Bell>
+      <Bell :size="17" aria-hidden="true"></Bell>
       <span>Requests</span>
       <!--Badge shows only if thereis incoming request-->
       <span
@@ -91,9 +91,9 @@ const navLinks= [
           class="flex items-center gap-3 px-4 py-2.5 border-b border-white/[0.04]"
         >
           <div class="w-7 h-7 rounded-full bg-teal/20 flex items-center justify-center text-sage text-xs flex-shrink-0">
-            {{ req.username[0].toUpperCase()}}
+            {{ req.username?.[0]?.toUpperCase() ?? 'P'}}
           </div>
-          <span class="text-xs text-white flex-1 truncate">{{ req.username }}</span>
+          <span class="text-xs text-white flex-1 truncate">{{ req.username || 'Unknown' }}</span>
           <button @click="emit('accept-request', req.id)" class="text-sage hover:text-white transition p-1" title="Accept">
             <Check :size="13"></Check>
           </button>
@@ -122,7 +122,7 @@ const navLinks= [
 
     <!--NAME-->
     <div class="flex-1 min-w-0">
-      <p classs="text-white text-xs truncate">{{ user.nickname }}</p>
+      <p class="text-white text-xs truncate">{{ user.nickname }}</p>
       <p class="text-muted text-[10px]">Player</p>
     </div>
 

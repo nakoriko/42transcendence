@@ -8,22 +8,21 @@ import DashRallyTimeline from '@/components/dashboard/DashRallyTimeline.vue';
 import DashUniverse from '@/components/dashboard/DashUniverse.vue';
 
 // const userStore = useUserStore()
-const lastMatch = ref([null])
+const matches = ref([])
 const lastEvents = ref([])
 
 const activeMatchId = ref(null)
 
 function onMatchSelected(matchId) {
-    console.log('DashboardView получил matchId:', matchId)
     activeMatchId.value = matchId
 }
 
 onMounted(async () => {
     const [matchRes, eventsRes ] = await Promise.all([
-        apiFetch('/api/game/matches/'),
+        apiFetch('/api/game/matches/?limit=200'),
         apiFetch('/api/game/events/')
     ])
-    if(matchRes) lastMatch.value = (await (matchRes.json()))[0]//last match
+    if(matchRes) matches.value = (await (matchRes.json()))
     if(eventsRes) lastEvents.value = (await(eventsRes.json()))
 })
 
@@ -52,7 +51,7 @@ onMounted(async () => {
             <div class="grid grid-cols-[2fr_3fr] gap-6 items-stretch">
                 <DashPlayerStats></DashPlayerStats>
                 <DashRallyTimeline 
-                :match="lastMatch" 
+                :matches="matches" 
                 :events="lastEvents"
                 @matchSelected="onMatchSelected"></DashRallyTimeline>
             </div>

@@ -4,14 +4,19 @@ import GameControls from '@/components/GameControls.vue'
 import GameScoreBoard from '@/components/GameScoreBoard.vue'
 import { ref, reactive, onMounted, onUnmounted} from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 import { apiFetch } from '@/utils/apiFetch'
 
+    const userStore = useUserStore()
     const gameCanvas = ref(null)
     const route = useRoute()
     const player1 = reactive({id:null, nickname: 'Player 1'})
     const player2 = reactive({id: Number(route.query.player2), nickname: 'Player 2'})
     let animationId = null
     let matchId = null // moved here. Need to be acceible from onBeforeRouteLeave (end of script)
+    
+    const events = []
+
     const score_p1 = ref(0)
     const score_p2 = ref(0)
     const gameOver = ref(false)
@@ -39,11 +44,18 @@ import { apiFetch } from '@/utils/apiFetch'
         })
     }
 
+    async function saveMatch() {
+        if(!events.length) return
+    //bulk instead of for cycle for every event
+        await apiFetch ('/api/game/matches/events/bulk/', {
+            method: 'POST',
+            body: JSON.stringify(events)
+        })
+    }
+
     function startGame() {
         const canvas = gameCanvas.value
         const ctx = canvas.getContext('2d')
-        const events = []
-
         //ball position
         const ball = {
             x: 400, 
@@ -83,10 +95,8 @@ import { apiFetch } from '@/utils/apiFetch'
             // const token = localStorage.getItem('access')
 
             //get currnet user ID and nickname
-            const profile = await apiFetch(`/api/users/profile/`)
-            const profileData = await profile.json()
-            player1.id = profileData.id
-            player1.nickname = profileData.nickname
+            player1.id = userStore.currentUser.id
+            player1.nickname = userStore.currentUser.nickname
 
             //get opponent ID and nickname
             const profile2 = await apiFetch(`/api/users/${player2.id}/`)
@@ -100,14 +110,6 @@ import { apiFetch } from '@/utils/apiFetch'
             const matchData = await match.json()
             matchId = matchData.id
             render()
-        }
-
-        async function saveMatch() {
-            //bulk instead of for cycle for every event
-            await apiFetch ('/api/game/matches/events/bulk/', {
-                method: 'POST',
-                body: JSON.stringify(events)
-            })
         }
 
         function resetBall() {
@@ -301,6 +303,7 @@ import { apiFetch } from '@/utils/apiFetch'
                 // const winnerId = score_p1.value >= score_p2.value
                 // ? player2.id
                 // : player1.id
+                await saveMatch()
                 await finishMatch(winnerId)
             } catch(e) {
                 console.error('Failed to save abandoned mathc', e)

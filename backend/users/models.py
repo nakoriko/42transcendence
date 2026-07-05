@@ -24,7 +24,7 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['nickname']
 
-    nickname = models.CharField(max_length=50, blank = True)
+    nickname = models.CharField(max_length=50, unique=True)
     avatar = models.ImageField(upload_to='avatars/', blank = True)
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
