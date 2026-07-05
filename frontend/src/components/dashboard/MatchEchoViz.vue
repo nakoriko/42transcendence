@@ -25,7 +25,6 @@ let simulation = null
 const isEmpty = ref(false)
 
 async function renderViz(match, events) {
-    console.log('renderViz called, match:', match?.id, 'events:', events.length)
 
     if (!match || !container.value) return
 

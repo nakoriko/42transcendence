@@ -14,7 +14,6 @@ const lastEvents = ref([])
 const activeMatchId = ref(null)
 
 function onMatchSelected(matchId) {
-    console.log('DashboardView получил matchId:', matchId)
     activeMatchId.value = matchId
 }
 

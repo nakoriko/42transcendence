@@ -24,24 +24,19 @@ onMounted(async () => {
 })
 
 watch(() => props.activeMatchId, (id) => {
-    console.log('DashMatchHistory получил activeMatchId:', id)
 
     if(!id) return
     const match = matches.value.find(m =>m.id === id)
-    console.log('найден матч:', match)
-
     if(match) selectedMatch.value = match
 })
 
 watch(selectedMatch, async (match) => {
-    console.log('selectedMatch changed:', match?.id)
     events.value = []
 
     if (!match) { events.value = []; return }
     const res = await apiFetch(`/api/game/matches/${match.id}/events/`)
     
     if (res) events.value = await res.json()
-    console.log('fetched events:', events.value.length)
 })
 
 const filteredMatches = computed(() => {
