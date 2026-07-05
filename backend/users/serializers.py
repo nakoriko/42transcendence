@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/28 12:02:32 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/07/05 19:38:13 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,6 +21,7 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
     #never returns passwortdfor reading:
     password = serializers.CharField(write_only=True)
+    nickname = serializers.CharField(max_length=15)
     class Meta:
         model = User
         fields = ['email', 'password', 'nickname']
@@ -64,10 +65,12 @@ class FriendRelationSerializer(serializers.ModelSerializer):
         fields = ['id', 'status', 'friend']
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
+    nickname = serializers.CharField(max_length=15, required=False)
+
     class Meta:
             model = User
             fields = ['nickname', 'email']
             extra_kwargs = {
-                'nickname': {'required': False},
+                # 'nickname': {'required': False},
                 'email': {'required': False},
             }
