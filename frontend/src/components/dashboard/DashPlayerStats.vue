@@ -44,7 +44,7 @@ async function loadData(){
     const el = chartEl.value
     const labels = data.labels
     const { width, height } = el.getBoundingClientRect()
-    const margin = { top: 16, right: 16, bottom: 28, left: 32  }
+    const margin = { top: 16, right: 16, bottom: 28, left: 12  }
     const W = width - margin.left - margin.right
     const H = height - margin.top - margin.bottom
 
@@ -119,14 +119,15 @@ async function loadData(){
     const lineGen = d3.line() //creates coordinates for x,Y
         .x((_, i) => xScale(labels[i])) // since we need just its number, not a valu, we put it like '_', i
         .y(d => yScale(d)) // here we rake the value
-        .curve(d3.curveCatmullRom.alpha(0.05))
+        // .curve(d3.curveCatmullRom.alpha(0.05))
+        .curve(d3.curveMonotoneX)
 
     //area generation (for fill)
     const areaGen = d3.area()
         .x((_, i) => xScale(labels[i]))
         .y0(H)
         .y1(d => yScale(d))
-        .curve(d3.curveCatmullRom.alpha(0.5))
+        .curve(d3.curveMonotoneX)
 
     if(visibleSeries.value.wins) {
         g.append('path')
@@ -166,6 +167,44 @@ async function loadData(){
             .attr('d', lineGen)
     }
 
+    ///////////////LeftLine
+    g.append('line')
+        .attr('x1', 0).attr('x2', 0)
+        .attr('y1', 0).attr('y2', H)
+        .attr('stroke', 'rgba(255,255,255,0.1)')
+        .attr('stroke-width', 1)
+
+
+    ///////////////Bottob line with dates
+    const MAX_LABELS = 10
+
+    const xAxis = d3.axisBottom(xScale)
+        .tickSize(-H)
+
+    const axisG = g.append('g')
+        .attr('transform', `translate(0, ${H})`)
+        .call(xAxis)
+
+    const ticks = axisG.selectAll('.tick')
+    
+    ticks.select('line')
+        .attr('stroke', 'rgba(255,255,255,0.07)')
+    ticks.select('text')
+        .attr('fill', 'rgba(255,255,255,0.3)')
+        .attr('font-size', '10px')
+        .attr('dy', '1.2em')
+    ticks.style('display', labels.length > MAX_LABELS ? 'none' : null)
+    
+    axisG.select('.domain')
+        .attr('stroke', 'rgba(255,255,255,0.1)')
+        .attr('stroke-width', 1)
+
+    // axisG.selectAll('text')
+    //     .attr('fill', 'rgba(255,255,255,0.3)')
+    //     .attr('font-size', '10px')
+    //     .attr('dy', '1.2em')
+    //     .style('display', labels.length > MAX_LABELS ? 'none' : null)
+
     //helpline for tooltip
     const hoverLine = g.append('line')
         .attr('y1', 0)
@@ -174,7 +213,12 @@ async function loadData(){
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3.3')
         .attr('opacity', 0)
+
     //invisible hover dots for tooltip
+
+
+
+
     labels.forEach((label, i) => {
         const x = xScale(label)
         const yVal = visibleSeries.value.total ? data.total[i]
