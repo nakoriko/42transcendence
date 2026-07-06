@@ -1,7 +1,7 @@
 
 <script setup>
 import { apiFetch } from '@/utils/apiFetch'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import PlayCard from '../PlayCard.vue'
 import AppFilterTabs from '../AppFilterTabs.vue'
 import { X } from 'lucide-vue-next'
@@ -77,6 +77,10 @@ import { X } from 'lucide-vue-next'
     onMounted(() => {
         loadFriends()
         window.addEventListener('friends-updated', loadFriends)
+    })
+
+    onUnmounted(() => {
+        window.removeEventListener('friends-updated', loadFriends)
     })
 
 </script>
