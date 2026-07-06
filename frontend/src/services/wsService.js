@@ -6,11 +6,12 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/04 13:36:41 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/06 19:14:48 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 import { useChatStore } from "@/stores/chat"
+import { usePresenceStore } from "@/stores/presence"
 
 export { connect, disconnect, send}
 
@@ -27,6 +28,11 @@ const messageHandlers = {
         const chatStore = useChatStore()
         chatStore.receiveError(data)
         // console.warn('WS: chat error', data),
+    },
+
+    online_count: (data) => {
+        const presenceStore = usePresenceStore()
+        presenceStore.setCount(data.count)
     }
 }
 
