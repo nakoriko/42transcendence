@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/22 22:04:05 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/07/06 15:56:54 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -115,9 +115,19 @@ class FriendRequestView(APIView):
     def post(self, request):
         to_user_id = request.data.get('to_user_id')
 
+        if to_user_id is None:
+                return Response({ 'error' : 'to_user_id is required'}, status=400)
+        try:
+            to_user_id = int(to_user_id)
+        except: (TypeError, ValueError)
+            return Response({'error': 'to_user_id must be a valid integer'}, status=400)
+
         #cannot add myself:
-        if int (to_user_id) == request.user.id:
+        if to_user_id == request.user.id:
             return Response({'error': 'Cannot add yourself'}, status=400)
+        
+        if not User.objects.filter(pk=to_user_id).exists():
+            return Response({'error': 'User not found'}, status=404)
         
         #check if there's active invitations
         already_exits = FriendRelation.objects.filter(
