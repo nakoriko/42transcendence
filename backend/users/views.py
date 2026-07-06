@@ -6,11 +6,11 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/06 15:56:54 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/07/06 16:33:58 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
@@ -66,7 +66,7 @@ class ProfileView(APIView):
 class PublicProfileView(APIView):
     permission_classes = [IsAuthenticated] #define by standart method of rest framaework.permissions (checks token)
     def get(self, request, pk):
-        user = User.objects.get(pk=pk)
+        user = get_object_or_404(User, pk=pk)
         return Response({
             "id": user.id,
             "email": user.email,
@@ -119,7 +119,7 @@ class FriendRequestView(APIView):
                 return Response({ 'error' : 'to_user_id is required'}, status=400)
         try:
             to_user_id = int(to_user_id)
-        except: (TypeError, ValueError)
+        except (TypeError, ValueError):
             return Response({'error': 'to_user_id must be a valid integer'}, status=400)
 
         #cannot add myself:
