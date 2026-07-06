@@ -43,9 +43,6 @@ async function loadData(){
     players.value = data
     stats.value.players = data.length
     stats.value.matches = data.reduce((sum, player) => sum + player.total_matches, 0)
-    // for(const player of data) {
-    //     sum = sum + player.total_matches
-    // }
     const withReaction = data.filter(player => player.avg_reaction_ms !== null)
     stats.value.reaction = withReaction.length 
         ? Math.round(withReaction.reduce((sum, player) => sum + player.avg_reaction_ms, 0) / withReaction.length )  
@@ -122,23 +119,13 @@ function drawChart() {
         .attr('stroke', (p, i) =>`url(#spike-grad-${i})`)
         .attr('stroke-width', 0.3)
 
-    // svg.selectAll('line')
-    //     .data(players.value)
-    //     .join('line')
-    //     .attr('x1', p => scaleX(new Date(p.date_joined)))
-    //     .attr('y1', H - PB)
-    //     .attr('x2', p => scaleX(new Date(p.date_joined)))
-    //     .attr('y2', p => scaleY(p.total_matches))
-    //     .attr('stroke', p => colorScale(p.total_matches))
-    //     .attr('stroke-opacity', 0.4)
-    //     .attr('stroke-width', 1)
-//CREAZIONE DI SPIKES + AGGIUNGERE COLOR INTERPOLATION
+
     svg.selectAll('circle')
         .data(players.value)
         .join('circle')
         .attr('cx', p => scaleX(new Date(p.date_joined)))
         .attr('cy', p =>scaleY(p.total_matches))
-        .attr('r', p => p.id === userStore.currentUser.id ? 9 : 4.5)
+        .attr('r', p => p.id === userStore.currentUser?.id ? 9 : 4.5)
         .attr('fill', p => colorScale(p.total_matches))
         .attr('fill-opacity', 0.85)
         .on('mouseover', function(event, p) {
