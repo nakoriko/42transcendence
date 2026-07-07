@@ -31,7 +31,6 @@ async function loadData(){
     const res = await apiFetch(`/api/analytics/player-stats/?period=${period.value.toLowerCase()}`)
     if(!res) return
     chartData.value = await res.json()
-    // d3.select(chartEl.value).select('svg').remove()
 }
 
  function drawChart() {
@@ -44,7 +43,7 @@ async function loadData(){
     const el = chartEl.value
     const labels = data.labels
     const { width, height } = el.getBoundingClientRect()
-    const margin = { top: 16, right: 16, bottom: 28, left: 12  }
+    const margin = { top: 16, right: 16, bottom: 24, left: 12  }
     const W = width - margin.left - margin.right
     const H = height - margin.top - margin.bottom
 
@@ -199,12 +198,6 @@ async function loadData(){
         .attr('stroke', 'rgba(255,255,255,0.1)')
         .attr('stroke-width', 1)
 
-    // axisG.selectAll('text')
-    //     .attr('fill', 'rgba(255,255,255,0.3)')
-    //     .attr('font-size', '10px')
-    //     .attr('dy', '1.2em')
-    //     .style('display', labels.length > MAX_LABELS ? 'none' : null)
-
     //helpline for tooltip
     const hoverLine = g.append('line')
         .attr('y1', 0)
@@ -215,10 +208,6 @@ async function loadData(){
         .attr('opacity', 0)
 
     //invisible hover dots for tooltip
-
-
-
-
     labels.forEach((label, i) => {
         const x = xScale(label)
         const yVal = visibleSeries.value.total ? data.total[i]
@@ -274,34 +263,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div>
+    <div class="flex flex-col h-full">
         <!-- строка 1: заголовок + фильтр периода -->
         <div class="flex items-center justify-between mb-2">
             <div class="input-label">Player Stats</div>
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" />
         </div>
         <!-- строка 3: график -->
-         <div class="relative">
-            <div ref="chartEl" class=" h-64" />
-            <AppTooltip ref="tt">
-                <div class="text-xs font-medium mb-2 pb-2 border-b border-white/[0.07]"> {{ ttData.date }}</div>
-                <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">Wins</span>
-                    <span class="text-[10px] text-teal">{{ ttData.wins }}</span>
-                </div>
-                <div class="flex justify-between gap-4 mb-1 ">
-                    <span class="text-[10px] text-muted">Losses</span>
-                    <span class="text-[10px] text-coral">{{ ttData.losses }}</span>
-                </div>
-                <div class="flex justify-between gap-4 mb-1 ">
-                    <span class="text-[10px] text-muted">Total</span>
-                    <span class="text-[10px] text-sage">{{ ttData.total }}</span>
-                </div>
-
-            </AppTooltip>
-         </div>
         <div class="flex items-center justify-between mt-6">
-            <div class="flex items-center gap-6 text-sm text-muted">
+            <div class="flex items-center gap-6 text-xs text-muted">
                 <span>Wins <span class="text-teal font-medium">{{ totalWins }}</span></span>
                 <span class="opacity-30">|</span>
                 <span>Losses <span class="text-coral font-medium">{{ totalLosses }}</span></span>
@@ -325,7 +295,27 @@ onUnmounted(() => {
                 </button>
             </div>
         </div>
+         <div class="relative flex-1">
+            <div ref="chartEl" class="absolute inset-0" />
+            <AppTooltip ref="tt">
+                <div class="text-xs font-medium mb-2 pb-2 border-b border-white/[0.07]"> {{ ttData.date }}</div>
+                <div class="flex justify-between gap-4 mb-1">
+                    <span class="text-[10px] text-muted">Wins</span>
+                    <span class="text-[10px] text-teal">{{ ttData.wins }}</span>
+                </div>
+                <div class="flex justify-between gap-4 mb-1 ">
+                    <span class="text-[10px] text-muted">Losses</span>
+                    <span class="text-[10px] text-coral">{{ ttData.losses }}</span>
+                </div>
+                <div class="flex justify-between gap-4 mb-1 ">
+                    <span class="text-[10px] text-muted">Total</span>
+                    <span class="text-[10px] text-sage">{{ ttData.total }}</span>
+                </div>
+
+            </AppTooltip>
+         </div>
     </div>
 </template>
+
                 
                 
