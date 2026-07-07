@@ -41,7 +41,6 @@ let animProgress = []
 let rafId = null 
 const userStore = useUserStore()
 
-
 //computed ralli (recalcolute every call)
 const rallies = computed(() => {
     if (!filteredMatches.value.length|| !userStore.currentUser) return []
@@ -78,8 +77,6 @@ const rallies = computed(() => {
     })
 
 //limits for bottom timeline
-
-
 const matchGroups = computed(() => {
     const groups = []
     rallies.value.forEach((r, i) => {
@@ -94,15 +91,12 @@ const matchGroups = computed(() => {
 })
 
 //draw graph on canvas
-
 function draw() {
     if (!canvas.value || !rallies.value.length) return
-
     const ctx = canvas.value.getContext('2d')
     const W = canvas.value.width
     const H = canvas.value.height
-
-    const PL = 12, PR = 12, PT = 12, PB = 18
+    const PL = 12, PR = 12, PT = 12, PB = 24
     
     //woekspace
     const CW = W - PL - PR
@@ -135,7 +129,6 @@ function draw() {
             ctx.stroke()
             ctx.restore()
         }
-
 
         const prog = animProgress[i] ?? 0
         const x = PL + ( i + 0.5) * GAP
@@ -220,7 +213,6 @@ function startAnimation() {
 }
 
 //canvas and hover
-
 function setupCanvas() {
     if(!canvas.value || !container.value) return
     canvas.value.width = container.value.clientWidth
@@ -233,15 +225,12 @@ function onMouseMove(e) {
     const rect = canvas.value.getBoundingClientRect()
     const mx = e.clientX - rect.left //mouse postion related to canvas and clients window
     const W = canvas.value.width
-    // const GAP = (W - PL + PR) / rallies.value.length
     const GAP = (W - 24) / rallies.value.length
-
     const idx = Math.floor((mx-12) / GAP)// index of spike uner cursor
     if(idx < 0 || idx >= rallies.value.length) {
         tt.value?.hide()
         return 
     }
-
     const r = rallies.value[idx]
     ttData.num = r.num
     ttData.total = rallies.value.length
@@ -250,7 +239,6 @@ function onMouseMove(e) {
     ttData.score = r.score
     ttData.opponent = r.opponent ?? '-'
     ttData.date = formatShortDate(r.matchDate)
-
     const x = 12 + (idx + 0.5) * GAP
     const tooltipWidth = 170
     const xPos = x + tooltipWidth + 12 > W
@@ -276,7 +264,6 @@ function onMouseLeave() {
 //control of containers resize
 useResizeObserver(container, setupCanvas, 150)
 
-
 onMounted (() => {
     setupCanvas()
 })
@@ -293,7 +280,7 @@ onUnmounted(() => {
 <template>
     <div class="flex flex-col h-full">  <!--DashRally timeline-->
         <div class="flex items-center justify-between mb-4">
-            <div class="input-label">Ralli timeline</div>
+            <div class="input-label">Rally timeline</div>
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" />
         </div>
         <div class="flex-1 relative" ref="container">
