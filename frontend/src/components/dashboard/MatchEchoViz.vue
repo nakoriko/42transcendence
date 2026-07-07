@@ -11,7 +11,7 @@ const props = defineProps({
 
 const userStore = useUserStore()
 const tt = ref(null)
-const ttData = reactive(({ type: '', index: '', player: '', react: '', color: ''}))
+const ttData = reactive(({ type: '', index: '', player: '', color: ''}))
 
 const container = ref(null)
 let simulation = null
@@ -49,7 +49,6 @@ async function renderViz(match, events) {
         player: e.player,
         playerName: e.player === currentUserId ? currentUserName : match.opponent_nickname,
         posY: e.pos_y ?? 0.5,
-        react: e.reaction_time_ms,
         color: e.event_type === 'goal' ? '#4A8C9B'
             :  e.event_type === 'miss' ? '#F8856D'
             : '#ABC7C3',
@@ -157,7 +156,6 @@ async function renderViz(match, events) {
         ttData.color   = d.color
         ttData.index = `#${d.id + 1}`
         ttData.player = d.playerName
-        ttData.react  = d.react ? `${d.react} ms` : '—'
         tt.value.show(W-220, 16)
     })
     .on('mouseout', function() {
@@ -225,8 +223,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-<div class="relative w-full min-h-[400px]">
-    <div ref="container" class="w-full min-h-[400px]"></div>
+<div class="relative w-full h-full min-h-[400px]">
+    <div ref="container" class="w-full h-full min-h-[400px] flex items-center justify-center"></div>
     <div v-if="isEmpty" class="absolute inset-0 flex items-center justify-center">
         <span class="text-sm text-muted"> No events recorded - match was stopped early</span>
     </div>
@@ -238,10 +236,6 @@ onUnmounted(() => {
         <div class="flex justify-between items-center mb-1">
             <span class="text-[10px] text-muted">Player</span>
             <span class="text-[10px]">{{ ttData.player }}</span>
-        </div>
-        <div class="flex justify-between gap-4">
-            <span class="text-[10px] text-muted">Reaction</span>
-            <span class="text-[10px]">{{ ttData.react }}</span>
         </div>
     </AppTooltip>
 </div>
