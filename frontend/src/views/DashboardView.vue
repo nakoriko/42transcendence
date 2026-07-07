@@ -102,16 +102,11 @@ onMounted(async () => {
         <!--TItle-->
 
 
-        <!--Pong Universe-->
-        <section ref="universeRef" class="py-6 border-b border-white/[0.04]">
-            <!--DashUNiverse will be here-->
-           <DashUniverse></DashUniverse>
-        </section>
 
 
         <!--PLayer Stats + Rally timeline-->
-        <section ref="statsRef" class="py-6 border-b border-white/[0.04]">
-            <div class="grid grid-cols-[2fr_3fr] gap-6 items-stretch">
+        <section ref="statsRef" class="py-10 border-b border-white/[0.04]">
+            <div class="grid grid-cols-[1fr_1fr] gap-8 items-stretch min-h-[380px]">
                 <DashPlayerStats></DashPlayerStats>
                 <DashRallyTimeline 
                 :matches="matches" 
@@ -120,9 +115,16 @@ onMounted(async () => {
             </div>
         </section>
 
+        <!--Pong Universe-->
+        <section ref="universeRef" class="py-10 border-b border-white/[0.04]">
+            <!--DashUNiverse will be here-->
+           <DashUniverse></DashUniverse>
+        </section>
+
+
 
         <!--Match history-->
-        <section ref="historyRef" class="py-6">
+        <section ref="historyRef" class="py-10">
             <!--DashMatch Stats-->
             <DashMatchHistory :activeMatchId></DashMatchHistory>
         </section>
