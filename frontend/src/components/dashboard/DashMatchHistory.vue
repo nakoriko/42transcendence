@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'  // ← добавили watch
+import { ref, computed, onMounted, watch } from 'vue' 
 import RecentMatchesList from '../RecentMatchesList.vue'
 import MatchEchoViz from './MatchEchoViz.vue'
 import { apiFetch } from '@/utils/apiFetch.js'
@@ -29,7 +29,6 @@ watch(() => props.activeMatchId, (id) => {
     const match = matches.value.find(m =>m.id === id)
     if(!match) return
     selectedMatch.value = match
-
     const isVisible = filteredMatches.value.some(m => m.id === match.id)
     if(!isVisible) {
         activeFilter.value = 'all'
@@ -38,10 +37,8 @@ watch(() => props.activeMatchId, (id) => {
 
 watch(selectedMatch, async (match) => {
     events.value = []
-
     if (!match) { events.value = []; return }
     const res = await apiFetch(`/api/game/matches/${match.id}/events/`)
-    
     if (res) events.value = await res.json()
 })
 
@@ -65,7 +62,6 @@ const stats = computed(() => {
 
 <template>
 <div class="grid grid-cols-2 gap-6 items-stretch">
-
     <RecentMatchesList
         :matches="filteredMatches"
         :activeFilter="activeFilter"
@@ -73,13 +69,6 @@ const stats = computed(() => {
         :showScore="true"
         @filter-change="activeFilter = $event"
         @match-click="selectedMatch = $event" />
-
-    <div class="flex-1 flex items-center justify-center">
-        <div class="flex-1 flex items-center justify-center">
-            <MatchEchoViz :match="selectedMatch" :events="events" />  <!-- ← передаём events -->
-        </div>
-
-    </div>
-
+    <MatchEchoViz :match="selectedMatch" :events="events" /> 
 </div>
 </template>
