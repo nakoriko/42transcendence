@@ -1,7 +1,7 @@
 <script setup>
 import AppFilterTabs from './AppFilterTabs.vue'
 import AppBadge from './AppBadge.vue';
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 
 
 const props = defineProps ({
@@ -22,7 +22,19 @@ const props = defineProps ({
         default: true
     }
 })
+
+const itemRefs = ref([])
+
 const emit = defineEmits(['filter-change', 'match-click'])
+
+watch(() => props.selectedMatchId, async(id) => {
+    if( id === null) return
+    await nextTick()
+    const index = props.matches.findIndex(m => m.id === id)
+    if(index === -1) return
+
+    itemRefs.value[index]?.scrollIntoView({behavior: 'smooth', block: 'center'})
+})
 </script>
 
 
@@ -42,8 +54,9 @@ const emit = defineEmits(['filter-change', 'match-click'])
 
         <div v-else class="flex flex-col gap-1.5 max-h-[400px] overflow-y-auto scroll-thin [scrollbar-gutter:stable]">
             <div v-for="(match, index) in matches" :key="match.id"
-            @click="emit('match-click', match)"
-            :class="selectedMatchId === match.id ? 'bg-teal/[0.06]' : 'hover:bg-white/[0.04]'"
+                :ref="el => itemRefs[index] = el"
+                @click="emit('match-click', match)"
+                :class="selectedMatchId === match.id ? 'bg-teal/[0.06]' : 'hover:bg-white/[0.04]'"
             class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 
                 rounded-[12px] px-4 py-5 transition cursor-pointer">
                 <!-- class="grid grid-cols-[1fr_auto_1fr] items-center gap-4

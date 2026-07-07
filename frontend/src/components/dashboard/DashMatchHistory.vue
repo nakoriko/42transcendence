@@ -27,7 +27,13 @@ watch(() => props.activeMatchId, (id) => {
 
     if(!id) return
     const match = matches.value.find(m =>m.id === id)
-    if(match) selectedMatch.value = match
+    if(!match) return
+    selectedMatch.value = match
+
+    const isVisible = filteredMatches.value.some(m => m.id === match.id)
+    if(!isVisible) {
+        activeFilter.value = 'all'
+    }
 })
 
 watch(selectedMatch, async (match) => {
