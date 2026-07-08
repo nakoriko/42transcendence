@@ -76,16 +76,5 @@
         position: relative;
     }
 
-    .chat-contact-scroll::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 4px;
-        bottom: 0;
-        width: 3px;
-        background: rgba(255,255,255,0.08);
-        border-radius: 999px;
-        pointer-events: none;
-    }
 
 </style>
