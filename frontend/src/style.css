@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 11:38:29 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/06 21:01:54 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/08 12:44:07 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,14 @@
 
     --radius-card: 16px;
     --radius-pill: 50px;
+}
+
+:root {
+    --layout-px: clamp(1rem, 4vw, 4rem);
+    --layout-py: clamp(1.5rem, 3vw, 3.5rem);
+
+    --sidebar-w-full: 20rem;
+    --sidebar-w-collapsed: 4.5rem;
 }
 
 @layer base {
