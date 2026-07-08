@@ -19,8 +19,8 @@
   function updateSidebarMode() {
     const w = window.innerWidth
     if(w < 768) sidebarMode.value = 'hidden'
-    else if (w < 1024) sidebarMode.value = 'collapsed'
-    else sidebarMode.value = 'full'
+    else if (w < 1280) sidebarMode.value = 'collapsed'
+    else sidebarMode.value = 'full' //>=1280
     if(sidebarMode.value !== 'hidden') mobileMenuOpen.value = false
   }
 
@@ -115,7 +115,8 @@
       
     
     <div class="flex-1 min-w-0 flex flex-col h-screen overflow-y-scroll scroll-thin">
-        <div class="max-w-[1700px] mx-auto w-full px-[var(--layout-px)] py-[var(--layout-py)] flex-1">
+        <div class="max-w-[1700px] mx-auto w-full px-[var(--layout-px)] pb-[var(--layout-py)] flex-1"
+          :style="{paddingTop: sidebarMode === 'hidden' ? '5rem' : 'var(--layout-py)'}">
           <RouterView />
         </div>
       <footer class="py-4 text-center text-xs text-muted/40 mt-auto">
