@@ -48,16 +48,16 @@ const filteredMatches = computed(() => {
     return matches.value
 })
 
-const stats = computed(() => {
-    if (!events.value.length) return null
-    const uid = currentUserId.value
-    return {
-        myGoals:  events.value.filter(e => e.event_type === 'goal' && e.player === uid).length,
-        oppGoals: events.value.filter(e => e.event_type === 'goal' && e.player !== uid).length,
-        hits:     events.value.filter(e => e.event_type === 'hit').length,
-        misses:   events.value.filter(e => e.event_type === 'miss').length,
-    }
-})
+// const stats = computed(() => {
+//     if (!events.value.length) return null
+//     const uid = currentUserId.value
+//     return {
+//         myGoals:  events.value.filter(e => e.event_type === 'goal' && e.player === uid).length,
+//         oppGoals: events.value.filter(e => e.event_type === 'goal' && e.player !== uid).length,
+//         hits:     events.value.filter(e => e.event_type === 'hit').length,
+//         misses:   events.value.filter(e => e.event_type === 'miss').length,
+//     }
+// })
 </script>
 
 <template>
