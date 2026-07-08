@@ -74,12 +74,11 @@ async function uploadAvatar(file) {
 
 <template>
     <div class="self-start w-full pb-4 ">
-
-        <div class="flex items-center gap-8 w-full">
-            
+        <div class="flex items-center gap-4 sm:gap-8 w-full flex-wrap">
             <ProfileAvatar
             :user="user"
             :canUpload="true"
+            class="min-w-0"
             @upload="uploadAvatar" />
             
             <button v-if="!isEditing"
@@ -90,7 +89,6 @@ async function uploadAvatar(file) {
                 <Pencil :size="11" />
                 Edit
             </button>
-
         </div>
 
         <div v-if="isEditing" class="mt-4 flex flex-col gap-3">
