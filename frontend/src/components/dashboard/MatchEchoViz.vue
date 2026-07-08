@@ -21,8 +21,8 @@ async function renderViz(match, events) {
 
     if (!match || !container.value) return
 
-    const currentUserId   =  userStore.currentUser.id
-    const currentUserName = userStore.currentUser.nickname ?? userStore.currentUser.username ?? 'You'
+    const currentUserId   =  userStore.currentUser?.id
+    const currentUserName = userStore.currentUser?.nickname ?? userStore.currentUser?.username ?? 'You'
     //avoid double event (miss for player1 = goal for player2)
     const vizEvents = events.filter(e => e.event_type === 'hit' || e.player === currentUserId)
 
