@@ -1,5 +1,6 @@
 <script setup>
-  import { ref, watch, onMounted, computed } from 'vue'
+  import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+  import { Menu } from 'lucide-vue-next'
   import { useRouter, useRoute } from 'vue-router'
   import AppSidebar from './components/AppSidebar.vue'
   import { apiFetch } from './utils/apiFetch.js'
@@ -7,14 +8,21 @@
 
 
   const userStore = useUserStore()
-
   const router = useRouter()
   const route = useRoute()
-
   const isLoggedIn =  computed(() =>!!userStore.currentUser)
   const user =  computed(() => userStore.currentUser ?? {nickname: 'Player'})
   const incomingRequests=ref([])
+  const sidebarMode = ref('full')
+  const mobileMenuOpen = ref(false)
 
+  function updateSidebarMode() {
+    const w = window.innerWidth
+    if(w < 768) sidebarMode.value = 'hidden'
+    else if (w < 1024) sidebarMode.value = 'collapsed'
+    else sidebarMode.value = 'full'
+    if(sidebarMode.value !== 'hidden') mobileMenuOpen.value = false
+  }
 
 
   async function  loadIncoming() {
@@ -40,10 +48,17 @@
       await userStore.fetchUser()
       loadIncoming()
     }
+    updateSidebarMode()
+    window.addEventListener('resize', updateSidebarMode)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', updateSidebarMode)
   })
 
   watch(route, () => {
       if(isLoggedIn.value) loadIncoming()
+      mobileMenuOpen.value = false
   })
 
   function logout() {
@@ -78,19 +93,31 @@
   <div class="flex min-h-screen bg-navy-900">
     
     <AppSidebar 
-      v-if="isLoggedIn" 
+      v-if="isLoggedIn"
+      :mode="sidebarMode"
+      :mobile-open="mobileMenuOpen"
       :user="user"
       :incoming-requests="incomingRequests"
       @logout="logout"
       @accept-request="acceptRequest"
-      @decline-request="declineRequest" />
+      @decline-request="declineRequest"
+      @close-mobile="mobileMenuOpen = false" />
+
+      <!-- burger when sidebar is hidden -->
+    <button v-if="isLoggedIn && sidebarMode === 'hidden'"
+      @click="mobileMenuOpen = true"
+      class="fixed top-4 left-4 z-30 p-2.5 rounded-xl bg-navy-800/80 border border-white/[0.07]
+              text-white backdrop-blur-sm"
+      aria-label="Open Menu">
+      <Menu :size="20"></Menu>
+    </button>
+
       
     
     <div class="flex-1 min-w-0 flex flex-col h-screen overflow-y-scroll scroll-thin">
-        <div class="max-w-[1700px] mx-auto w-full px-10 py-10 flex-1">
+        <div class="max-w-[1700px] mx-auto w-full px-[var(--layout-px)] py-[var(--layout-py)] flex-1">
           <RouterView />
         </div>
-      <!-- футер переезжает сюда, убираем fixed -->
       <footer class="py-4 text-center text-xs text-muted/40 mt-auto">
         <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>
         <span class="mx-2 text-muted/20"> | </span>
