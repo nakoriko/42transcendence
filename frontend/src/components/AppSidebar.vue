@@ -174,8 +174,8 @@ const navLinks= [
   .fade-enter-active, .fade-leave-active {transition: opacity 0.15s, transform 0.15s;}
   .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-4px);}
 
-  .slide-enter-active, .slide-lieve-active {transition: transform 0.2s ease;}
-  .slide-enter-active, .slide-leave-to { transform: translateX(-100%);}
+  .slide-enter-active, .slide-leave-active {transition: transform 0.2s ease;}
+  .slide-enter-from, .slide-leave-to { transform: translateX(-100%);}
 </style>
 
 
