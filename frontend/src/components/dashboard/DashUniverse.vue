@@ -43,10 +43,6 @@ async function loadData(){
     players.value = data
     stats.value.players = data.length
     stats.value.matches = data.reduce((sum, player) => sum + player.total_matches, 0)
-    // const withReaction = data.filter(player => player.avg_reaction_ms !== null)
-    // stats.value.reaction = withReaction.length 
-    //     ? Math.round(withReaction.reduce((sum, player) => sum + player.avg_reaction_ms, 0) / withReaction.length )  
-    //     : null
 }
 
 function drawChart() {
@@ -205,8 +201,6 @@ onUnmounted(() => {
         </div>
         <div class="flex gap-8">
             <div class="flex flex-col justify-between w-56 flex-shrink-0">
-
-
                 <div class="flex flex-col gap-3">
                     <div class="input-label">Platform Stats</div>
                     <AppMetric :value="String(stats.players)" label="Total players" color="biege" ></AppMetric>
