@@ -51,7 +51,6 @@ function drawChart() {
     d3.select(chartEl.value).selectAll('*').remove()
 
     const W = chartEl.value.getBoundingClientRect().width
-
     const H = chartEl.value.getBoundingClientRect().height || 400
     const PL = 20, PR = 20, PT = 40, PB = 20
     const CW = W - PL - PR
@@ -187,14 +186,10 @@ watch(() => userStore.currentUser, drawChart, { deep: true })
 onUnmounted(() => {
     resizeObserver.disconnect()
 })
-
-
 </script>
 
-
-
 <template>
-    <div>  <!--DashPlayer Stats-->
+    <div>
         <div class="flex items-center justify-between mb-5">
             <div class="text-2xl uppercase mb-4">Pong universe</div>
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']"></AppFilterTabs>
@@ -212,7 +207,6 @@ onUnmounted(() => {
 
                 <div class="flex flex-col gap-2">
                     <div class="input-label">Activity Legend</div>
-
                     <div class="flex items-center gap-2">
                         <span class="text-[9px] text-muted uppercase tracking-widest">new</span>
                         <div class="flex-1 h-px bg-gradient-to-r from-teal via-sage to-coral mb-1"></div>
@@ -221,9 +215,7 @@ onUnmounted(() => {
                 </div>
 
                 <div class="border-t border-white/[0.07]"></div>  
-
                 <div class="text-xs text-muted">All players ranked by first match date. Height = total matches played. Color = activity level. Hover any spike to see full player stats.</div>
-
 
             </div>
             <div class="flex-1 relative min-w-0">
@@ -253,10 +245,6 @@ onUnmounted(() => {
                         <span class="text-[10px]">{{ calcWinRate(ttData.wins, ttData.losses) }}%</span>
                     </div>
                     <div class="border-b border-white/[0.07] my-2"></div>
-                    <!-- <div class="flex justify-between gap-4 mb-1">
-                        <span class="text-[10px] text-muted">Reaction</span>
-                        <span class="text-[10px]">{{ ttData.avg_reaction_ms ? ttData.avg_reaction_ms + 'ms' : '-' }}</span>
-                    </div> -->
                     <div class="flex justify-between gap-4">
                         <span class="text-[10px] text-muted">Accuracy</span>
                         <span class="text-[10px]">{{ ttData.hit_accuracy ? Math.round(ttData.hit_accuracy * 100) + '%' : '-' }}</span>
@@ -265,5 +253,4 @@ onUnmounted(() => {
             </div>
         </div>
     </div>
-
 </template>
