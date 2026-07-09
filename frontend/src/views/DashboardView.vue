@@ -85,8 +85,8 @@ onMounted(async () => {
 
 </script>
 <template>
-    <div class="min-h-screen px-12 py-14 pb-24">
-        <div class="mb-10 flex items-center justify-between">
+    <div class="pb-16">
+        <div class="mb-10 flex items-center justify-between flex-wrap gap-4">
             <div> <!--protection while assync fetchUsers finish his a request: v-if="currentUser"-->
                 <p class="input-label mb-1">Transcend · Dashboard</p>
                 <h1 class="page-title">Analytics</h1>
@@ -106,12 +106,16 @@ onMounted(async () => {
 
         <!--PLayer Stats + Rally timeline-->
         <section ref="statsRef" class="py-10 border-b border-white/[0.04]">
-            <div class="grid grid-cols-[1fr_1fr] gap-8 items-stretch min-h-[380px]">
-                <DashPlayerStats></DashPlayerStats>
-                <DashRallyTimeline 
-                :matches="matches" 
-                :events="lastEvents"
-                @matchSelected="onMatchSelected"></DashRallyTimeline>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch lg:min-h-[380px]">
+                <div class="min-h-[380px] lg:min-h-0">
+                    <DashPlayerStats></DashPlayerStats>
+                </div>
+                <div class="min-h-[380px] lg:min-h-0">
+                    <DashRallyTimeline 
+                    :matches="matches" 
+                    :events="lastEvents"
+                    @matchSelected="onMatchSelected"></DashRallyTimeline>
+                </div>
             </div>
         </section>
 

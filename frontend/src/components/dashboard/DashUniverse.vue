@@ -199,8 +199,8 @@ onUnmounted(() => {
             <div class="text-2xl uppercase mb-4">Pong universe</div>
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']"></AppFilterTabs>
         </div>
-        <div class="flex gap-8">
-            <div class="flex flex-col justify-between w-56 flex-shrink-0">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex flex-col gap-6 lg:gap-0 lg:justify-between w-full lg:w-56 lg:flex-shrink-0">
                 <div class="flex flex-col gap-3">
                     <div class="input-label">Platform Stats</div>
                     <AppMetric :value="String(stats.players)" label="Total players" color="biege" ></AppMetric>

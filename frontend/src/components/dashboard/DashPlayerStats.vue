@@ -225,7 +225,10 @@ async function loadData(){
                 ttData.wins = data.wins[i]
                 ttData.losses = data.losses[i]
                 ttData.total = data.total[i]
-                const tooltipX = (margin.left + x) + 16
+                const tooltipWidth = 170
+                const tooltipX = (tooltipWidth + x + 16 > W)
+                    ? (margin.left + x) - tooltipWidth - 1
+                    : (margin.left + x) + 16
                 const tooltipY = margin.top + yScale(yVal) - 10
                 hoverLine
                     .attr('x1', x).attr('x2', x)
@@ -270,15 +273,15 @@ onUnmounted(() => {
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" />
         </div>
         <!-- строка 3: график -->
-        <div class="flex items-center justify-between mt-6">
-            <div class="flex items-center gap-6 text-xs text-muted">
+        <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1  sm:gap-6 text-xs text-muted">
                 <span>Wins <span class="text-teal font-medium">{{ totalWins }}</span></span>
-                <span class="opacity-30">|</span>
+                <span class="opacity-30 hidden sm:inline">|</span>
                 <span>Losses <span class="text-coral font-medium">{{ totalLosses }}</span></span>
-                <span class="opacity-30">|</span>
+                <span class="opacity-30 hidden sm:inline">|</span>
                 <span>Win Rate <span class="text-sage font-medium">{{ winRate }}%</span></span>
             </div>
-            <div class="flex gap-4">
+            <div class="flex flex-wrap gap-4">
                 <button v-for="s in ['wins', 'losses', 'total']"
                     :key="s"
                     @click="toggleSeries(s)"
