@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'  // ← добавили watch
+import { ref, computed, onMounted, watch } from 'vue' 
 import RecentMatchesList from '../RecentMatchesList.vue'
 import MatchEchoViz from './MatchEchoViz.vue'
 import { apiFetch } from '@/utils/apiFetch.js'
@@ -27,15 +27,18 @@ watch(() => props.activeMatchId, (id) => {
 
     if(!id) return
     const match = matches.value.find(m =>m.id === id)
-    if(match) selectedMatch.value = match
+    if(!match) return
+    selectedMatch.value = match
+    const isVisible = filteredMatches.value.some(m => m.id === match.id)
+    if(!isVisible) {
+        activeFilter.value = 'all'
+    }
 })
 
 watch(selectedMatch, async (match) => {
     events.value = []
-
     if (!match) { events.value = []; return }
     const res = await apiFetch(`/api/game/matches/${match.id}/events/`)
-    
     if (res) events.value = await res.json()
 })
 
@@ -45,21 +48,20 @@ const filteredMatches = computed(() => {
     return matches.value
 })
 
-const stats = computed(() => {
-    if (!events.value.length) return null
-    const uid = currentUserId.value
-    return {
-        myGoals:  events.value.filter(e => e.event_type === 'goal' && e.player === uid).length,
-        oppGoals: events.value.filter(e => e.event_type === 'goal' && e.player !== uid).length,
-        hits:     events.value.filter(e => e.event_type === 'hit').length,
-        misses:   events.value.filter(e => e.event_type === 'miss').length,
-    }
-})
+// const stats = computed(() => {
+//     if (!events.value.length) return null
+//     const uid = currentUserId.value
+//     return {
+//         myGoals:  events.value.filter(e => e.event_type === 'goal' && e.player === uid).length,
+//         oppGoals: events.value.filter(e => e.event_type === 'goal' && e.player !== uid).length,
+//         hits:     events.value.filter(e => e.event_type === 'hit').length,
+//         misses:   events.value.filter(e => e.event_type === 'miss').length,
+//     }
+// })
 </script>
 
 <template>
-<div class="grid grid-cols-2 gap-6 items-stretch">
-
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
     <RecentMatchesList
         :matches="filteredMatches"
         :activeFilter="activeFilter"
@@ -67,13 +69,6 @@ const stats = computed(() => {
         :showScore="true"
         @filter-change="activeFilter = $event"
         @match-click="selectedMatch = $event" />
-
-    <div class="flex-1 flex items-center justify-center">
-        <div class="flex-1 flex items-center justify-center">
-            <MatchEchoViz :match="selectedMatch" :events="events" />  <!-- ← передаём events -->
-        </div>
-
-    </div>
-
+    <MatchEchoViz :match="selectedMatch" :events="events" /> 
 </div>
 </template>

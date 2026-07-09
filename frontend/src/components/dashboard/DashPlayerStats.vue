@@ -31,7 +31,6 @@ async function loadData(){
     const res = await apiFetch(`/api/analytics/player-stats/?period=${period.value.toLowerCase()}`)
     if(!res) return
     chartData.value = await res.json()
-    // d3.select(chartEl.value).select('svg').remove()
 }
 
  function drawChart() {
@@ -44,7 +43,7 @@ async function loadData(){
     const el = chartEl.value
     const labels = data.labels
     const { width, height } = el.getBoundingClientRect()
-    const margin = { top: 16, right: 16, bottom: 28, left: 32  }
+    const margin = { top: 16, right: 16, bottom: 24, left: 12  }
     const W = width - margin.left - margin.right
     const H = height - margin.top - margin.bottom
 
@@ -119,14 +118,15 @@ async function loadData(){
     const lineGen = d3.line() //creates coordinates for x,Y
         .x((_, i) => xScale(labels[i])) // since we need just its number, not a valu, we put it like '_', i
         .y(d => yScale(d)) // here we rake the value
-        .curve(d3.curveCatmullRom.alpha(0.05))
+        // .curve(d3.curveCatmullRom.alpha(0.05))
+        .curve(d3.curveMonotoneX)
 
     //area generation (for fill)
     const areaGen = d3.area()
         .x((_, i) => xScale(labels[i]))
         .y0(H)
         .y1(d => yScale(d))
-        .curve(d3.curveCatmullRom.alpha(0.5))
+        .curve(d3.curveMonotoneX)
 
     if(visibleSeries.value.wins) {
         g.append('path')
@@ -166,6 +166,38 @@ async function loadData(){
             .attr('d', lineGen)
     }
 
+    ///////////////LeftLine
+    g.append('line')
+        .attr('x1', 0).attr('x2', 0)
+        .attr('y1', 0).attr('y2', H)
+        .attr('stroke', 'rgba(255,255,255,0.1)')
+        .attr('stroke-width', 1)
+
+
+    ///////////////Bottob line with dates
+    const MAX_LABELS = 10
+
+    const xAxis = d3.axisBottom(xScale)
+        .tickSize(-H)
+
+    const axisG = g.append('g')
+        .attr('transform', `translate(0, ${H})`)
+        .call(xAxis)
+
+    const ticks = axisG.selectAll('.tick')
+    
+    ticks.select('line')
+        .attr('stroke', 'rgba(255,255,255,0.07)')
+    ticks.select('text')
+        .attr('fill', 'rgba(255,255,255,0.3)')
+        .attr('font-size', '10px')
+        .attr('dy', '1.2em')
+    ticks.style('display', labels.length > MAX_LABELS ? 'none' : null)
+    
+    axisG.select('.domain')
+        .attr('stroke', 'rgba(255,255,255,0.1)')
+        .attr('stroke-width', 1)
+
     //helpline for tooltip
     const hoverLine = g.append('line')
         .attr('y1', 0)
@@ -174,6 +206,7 @@ async function loadData(){
         .attr('stroke-width', 1)
         .attr('stroke-dasharray', '3.3')
         .attr('opacity', 0)
+
     //invisible hover dots for tooltip
     labels.forEach((label, i) => {
         const x = xScale(label)
@@ -192,7 +225,10 @@ async function loadData(){
                 ttData.wins = data.wins[i]
                 ttData.losses = data.losses[i]
                 ttData.total = data.total[i]
-                const tooltipX = (margin.left + x) + 16
+                const tooltipWidth = 170
+                const tooltipX = (tooltipWidth + x + 16 > W)
+                    ? (margin.left + x) - tooltipWidth - 1
+                    : (margin.left + x) + 16
                 const tooltipY = margin.top + yScale(yVal) - 10
                 hoverLine
                     .attr('x1', x).attr('x2', x)
@@ -230,15 +266,40 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div>
+    <div class="flex flex-col h-full">
         <!-- строка 1: заголовок + фильтр периода -->
         <div class="flex items-center justify-between mb-2">
             <div class="input-label">Player Stats</div>
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" />
         </div>
         <!-- строка 3: график -->
-         <div class="relative">
-            <div ref="chartEl" class=" h-64" />
+        <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1  sm:gap-6 text-xs text-muted">
+                <span>Wins <span class="text-teal font-medium">{{ totalWins }}</span></span>
+                <span class="opacity-30 hidden sm:inline">|</span>
+                <span>Losses <span class="text-coral font-medium">{{ totalLosses }}</span></span>
+                <span class="opacity-30 hidden sm:inline">|</span>
+                <span>Win Rate <span class="text-sage font-medium">{{ winRate }}%</span></span>
+            </div>
+            <div class="flex flex-wrap gap-4">
+                <button v-for="s in ['wins', 'losses', 'total']"
+                    :key="s"
+                    @click="toggleSeries(s)"
+                    :class="['flex items-center gap-1.5 text-xs text-muted transition-opacity cursor-pointer',
+                    visibleSeries[s] ? 'opacity-100' : 'opacity-30']"
+                >
+                    <span :class="[
+                        'w-2 h-2 rounded-full',
+                        s === 'wins'   ? 'bg-teal'  : '',
+                        s === 'losses' ? 'bg-coral' : '',
+                        s === 'total'  ? 'bg-sage'  : ''
+                    ]" />
+                    {{ s }}
+                </button>
+            </div>
+        </div>
+         <div class="relative flex-1">
+            <div ref="chartEl" class="absolute inset-0" />
             <AppTooltip ref="tt">
                 <div class="text-xs font-medium mb-2 pb-2 border-b border-white/[0.07]"> {{ ttData.date }}</div>
                 <div class="flex justify-between gap-4 mb-1">
@@ -256,32 +317,8 @@ onUnmounted(() => {
 
             </AppTooltip>
          </div>
-        <div class="flex items-center justify-between mt-6">
-            <div class="flex items-center gap-6 text-sm text-muted">
-                <span>Wins <span class="text-teal font-medium">{{ totalWins }}</span></span>
-                <span class="opacity-30">|</span>
-                <span>Losses <span class="text-coral font-medium">{{ totalLosses }}</span></span>
-                <span class="opacity-30">|</span>
-                <span>Win Rate <span class="text-sage font-medium">{{ winRate }}%</span></span>
-            </div>
-            <div class="flex gap-4">
-                <button v-for="s in ['wins', 'losses', 'total']"
-                    :key="s"
-                    @click="toggleSeries(s)"
-                    :class="['flex items-center gap-1.5 text-xs text-muted transition-opacity cursor-pointer',
-                    visibleSeries[s] ? 'opacity-100' : 'opacity-30']"
-                >
-                    <span :class="[
-                        'w-2 h-2 rounded-full',
-                        s === 'wins'   ? 'bg-teal'  : '',
-                        s === 'losses' ? 'bg-coral' : '',
-                        s === 'total'  ? 'bg-sage'  : ''
-                    ]" />
-                    {{ s }}
-                </button>
-            </div>
-        </div>
     </div>
 </template>
+
                 
                 

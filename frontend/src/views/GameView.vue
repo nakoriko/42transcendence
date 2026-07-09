@@ -317,20 +317,20 @@ import { apiFetch } from '@/utils/apiFetch'
 </script>
 
 <template>
-    <div class="min-h-screen bg-navy-900 flex flex-col items-center px-4">
-        <div class="flex-1 flex flex-col items-center justify-center gap-6">
+    <div class="h-full bg-navy-900 flex flex-col items-center px-4 overflow-hidden">
+        <div class="flex-1 min-h-0 flex flex-col items-center justify-center gap-6 w-full">
             <GameScoreBoard :p1="score_p1" :p2="score_p2" :name1="player1.nickname" :name2="player2.nickname"></GameScoreBoard>
 
-        <div class="relative">
+        <div class="relative w-full flex items-center justify-center min-h-0">
             <canvas
                 ref="gameCanvas"
                 width="800" height="600"
-                class="rounded-2xl border border-white/[0.07]"
+                class="max-w-full max-h-[60vh] w-auto h-auto block rounded-2xl border border-white/[0.07]"
             ></canvas>
 
             <div v-if="gameOver"
-                class="absolute inset-0 flex flex-col items-center justify-center bg-navy-900/80 rounded-2xl gap-8">
-                <p class="text-5xl font-light text-white">{{ winnerText }}</p>
+                class="absolute inset-0 flex flex-col items-center justify-center bg-navy-900/80 rounded-2xl gap-8 px-4 text-center">
+                <p class="text-3xl sm:text-5xl font-light text-white">{{ winnerText }}</p>
                 <RouterLink to="/lobby">
                     <AppButton variant="large">Play again</AppButton>
                 </RouterLink>

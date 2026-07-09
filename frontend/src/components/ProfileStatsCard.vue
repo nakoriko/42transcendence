@@ -22,56 +22,30 @@ const winRate = computed(()=> calcWinRate(props.wins, props.losses))
 
 <template>
 <div>
-    <!-- <hr class="border-white/[0.08] my-4" /> -->
-
-    <!-- <div class="input-label mb-4"> Your Stats</div> -->
-
-    <div class="flex gap-8 items-center mb-8">
-        <div class="card flex-1 flex justify-between items-center">
-            <div class="flex items-center gap-5">
+    <div class="flex flex-wrap gap-4 mb-8">
+        <div class="card flex-auto min-w-[160px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
                 <div class="w-15 h-15 bg-white/[0.03] rounded-xl flex items-center justify-center">
                     <Trophy class="w-6 h-6 text-sage" />
                 </div>
-                <span class="text-xs text-muted">Wins</span>
-            </div>
-            <span class="text-4xl font-light text-sage px-4">{{ wins }}</span>
+                <span class="text-xs text-muted truncate">Wins</span>
+                <span class="text-3xl font-light text-sage tabular-nums">{{ wins }}</span>
         </div>
 
-        <div class="card flex-1 flex justify-between items-center">
-            <div class="flex items-center gap-5">
+        <div class="card flex-auto min-w-[160px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
                 <div class="w-15 h-15 bg-white/[0.03] rounded-xl flex items-center justify-center">
                     <ThumbsDown class="w-6 h-6 text-sage" />
                 </div>
-                <span class="text-xs text-muted">Losses</span>
-            </div>
-            <span class="text-4xl font-light text-sage px-4">{{ losses }}</span>
+                <span class="text-xs text-muted truncate">Losses</span>
+                <span class="text-3xl font-light text-sage tabular-nums">{{ losses }}</span>
         </div>
 
-        <div class="card flex-1 flex justify-between items-center">
-            <div class="flex items-center gap-5">
+        <div class="card flex-auto min-w-[160px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
                 <div class="w-15 h-15 bg-white/[0.03] rounded-xl flex items-center justify-center">
                     <PieChart class="w-6 h-6 text-sage" />
                 </div>
-                <span class="text-xs text-muted">Win Rate</span>
-            </div>
-            <span class="text-4xl font-light text-sage px-4">{{ winRate }}%</span>
+                <span class="text-xs text-muted truncate">Win Rate</span>
+                <span class="text-3xl font-light text-sage tabular-nums">{{ winRate }}%</span>
         </div>
-
-
-        <!-- <div class="mt-1">
-            <div class="h-1 bg-white/[0.06] rounded-full overflow-hidden">
-                <div class="h-full bg-teal rounded-full transition-all"
-                    :style="{ width: winRate + '%'}"></div>
-            </div>
-            <div class="flex justify-between mt-1">
-                <span class="text-[9px] text-muted">0%</span>
-                <span class="text-[9px] text-muted">100%</span>
-            </div>
-
-        </div> -->
-
     </div>
-
 </div>
-
 </template>

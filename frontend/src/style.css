@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 11:38:29 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/06/22 13:57:49 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/08 18:27:46 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,14 @@
     --radius-pill: 50px;
 }
 
+:root {
+    --layout-px: clamp(1rem, 4vw, 4rem);
+    --layout-py: clamp(1.5rem, 3vw, 3.5rem);
+
+    --sidebar-w-full: 20rem;
+    --sidebar-w-collapsed: 4.5rem;
+}
+
 @layer base {
     body {
         background-color: #0f1629;
@@ -41,7 +49,7 @@
 
 @layer components {
     .card {
-        @apply bg-navy-800/[0.5] border border-white/[0.07] rounded-[var(--radius-card)] p-4;
+        @apply bg-navy-800/[0.5] border border-white/[0.07] rounded-[var(--radius-card)] p-4 overflow-hidden;
     }
     .card-label {
         @apply text-[9px] text-muted uppercase tracking-widest mb-2;
@@ -104,3 +112,5 @@
     background: rgba(255,255,255,0.08);
     border-radius: 999px;
 }
+
+

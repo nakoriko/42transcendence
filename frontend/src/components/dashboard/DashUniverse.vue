@@ -16,7 +16,7 @@ const players = ref([])
 const stats = ref({
     players: 0,
     matches: 0,
-    reaction: null,
+    // reaction: null,
 })
 
 const tt = ref(null)
@@ -28,7 +28,7 @@ const ttData = reactive({
     wins: 0,
     losses: 0,
     win_rate: 0,
-    avg_reaction_ms: null,
+    // avg_reaction_ms: null,
     hit_accuracy: null,
 })
 
@@ -43,13 +43,6 @@ async function loadData(){
     players.value = data
     stats.value.players = data.length
     stats.value.matches = data.reduce((sum, player) => sum + player.total_matches, 0)
-    // for(const player of data) {
-    //     sum = sum + player.total_matches
-    // }
-    const withReaction = data.filter(player => player.avg_reaction_ms !== null)
-    stats.value.reaction = withReaction.length 
-        ? Math.round(withReaction.reduce((sum, player) => sum + player.avg_reaction_ms, 0) / withReaction.length )  
-        : null
 }
 
 function drawChart() {
@@ -122,23 +115,13 @@ function drawChart() {
         .attr('stroke', (p, i) =>`url(#spike-grad-${i})`)
         .attr('stroke-width', 0.3)
 
-    // svg.selectAll('line')
-    //     .data(players.value)
-    //     .join('line')
-    //     .attr('x1', p => scaleX(new Date(p.date_joined)))
-    //     .attr('y1', H - PB)
-    //     .attr('x2', p => scaleX(new Date(p.date_joined)))
-    //     .attr('y2', p => scaleY(p.total_matches))
-    //     .attr('stroke', p => colorScale(p.total_matches))
-    //     .attr('stroke-opacity', 0.4)
-    //     .attr('stroke-width', 1)
-//CREAZIONE DI SPIKES + AGGIUNGERE COLOR INTERPOLATION
+
     svg.selectAll('circle')
         .data(players.value)
         .join('circle')
         .attr('cx', p => scaleX(new Date(p.date_joined)))
         .attr('cy', p =>scaleY(p.total_matches))
-        .attr('r', p => p.id === userStore.currentUser.id ? 9 : 4.5)
+        .attr('r', p => p.id === userStore.currentUser?.id ? 9 : 4.5)
         .attr('fill', p => colorScale(p.total_matches))
         .attr('fill-opacity', 0.85)
         .on('mouseover', function(event, p) {
@@ -148,7 +131,7 @@ function drawChart() {
             ttData.total_matches = p.total_matches
             ttData.wins = p.wins
             ttData.losses = p.losses
-            ttData.avg_reaction_ms = p.avg_reaction_ms
+            // ttData.avg_reaction_ms = p.avg_reaction_ms
             ttData.hit_accuracy = p.hit_accuracy
 
             const x = scaleX(new Date(p.date_joined))
@@ -216,24 +199,34 @@ onUnmounted(() => {
             <div class="text-2xl uppercase mb-4">Pong universe</div>
             <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']"></AppFilterTabs>
         </div>
-        <div class="flex gap-8">
-            <div class="flex flex-col gap-6 w-56 flex-shrink-0">
-                <div class="text-xs text-muted">All players ranked by first match date. Height = total matches played. Color = activity level. Hover any spike to see full player stats.</div>
-                <div class="border-t border-white/[0.07]"></div>  <!-- ← дивайдер -->
-
-                <div class="flex flex-col gap-3 mb-1">
+        <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex flex-col gap-6 lg:gap-0 lg:justify-between w-full lg:w-56 lg:flex-shrink-0">
+                <div class="flex flex-col gap-3">
                     <div class="input-label">Platform Stats</div>
                     <AppMetric :value="String(stats.players)" label="Total players" color="biege" ></AppMetric>
                     <AppMetric :value="String(stats.matches)" label="Matches played" color="sage" ></AppMetric>
-                    <AppMetric :value="stats.reaction ? String(stats.reaction + ' ms') : '-'" label="Global avg reaction" color="teal" ></AppMetric>
+                    <!-- <AppMetric :value="stats.reaction ? String(stats.reaction + ' ms') : '-'" label="Global avg reaction" color="teal" ></AppMetric> -->
                 </div>
-                <div class="flex items-center gap-2 mt-1">
-                    <span class="text-[9px] text-muted uppercase tracking-widest">new</span>
-                    <div class="flex-1 h-px bg-gradient-to-r from-teal via-sage to-coral mb-1"></div>
-                    <span class="text-[9px] text-muted uppercase tracking-widest">veteran</span>
+
+                <div class="border-t border-white/[0.07]"></div>  
+
+                <div class="flex flex-col gap-2">
+                    <div class="input-label">Activity Legend</div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] text-muted uppercase tracking-widest">new</span>
+                        <div class="flex-1 h-px bg-gradient-to-r from-teal via-sage to-coral mb-1"></div>
+                        <span class="text-[9px] text-muted uppercase tracking-widest">veteran</span>
+                    </div>
                 </div>
+
+                <div class="border-t border-white/[0.07]"></div>  
+
+                <div class="text-xs text-muted">All players ranked by first match date. Height = total matches played. Color = activity level. Hover any spike to see full player stats.</div>
+
+
             </div>
-            <div class="flex-1 relative">
+            <div class="flex-1 relative min-w-0">
                 <div ref="chartEl" class="w-full h-[400px] overflow-hidden"></div>
                 <AppTooltip ref="tt">
                     <div class="text-xs font-medium mb-3" :style="{color: ttData.color}">{{ ttData.nickname }}</div>
@@ -260,10 +253,10 @@ onUnmounted(() => {
                         <span class="text-[10px]">{{ calcWinRate(ttData.wins, ttData.losses) }}%</span>
                     </div>
                     <div class="border-b border-white/[0.07] my-2"></div>
-                    <div class="flex justify-between gap-4 mb-1">
+                    <!-- <div class="flex justify-between gap-4 mb-1">
                         <span class="text-[10px] text-muted">Reaction</span>
                         <span class="text-[10px]">{{ ttData.avg_reaction_ms ? ttData.avg_reaction_ms + 'ms' : '-' }}</span>
-                    </div>
+                    </div> -->
                     <div class="flex justify-between gap-4">
                         <span class="text-[10px] text-muted">Accuracy</span>
                         <span class="text-[10px]">{{ ttData.hit_accuracy ? Math.round(ttData.hit_accuracy * 100) + '%' : '-' }}</span>

@@ -3,7 +3,6 @@ import { ref, onMounted, onUnmounted, watch, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
-// import { apiFetch } from '@/utils/apiFetch'
 
 const props = defineProps({
     match:  { type: Object, default: null },
@@ -12,14 +11,8 @@ const props = defineProps({
 
 const userStore = useUserStore()
 const tt = ref(null)
-const ttData = reactive(({ type: '', index: '', player: '', react: '', color: ''}))
+const ttData = reactive(({ type: '', index: '', player: '', color: ''}))
 
-
-// const tooltip  = ref(null)
-// const ttName   = ref(null)
-// const ttIndex  = ref(null)
-// const ttReact  = ref(null)
-// const ttPlayer = ref(null)
 const container = ref(null)
 let simulation = null
 const isEmpty = ref(false)
@@ -28,10 +21,8 @@ async function renderViz(match, events) {
 
     if (!match || !container.value) return
 
-    // const profileResponse = await apiFetch('/api/users/profile/')
-    // const profile = await profileResponse.json()
-    const currentUserId   =  userStore.currentUser.id
-    const currentUserName = userStore.currentUser.nickname ?? userStore.currentUser.username ?? 'You'
+    const currentUserId   =  userStore.currentUser?.id
+    const currentUserName = userStore.currentUser?.nickname ?? userStore.currentUser?.username ?? 'You'
     //avoid double event (miss for player1 = goal for player2)
     const vizEvents = events.filter(e => e.event_type === 'hit' || e.player === currentUserId)
 
@@ -58,7 +49,6 @@ async function renderViz(match, events) {
         player: e.player,
         playerName: e.player === currentUserId ? currentUserName : match.opponent_nickname,
         posY: e.pos_y ?? 0.5,
-        react: e.reaction_time_ms,
         color: e.event_type === 'goal' ? '#4A8C9B'
             :  e.event_type === 'miss' ? '#F8856D'
             : '#ABC7C3',
@@ -166,9 +156,7 @@ async function renderViz(match, events) {
         ttData.color   = d.color
         ttData.index = `#${d.id + 1}`
         ttData.player = d.playerName
-        ttData.react  = d.react ? `${d.react} ms` : '—'
         tt.value.show(W-220, 16)
-        // tooltip.value.style.opacity = 1
     })
     .on('mouseout', function() {
         nodeEls
@@ -182,7 +170,6 @@ async function renderViz(match, events) {
             .attr('stroke-width', 0.5)
 
         tt.value.hide()
-        // tooltip.value.style.opacity = 0
     })
 
     function curvePath(d) {
@@ -196,8 +183,6 @@ async function renderViz(match, events) {
         return `M${sx} ${sy} Q${cx} ${cy} ${tx} ${ty}`
     }
 
-    // tooltip.value.style.left = (W - 220) + 'px'
-    // tooltip.value.style.top  = '16px'
 
     simulation = d3.forceSimulation(nodes)
         .force('link',    d3.forceLink(links).id(d => d.id).distance(60))
@@ -238,8 +223,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-<div class="relative w-full min-h-[400px]">
-    <div ref="container" class="w-full min-h-[400px]"></div>
+<div class="relative w-full h-full min-h-[400px]">
+    <div ref="container" class="w-full h-full min-h-[400px] flex items-center justify-center"></div>
     <div v-if="isEmpty" class="absolute inset-0 flex items-center justify-center">
         <span class="text-sm text-muted"> No events recorded - match was stopped early</span>
     </div>
@@ -252,28 +237,6 @@ onUnmounted(() => {
             <span class="text-[10px] text-muted">Player</span>
             <span class="text-[10px]">{{ ttData.player }}</span>
         </div>
-        <div class="flex justify-between gap-4">
-            <span class="text-[10px] text-muted">Reaction</span>
-            <span class="text-[10px]">{{ ttData.react }}</span>
-        </div>
     </AppTooltip>
-    <!-- <div ref="tooltip"
-        class="absolute pointer-events-none opacity-0 transition-opacity duration-100 z-20"
-        style="top:0;left:0">
-        <div class="bg-[rgba(15,22,41,0.97)] border border-white/[0.11] rounded-xl px-4 py-3 min-w-[160px]">
-            <div class="flex justify-between items-center mb-2">
-                <div ref="ttName" class="text-xs font-medium flex-1"></div>
-                <span ref="ttIndex" class="text-[10px] text-muted ml-2"></span>
-            </div>
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[10px] text-muted">Player</span>
-                <span ref="ttPlayer" class="text-[10px]"></span>
-            </div>
-            <div class="flex justify-between gap-4">
-                <span class="text-[10px] text-muted">Reaction</span>
-                <span ref="ttReact" class="text-[10px]"></span>
-            </div>
-        </div>
-    </div> -->
 </div>
 </template>

@@ -92,14 +92,14 @@ onMounted(fetchUsers)
 </script>
 
 <template>
-    <div class="min-h-screen px-12 py-14 pb-24 flex flex-col items-center gap-7">
+    <div class="pb-16 flex flex-col items-center gap-7">
 
         <div v-if="userStore.currentUser" class="w-full max-w-7xl">
             <p class="input-label">Welcome back</p>
             <h1 class="page-title">{{ userStore.currentUser.nickname }}</h1>
         </div>
 
-        <div class="grid grid-cols-[2fr_1fr] gap-16 w-full max-w-7xl mt-10">
+        <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] items-center gap-8 lg:gap-16 w-full max-w-7xl mt-10">
 
             <!-- Левая колонка: режим + оппоненты -->
             <div class="flex flex-col gap-8">
@@ -107,7 +107,7 @@ onMounted(fetchUsers)
                 <!-- Режим -->
                 <div class="flex flex-col gap-3">
                     <span class="input-label">Choose game mode</span>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-wrap">
                         <GameModeCard title="Local"
                             :selected="selectedMode === 'local'"
                             @select="tooggleMode('local')" />
@@ -116,7 +116,7 @@ onMounted(fetchUsers)
                             @select="tooggleMode('remote')" />
                         <GameModeCard title="vs AI" :disabled="true" />
                         <span v-if="selectedModeSubtitle"
-                            class="text-base font-light text-muted/50 ml-auto">
+                            class="text-base font-light text-muted/50 sm:ml-auto">
                             {{ selectedModeSubtitle }}
                         </span>
                     </div>
@@ -124,7 +124,7 @@ onMounted(fetchUsers)
 
                 <!-- Оппоненты -->
                 <div class="flex flex-col gap-3">
-                    <div class="border-t border-white/[0.07] pb-3 pt-8 flex items-center justify-between">
+                    <div class="border-t border-white/[0.07] pb-3 pt-8 flex items-center justify-between flex-wrap gap-3">
                         <span class="input-label">Choose an opponent</span>
                         <AppFilterTabs :options="['All Players', 'Friends']" v-model="activeFilter" />
                     </div>
