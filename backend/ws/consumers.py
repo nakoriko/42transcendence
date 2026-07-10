@@ -37,7 +37,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 self.user.is_online = False
                 await self.user.asave(update_fields=['is_online']) #NAT: added to fix error with profile update after F5 
                 # await self.user.asave()
-                await self.notify_friends_status(False)
+                await self.broadcast_presence_update(False) # ← era notify_friends_status(False)
                 await self.broadcast_online_count()
 
     #nuova versione di receive
@@ -88,7 +88,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             if conn_count == 1:
                 self.user.is_online = True
                 await self.user.asave(update_fields=['is_online']) #NAT: added to fix error: ws rewrited all fields. Cioe: se utente cambia il suo profilo, ws li rescrive tutti dentro DB (bug), acnhe se non sono piu attuali         # await self.user.asave()
-                await self.notify_friends_status(True)
+                await self.broadcast_presence_update(True)  # ← era notify_friends_status(True)
                 await self.broadcast_online_count()
 
            
@@ -265,18 +265,26 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             "content": event["content"],
         }))
 
-    async def notify_friends_status(self, is_online):
-        friends = FriendRelation.objects.filter(
-            Q(from_user=self.user) | Q(to_user=self.user),
-            status='accepted'
-        )
-        async for relation in friends:
-            friend_id = relation.to_user_id if relation.from_user_id == self.user.id else relation.from_user_id
-            await self.channel_layer.group_send(f"user_{friend_id}", {
-                "type": "friend_status_event",
-                "user_id": self.user.id,
-                "is_online": is_online,
-            })
+    #SAB: sostituito da broadcast_presence_update per aggiornare stato di tutti, non solo amici
+    # async def notify_friends_status(self, is_online):
+    #     friends = FriendRelation.objects.filter(
+    #         Q(from_user=self.user) | Q(to_user=self.user),
+    #         status='accepted'
+    #     )
+    #     async for relation in friends:
+    #         friend_id = relation.to_user_id if relation.from_user_id == self.user.id else relation.from_user_id
+    #         await self.channel_layer.group_send(f"user_{friend_id}", {
+    #             "type": "friend_status_event",
+    #             "user_id": self.user.id,
+    #             "is_online": is_online,
+    #         })
+
+    async def broadcast_presence_update(self, is_online):
+        await self.channel_layer.group_send("global_presence", {
+            "type": "friend_status_event",
+            "user_id": self.user.id,
+            "is_online": is_online,
+        })
 
     async def friend_status_event(self, event):
         await self.send(json.dumps({
