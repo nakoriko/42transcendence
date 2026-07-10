@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    views.py                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
+#    By: scarlucc <scarlucc@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/06 16:33:58 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/07/09 17:24:31 by scarlucc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,6 +23,10 @@ from django.db.models import Q
 
 from .serializers import RegisterSerializer, AvatarSerializer,  \
 FriendRelationSerializer, FriendUserSerializer, ProfileUpdateSerializer
+
+#SABINO modifica per vedere richieste amicizia in tempo reale
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 # Complex end-point, a lot of logiic -> class + APIView
 
@@ -138,11 +142,21 @@ class FriendRequestView(APIView):
         if already_exits:
             return Response({'error': 'Realtion  already exists'}, status=400)
 
-        FriendRelation.objects.create (
+        #SABINO modifica per vedere richieste amicizia in tempo reale
+        relation = FriendRelation.objects.create (
             from_user=request.user,
             to_user_id=to_user_id,
             status='pending'
         )
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(f"user_{to_user_id}", {
+            "type": "friend_request_event",
+            "from_user_id": request.user.id,
+            "from_user_nickname": request.user.nickname,
+            "relation_id": relation.id,
+        })
+        
         return Response({'message': 'Request sent succsessfully'}, status=201)
 
 class FriendsListView(APIView):
@@ -196,6 +210,13 @@ class FriendDetailView(APIView):
         action = request.data.get('action')
         if action == 'accept':
             relation.status = 'accepted'
+            #SABINO modifica per vedere richieste amicizia in tempo reale
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(f"user_{relation.from_user_id}", {
+                "type": "friend_request_accepted_event",
+                "user_id": request.user.id,
+                "nickname": request.user.nickname,
+            })
         elif action == 'reject':
             relation.status = 'rejected'
         else:

@@ -3,8 +3,14 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
+from django.db.models import Q
+from users.models import FriendRelation
+import redis.asyncio as redis
+
 
 User = get_user_model()
+
+redis_client = redis.Redis(host='redis', port=6379)
 
 class PresenceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -23,9 +29,16 @@ class PresenceConsumer(AsyncWebsocketConsumer):
 
         if self.authenticated:
             await self.channel_layer.group_discard(f"user_{self.user.id}", self.channel_name)
-            self.user.is_online = False
-            await self.user.asave(update_fields=['is_online']) #NAT: added to fix error with profile update after F5 
-            # await self.user.asave() 
+            await self.channel_layer.group_discard("global_presence", self.channel_name)
+            
+            conn_count = await redis_client.decr(f"ws_conn_count:{self.user.id}")
+
+            if conn_count <= 0:
+                self.user.is_online = False
+                await self.user.asave(update_fields=['is_online']) #NAT: added to fix error with profile update after F5 
+                # await self.user.asave()
+                await self.notify_friends_status(False)
+                await self.broadcast_online_count()
 
     #nuova versione di receive
     async def receive(self, text_data):
@@ -66,12 +79,19 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             self.authenticated = True
             self.auth_timeout.cancel()
 
-            self.user.is_online = True
-            await self.user.asave(update_fields=['is_online']) #NAT: added to fix error: ws rewrited all fields. Cioe: se utente cambia il suo profilo, ws li rescrive tutti dentro DB (bug), acnhe se non sono piu attuali         # await self.user.asave()
-
-
-            # iscrizione a gruppo personale
+             # iscrizione a gruppo personale
             await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
+            await self.channel_layer.group_add("global_presence", self.channel_name)
+
+            conn_count = await redis_client.incr(f"ws_conn_count:{self.user.id}")
+
+            if conn_count == 1:
+                self.user.is_online = True
+                await self.user.asave(update_fields=['is_online']) #NAT: added to fix error: ws rewrited all fields. Cioe: se utente cambia il suo profilo, ws li rescrive tutti dentro DB (bug), acnhe se non sono piu attuali         # await self.user.asave()
+                await self.notify_friends_status(True)
+                await self.broadcast_online_count()
+
+           
 
             await self.send(json.dumps({'type': 'auth_success'}))
         # except da mettere in versione finale
@@ -205,6 +225,21 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             }))
             return
 
+        # nuovo controllo: sono amici?
+        are_friends = await FriendRelation.objects.filter(
+            Q(from_user=self.user, to_user=to_user) |
+            Q(from_user=to_user, to_user=self.user),
+            status='accepted'
+        ).aexists()
+
+        if not are_friends:
+            await self.send(json.dumps({
+                "type": "chat_error",
+                "reason": "not_friends",
+                "to_user_id": to_user_id
+            }))
+            return
+
         if not to_user.is_online:
             await self.send(json.dumps({
                 "type": "chat_error",
@@ -228,4 +263,54 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 "nickname": event["from_user_nickname"],
             },
             "content": event["content"],
+        }))
+
+    async def notify_friends_status(self, is_online):
+        friends = FriendRelation.objects.filter(
+            Q(from_user=self.user) | Q(to_user=self.user),
+            status='accepted'
+        )
+        async for relation in friends:
+            friend_id = relation.to_user_id if relation.from_user_id == self.user.id else relation.from_user_id
+            await self.channel_layer.group_send(f"user_{friend_id}", {
+                "type": "friend_status_event",
+                "user_id": self.user.id,
+                "is_online": is_online,
+            })
+
+    async def friend_status_event(self, event):
+        await self.send(json.dumps({
+            "type": "friend_status_changed",
+            "user_id": event["user_id"],
+            "is_online": event["is_online"],
+        }))
+
+    async def broadcast_online_count(self):
+        count = await User.objects.filter(is_online=True).acount()
+        await self.channel_layer.group_send("global_presence", {
+            "type": "online_count_event",
+            "count": count,
+        })
+
+    async def online_count_event(self, event):
+        await self.send(json.dumps({
+            "type": "online_count",
+            "count": event["count"],
+        }))
+
+    async def friend_request_event(self, event):
+        await self.send(json.dumps({
+            "type": "friend_request_received",
+            "from_user": {
+                "id": event["from_user_id"],
+                "nickname": event["from_user_nickname"],
+            },
+            "relation_id": event["relation_id"],
+        }))
+
+    async def friend_request_accepted_event(self, event):
+        await self.send(json.dumps({
+            "type": "friend_request_accepted",
+            "user_id": event["user_id"],
+            "nickname": event["nickname"],
         }))
