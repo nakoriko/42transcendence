@@ -12,7 +12,6 @@ const props = defineProps({
 const userStore = useUserStore()
 const tt = ref(null)
 const ttData = reactive(({ type: '', index: '', player: '', color: ''}))
-
 const container = ref(null)
 let simulation = null
 const isEmpty = ref(false)
@@ -26,8 +25,6 @@ async function renderViz(match, events) {
     //avoid double event (miss for player1 = goal for player2)
     const vizEvents = events.filter(e => e.event_type === 'hit' || e.player === currentUserId)
 
-
-
     isEmpty.value = vizEvents.length === 0
     if(!vizEvents.length) {
         d3.select(container.value).selectAll('*').remove()
@@ -35,7 +32,6 @@ async function renderViz(match, events) {
     }
 
     d3.select(container.value).selectAll('*').remove()
-
 
     if (simulation) simulation.stop()
 
@@ -98,7 +94,6 @@ async function renderViz(match, events) {
         .attr('stroke-dasharray', '3,3')
         .attr('class', 'start-ring')
 
-    // ── DRAG ──────────────────────────────────────────────
     const drag = d3.drag()
         .on('start', function(event, d) {
             if (!event.active) simulation.alphaTarget(0.3).restart()
@@ -119,7 +114,6 @@ async function renderViz(match, events) {
         })
 
     nodeEls.call(drag)
-    // ──────────────────────────────────────────────────────
 
     nodeEls
     .on('mouseover', function(event, d) {
@@ -128,7 +122,6 @@ async function renderViz(match, events) {
 
         const prev = d.id - 1
         const next = d.id + 1
-
         nodeEls
             .transition().duration(200)
             .attr('fill-opacity', n =>
@@ -150,8 +143,6 @@ async function renderViz(match, events) {
                 (l.source.id === prev && l.target.id === d.id) ||
                 (l.source.id === d.id && l.target.id === next) ? 1.2 : 0.5
             )
-
-            
         ttData.type   = TYPE_NAMES[d.type]
         ttData.color   = d.color
         ttData.index = `#${d.id + 1}`
@@ -182,7 +173,6 @@ async function renderViz(match, events) {
         const cy = (sy + ty) / 2 + (dx / len) * k
         return `M${sx} ${sy} Q${cx} ${cy} ${tx} ${ty}`
     }
-
 
     simulation = d3.forceSimulation(nodes)
         .force('link',    d3.forceLink(links).id(d => d.id).distance(60))

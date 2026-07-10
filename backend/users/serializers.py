@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/05 19:38:13 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/07/09 15:48:10 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,6 +25,12 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'password', 'nickname']
+
+    def validate_nickname(self, value):
+            if User.objects.filter(nickname=value).exists():
+                raise serializers.ValidationError("This nickname is already taken") #catch of exception 09/07/20226 bug fix
+            return value
+
     
     #validated_data - set of data after is_valid() of DRF
     #self same as this in c++
@@ -74,3 +80,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
                 # 'nickname': {'required': False},
                 'email': {'required': False},
             }
+    def validate_nickname(self, value):
+        if User.objects.filter(nickname=value).exclude(pk=self.instance.pk).exists():
+            raise serializers.ValidationError("This nickname is already taken")
+        return value
