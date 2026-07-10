@@ -1,6 +1,7 @@
 <script setup>
 import AppAvatar from '../AppAvatar.vue';
 
+
 defineProps({
     currentUser: Object,
     opponent: {
@@ -8,6 +9,7 @@ defineProps({
         default: null
     }
 })
+
 </script>
 
 <template>
@@ -29,7 +31,7 @@ defineProps({
         <!-- Игрок 2 -->
         <div class="flex items-center gap-3 mb-5">
             <template v-if="opponent">
-                <AppAvatar :nickname="opponent?.nickname" :is-online="opponent.isOnline" size="lg" />
+                <AppAvatar :nickname="opponent?.nickname" :is-online="opponent.is_online" size="lg" />
                 <span class="text-xl text-white font-medium truncate">{{ opponent.nickname }}</span>
             </template>
             <template v-else>

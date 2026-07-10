@@ -9,16 +9,31 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import LobbyVsRow from '@/components/lobby/LobbyVsRow.vue'
 import AppFilterTabs from '@/components/AppFilterTabs.vue'
+import { usePresenceStore } from '@/stores/presence'
+
 
     const userStore = useUserStore()
+    const presenceStore = usePresenceStore()
     const router = useRouter()
     const user = ref([])
     const error = ref('')
     const selectPlayer2 = ref(null)
     const selectedMode = ref('local')
-    const selectedOpponentUser = computed(() =>
-        user.value.find(u=>u.id === selectPlayer2.value) ?? null
+
+    
+    //for live presence
+    const liveUsers = computed(() =>
+        user.value.map(u => ({
+            ...u,
+            is_online: presenceStore.online[u.id] ?? u.is_online
+        }))
     )
+
+
+    const selectedOpponentUser = computed(() =>
+        liveUsers.value.find(u=>u.id === selectPlayer2.value) ?? null
+    )
+
 
     // for game modes
     const modeSubtitles = { local: 'Same keyboard', remote: 'Play online' }
@@ -28,9 +43,10 @@ import AppFilterTabs from '@/components/AppFilterTabs.vue'
     const activeFilter = ref('All Players')
     const filteredUsers = computed(() =>
         activeFilter.value === 'Friends'
-            ? user.value.filter(u => u.is_friend)
-            : user.value
+            ? liveUsers.value.filter(u => u.is_friend)
+            : liveUsers.value
     )
+
 
     async function fetchUsers() {
     try {
