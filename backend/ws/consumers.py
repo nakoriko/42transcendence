@@ -280,7 +280,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
 
     async def friend_status_event(self, event):
         await self.send(json.dumps({
-            "type": "friend_status_changed",
+            "type": "presence_update",
             "user_id": event["user_id"],
             "is_online": event["is_online"],
         }))

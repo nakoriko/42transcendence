@@ -35,6 +35,7 @@ const messageHandlers = {
         presenceStore.setCount(data.count)
     },
     presence_update: (data) => {
+        console.log('friend change online status')
         const presenceStore = usePresenceStore()
         presenceStore.setStatus(data.user_id, data.is_online)
     }
