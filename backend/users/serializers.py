@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/09 15:48:10 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/07/10 20:04:51 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,7 +54,7 @@ class AvatarSerializer(serializers.ModelSerializer):
 class FriendUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'nickname', 'is_online', 'avatar']
+        fields = ['id', 'nickname', 'is_online', 'avatar', 'wins', 'losses']
 
 class FriendRelationSerializer(serializers.ModelSerializer):
     #data takes from method, not directl;y from model
