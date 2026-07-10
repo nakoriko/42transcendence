@@ -5,6 +5,9 @@ import { ref, onMounted, computed, onUnmounted } from 'vue'
 import PlayCard from '../PlayCard.vue'
 import AppFilterTabs from '../AppFilterTabs.vue'
 import { X } from 'lucide-vue-next'
+import { usePresenceStore } from '@/stores/presence.js'
+    
+    const presenceStore = usePresenceStore()
     const friends=ref([])
     const outgoing=ref([])
     const incoming=ref([])
@@ -14,10 +17,21 @@ import { X } from 'lucide-vue-next'
     const selectedId = ref(null)
     const activeFilter = ref('all')
 
+
+    const liveFriends = computed(() => 
+    friends.value.map(rel => ({
+        ...rel,
+        friend: {
+            ...rel.friend,
+            is_online: presenceStore.online[rel.friend.id] ?? rel.friend.is_online
+        }
+    }))
+    )
+
     const filteredList = computed(() => {
         if(activeFilter.value === 'pending') return outgoing.value
-        if(activeFilter.value === 'online') return friends.value.filter(f => f.friend.is_online)
-        return friends.value
+        if(activeFilter.value === 'online') return liveFriends.value.filter(f => f.friend.is_online)
+        return liveFriends.value
     })
 
     async function loadFriends() {

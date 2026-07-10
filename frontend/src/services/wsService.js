@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/10 10:46:28 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/10 12:04:12 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ const messageHandlers = {
         const presenceStore = usePresenceStore()
         presenceStore.setCount(data.count)
     },
-    presenсe_update: (data) => {
+    presence_update: (data) => {
         const presenceStore = usePresenceStore()
         presenceStore.setStatus(data.user_id, data.is_online)
     }
