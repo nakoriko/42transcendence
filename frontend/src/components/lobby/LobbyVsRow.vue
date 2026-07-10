@@ -19,6 +19,7 @@ defineProps({
 
         <!-- Игрок 1 -->
         <div class="flex items-center gap-3">
+        <!-- test -->
             <AppAvatar :nickname="currentUser?.nickname" :is-online="true"  size="lg" />
             <div class="flex flex-col">
                 <span class="text-xl text-white font-medium truncate">{{ currentUser?.nickname }}</span>
