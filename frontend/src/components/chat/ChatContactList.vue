@@ -4,16 +4,28 @@
     import { useChatStore } from '@/stores/chat';
     import PlayCard from '../PlayCard.vue';
     import AppFilterTabs from '../AppFilterTabs.vue';
+    import { usePresenceStore } from '@/stores/presence.js';
 
     const chatStore =  useChatStore()
     const friends = ref([])
     const activeFilter = ref('all')
+    const presenceStore = usePresenceStore()
+
+    const liveFriends = computed(() => 
+        friends.value.map(rel => ({
+            ...rel,
+            friend: {
+                ...rel.friend,
+                is_online: presenceStore.online[rel.friend.id] ?? rel.friend.is_online
+            }
+        }))
+    )
 
 
     const filteredFriends = computed(() => {
         if(activeFilter.value === 'online')
-            return friends.value.filter(rel => rel.friend.is_online)
-        return friends.value
+            return liveFriends.value.filter(rel => rel.friend.is_online)
+        return liveFriends.value
     })
 
     async function loadFriends() {
