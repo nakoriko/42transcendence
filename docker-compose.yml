@@ -55,13 +55,15 @@ services:
 
   nginx:
     container_name: nginx
-    image: nginx:alpine
+    #image: nginx:alpine
+    build: ./nginx
     depends_on: 
       - frontend
       - backend
     volumes: 
-      - ./nginx:/etc/nginx/conf.d
-      - ./nginx/certs:/etc/nginx/certs
+      # - ./nginx:/etc/nginx/conf.d
+      # - ./nginx/certs:/etc/nginx/certs
+      - ./backend/media:/media
     ports: 
       - "443:443"
       - "80:80"
