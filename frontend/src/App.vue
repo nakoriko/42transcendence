@@ -52,10 +52,14 @@
     }
     updateSidebarMode()
     window.addEventListener('resize', updateSidebarMode)
+    // window.addEventListener('friends-updated', loadIncoming) NAT: uncomment when Sabino will finish on backend
+
   })
 
   onUnmounted(() => {
     window.removeEventListener('resize', updateSidebarMode)
+      // window.removeEventListener('friends-updated', loadIncoming) NAT: uncomment when Sabino will finish on backend
+
   })
 
   watch(route, () => {
