@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Match, MatchEvent
 from datetime import timedelta 
 from django.utils import timezone
+from channels.layers import get_channel_layer #sab: per dashboard in tempo reale
+from asgiref.sync import async_to_sync  #sab: per dashboard in tempo reale
 
 from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer, \
     MatchHistorySerializer, MatchInviteSerializer
@@ -98,6 +100,18 @@ class FinishMatchView(APIView):
             loser.losses += 1
             winner.save()
             loser.save()
+
+            #sab: per dashboard in tempo reale
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)("dashboard_updates", {
+                "type": "match_finished_event",
+                "match_id": match.id,
+                "player1_id": match.player1_id,
+                "player2_id": match.player2_id,
+                "winner_id": winner.id,
+                "score_player1": match.score_player1,
+                "score_player2": match.score_player2,
+            })
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

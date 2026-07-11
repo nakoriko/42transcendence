@@ -30,6 +30,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         if self.authenticated:
             await self.channel_layer.group_discard(f"user_{self.user.id}", self.channel_name)
             await self.channel_layer.group_discard("global_presence", self.channel_name)
+            await self.channel_layer.group_discard("dashboard_updates", self.channel_name)
             
             conn_count = await redis_client.decr(f"ws_conn_count:{self.user.id}")
 
@@ -82,6 +83,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
              # iscrizione a gruppo personale
             await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
             await self.channel_layer.group_add("global_presence", self.channel_name)
+            await self.channel_layer.group_add("dashboard_updates", self.channel_name)
 
             conn_count = await redis_client.incr(f"ws_conn_count:{self.user.id}")
 
@@ -321,4 +323,15 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             "type": "friend_request_accepted",
             "user_id": event["user_id"],
             "nickname": event["nickname"],
+        }))
+
+    async def match_finished_event(self, event):
+        await self.send(json.dumps({
+            "type": "match_finished",
+            "match_id": event["match_id"],
+            "player1_id": event["player1_id"],
+            "player2_id": event["player2_id"],
+            "winner_id": event["winner_id"],
+            "score_player1": event["score_player1"],
+            "score_player2": event["score_player2"],
         }))
