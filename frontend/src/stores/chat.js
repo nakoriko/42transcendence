@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/04 12:21:58 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/04 13:44:27 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/11 08:56:31 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,13 @@ export const useChatStore = defineStore('chat', {
     state: () => ({
         messages: {},
         activeContactId: null,
-        lastError: null
+        lastError: null,
+        unreadPeers: {}
     }), 
+
+    getters: {
+        hasUnread: (state)  => Object.keys(state.unreadPeers).length > 0
+    },
 
     actions: {
         setActiveContact(contactId) {
@@ -27,6 +32,7 @@ export const useChatStore = defineStore('chat', {
             if(!this.messages[contactId]) {
                 this.messages[contactId] = []
             }
+            delete this.unreadPeers[contactId]
             this.lastError = null
         },
 
@@ -41,7 +47,10 @@ export const useChatStore = defineStore('chat', {
                 timeStamp: Date.now(),
                 self: false
             })
-        },
+            if(contactId !== this.activeContactId) {
+                this.unreadPeers[contactId] = true
+            }
+        }, 
 
         sendMessage(toUserId, content) {
             if(!content.trim()) return
@@ -62,10 +71,10 @@ export const useChatStore = defineStore('chat', {
             const reasons = {
                 user_offline: 'User is offline',
                 user_not_found: 'User is not found',
-                invalid_message: 'Message cannot be empty'
+                invalid_message: 'Message cannot be empty',
+                not_friends: 'You can only message your friends'
             }
             this.lastError = reasons[data.reason] || 'Error of message sending'
         }
-
     }
 })

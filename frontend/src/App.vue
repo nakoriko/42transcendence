@@ -5,9 +5,11 @@
   import AppSidebar from './components/AppSidebar.vue'
   import { apiFetch } from './utils/apiFetch.js'
   import { useUserStore } from './stores/user.js'
+  import { useChatStore } from './stores/chat.js'
 
 
   const userStore = useUserStore()
+  const chatStore = useChatStore()
   const router = useRouter()
   const route = useRoute()
   const isLoggedIn =  computed(() =>!!userStore.currentUser)
@@ -98,6 +100,7 @@
       :mobile-open="mobileMenuOpen"
       :user="user"
       :incoming-requests="incomingRequests"
+      :has-unread-messages="chatStore.hasUnread"
       @logout="logout"
       @accept-request="acceptRequest"
       @decline-request="declineRequest"
