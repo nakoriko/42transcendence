@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   wsService.js                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: scarlucc <scarlucc@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/11 09:43:01 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/11 10:34:36 by scarlucc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,12 @@ const messageHandlers = {
     //UNcomment when Sabino will finish on backend
     //in App.vue add aevetnListener as well (onMounted + onUnmounted)
     
-    // friend_request_recieved:  () => {
-    //     window.dispatchEvent(new CustomEvent('friends-updated'))
-    // },
-    // friend_request_accepted: () => {
-    //     window.dispatchEvent(new CustomEvent('friends-updated'))
-    // } 
+    friend_request_received:  () => {
+        window.dispatchEvent(new CustomEvent('friends-updated'))
+    },
+    friend_request_accepted: () => {
+        window.dispatchEvent(new CustomEvent('friends-updated'))
+    } 
 
 }
 
