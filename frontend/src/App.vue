@@ -20,13 +20,10 @@
 
   function updateSidebarMode() {
     const w = window.innerWidth
-    if(w < 768) sidebarMode.value = 'hidden'
-    else if (w < 1280) sidebarMode.value = 'collapsed'
-    else sidebarMode.value = 'full' //>=1280
+    sidebarMode.value = w < 1280 ? 'hidden' : 'full'
     if(sidebarMode.value !== 'hidden') mobileMenuOpen.value = false
   }
-
-
+  
   async function  loadIncoming() {
     if(!isLoggedIn.value) return
     try {

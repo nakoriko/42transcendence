@@ -30,7 +30,6 @@ const props = defineProps ({
 
 const showRequests = ref(false)
 const emit = defineEmits(['logout', 'accept-request', 'decline-request', 'close-mobile'])
-const isCollapsed = computed(() => props.mode === 'collapsed')
 const isOverlay = computed(() => props.mode === 'hidden')
 
 //array for routerLink istead of  all links in template
@@ -55,16 +54,14 @@ const navLinks= [
     <aside 
       v-if="!isOverlay || mobileOpen"
       class="flex-shrink-0 bg-navy-800/95 border-r border-white/[0.07]
-                    flex flex-col h-screen transition-[width] duration-200"
+                    flex flex-col h-screen transition-[width] duration-200 w-80"
       :class="[
-        isCollapsed ? 'w-20' : 'w-80',
         isOverlay ? 'fixed inset-y-0 left-0 z-50' : 'sticky top-0'
       ]">
       
     <!-- Logo gouse to home(/) -->
-    <RouterLink to="/" class="p-6 pb-4 flex items-center" :class="isCollapsed ? 'justify-center px-0' : ''">
-      <AppLogo v-if="!isCollapsed"/>
-      <span v-else class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-sage text-xs font-semibold">P</span>
+    <RouterLink to="/" class="p-6 pb-4 flex items-center">
+      <AppLogo/>
     </RouterLink>
 
     <!-- Links from array-->
@@ -73,18 +70,15 @@ const navLinks= [
         v-for="link in navLinks"
         :key="link.to"
         :to="link.to"
-        :title="isCollapsed ? link.label : null"
-        class="relative flex items-center gap-3 py-2.5 rounded-xl text-sm font-light text-muted transition
+        class="relative flex items-center gap-3 py-2.5 px-4 rounded-xl text-sm font-light text-muted transition
             hover:bg-white/[0.04] hover:text-white
             [&.router-link-exact-active]:bg-teal/[0.12] [&.router-link-exact-active]:text-teal"
-        :class="isCollapsed ? 'justify-center px-0' : 'px-4'"
         >
         <component :is="link.icon" :size="17" aria-hidden="true" />
-        <span v-if="!isCollapsed">{{ link.label }}</span>
+        <span>{{ link.label }}</span>
         <span
           v-if="link.to === '/chat' && hasUnreadMessages"
-          class="bg-coral rounded-full flex-shrink-0"
-          :class="isCollapsed ? 'absolute top-1.5 right-3 w-2 h-2' : 'w-2 h-2 ml-auto'"
+            class="bg-coral rounded-full flex-shrink-0 w-2 h-2 ml-auto"
         ></span>
       </RouterLink>
     </nav>
@@ -96,22 +90,19 @@ const navLinks= [
     <div class="px-3 pb-2">
       <button
         @click="showRequests = !showRequests"
-        :title="isCollapsed ? 'Requests' : null"
-        class="w-full flex items-center gap-3 py-2.5 rounded-xl text-sm font-light transition relative"
+        class="w-full flex items-center gap-3 py-2.5 px-4 rounded-xl text-sm font-light transition relative"
         :class=" [
           incomingRequests.length
           ? 'text-sand hover:bg-white/[0.04]'
-          : 'text-muted hover:bg-white/[0.04] hover:text-white',
-          isCollapsed ? 'justify-center px-0' : 'px-4']"
+          : 'text-muted hover:bg-white/[0.04] hover:text-white']"
       >
       <Bell :size="17" aria-hidden="true"></Bell>
-      <span v-if="!isCollapsed">Requests</span>
+      <span>Requests</span>
       <span
         v-if="incomingRequests.length"
         class="bg-coral text-white text-[9px] font-semibold
-              min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1"
-        :class="isCollapsed ? 'absolute top-1 right-1' : 'ml-auto'" 
-      >
+              min-w-[18px] h-[18px] rounded-full flex items-center 
+              justify-center px-1 ml-auto">
       {{ incomingRequests.length }}
     </span>
     </button>
@@ -119,7 +110,7 @@ const navLinks= [
     <!--dropdown o list of incoming invites-->
     <Transition name="fade">
       <div
-        v-if="showRequests && incomingRequests.length && !isCollapsed"
+        v-if="showRequests && incomingRequests.length"
         class="mt-1 mx-1 bg-navy-900 border border-white/[0.07] rounded-xl overflow-hidden"
       >
         <div
@@ -148,8 +139,8 @@ const navLinks= [
   <!--USer footer-->
   <div class="px-3 pb-5">
     <div class="group flex items-center gap-3 py-3 rounded-xl
-              border border-white/[0.07] hover:bg-white/[0.03] transition cursor-default"
-          :class="isCollapsed ? 'justify-center px-0' : 'px-4'">
+              border border-white/[0.07] hover:bg-white/[0.03] 
+              transition cursor-default px-4">
     <!--Avatar with green point-->
     <div class="relative flex-shrink-0">
       <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-sage text-sm font-light">
@@ -159,13 +150,13 @@ const navLinks= [
     </div>
 
     <!--NAME-->
-    <div v-if="!isCollapsed" class="flex-1 min-w-0">
+    <div class="flex-1 min-w-0">
       <p class="text-white text-xs truncate">{{ user.nickname }}</p>
       <p class="text-muted text-[10px]">Player</p>
     </div>
 
     <!--Loguot-->
-    <button v-if="!isCollapsed" @click="emit('logout')"
+    <button @click="emit('logout')"
             class="p-1 text-muted/40 hover:text-coral transition
             opacity-0 group-hover:opacity-100"
             title="Logout"
