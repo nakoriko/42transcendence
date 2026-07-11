@@ -54,12 +54,17 @@
         </div>
         
         <div class="chat-contact-scroll scroll-thin">
-            <PlayCard v-for="rel in filteredFriends"
-            :key="rel.friend.id"
-            :user="rel.friend"
-            :selected="chatStore.activeContactId === rel.friend.id"
-            :show-stats="false"
-            @select="selectContact" ></PlayCard>
+            <div v-for="rel in filteredFriends" :key="rel.friend.id" class="relative">
+                <PlayCard 
+                    :user="rel.friend"
+                    :selected="chatStore.activeContactId === rel.friend.id"
+                    :show-stats="false"
+                    @select="selectContact" ></PlayCard>
+                <span
+                    v-if="chatStore.unreadPeers[rel.friend.id]"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-coral rounded-full border-2 border-navy-800"
+                ></span>
+            </div>
             
             <div v-if="!filteredFriends.length" 
             class="text-[11px] text-muted text-center py-6"> Nobody's here yet</div>

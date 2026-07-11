@@ -14,6 +14,10 @@ const props = defineProps ({
     type: Array,
     default: () =>[]
   },
+  hasUnreadMessages: {
+    type: Boolean,
+    default: false
+  },
   mode: {
     type: String,
     default: 'full'
@@ -70,13 +74,18 @@ const navLinks= [
         :key="link.to"
         :to="link.to"
         :title="isCollapsed ? link.label : null"
-        class="flex items-center gap-3 py-2.5 rounded-xl text-sm font-light text-muted transition
+        class="relative flex items-center gap-3 py-2.5 rounded-xl text-sm font-light text-muted transition
             hover:bg-white/[0.04] hover:text-white
             [&.router-link-exact-active]:bg-teal/[0.12] [&.router-link-exact-active]:text-teal"
         :class="isCollapsed ? 'justify-center px-0' : 'px-4'"
         >
         <component :is="link.icon" :size="17" aria-hidden="true" />
         <span v-if="!isCollapsed">{{ link.label }}</span>
+        <span
+          v-if="link.to === '/chat' && hasUnreadMessages"
+          class="bg-coral rounded-full flex-shrink-0"
+          :class="isCollapsed ? 'absolute top-1.5 right-3 w-2 h-2' : 'w-2 h-2 ml-auto'"
+        ></span>
       </RouterLink>
     </nav>
 
