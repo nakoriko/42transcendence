@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/10 12:04:12 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/07/11 09:43:01 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,20 @@ const messageHandlers = {
         console.log('friend change online status')
         const presenceStore = usePresenceStore()
         presenceStore.setStatus(data.user_id, data.is_online)
-    }
+    },
+    
+    //!!!!!!! NAT: 
+    //add for recive friends request in real time. 
+    //UNcomment when Sabino will finish on backend
+    //in App.vue add aevetnListener as well (onMounted + onUnmounted)
+    
+    // friend_request_recieved:  () => {
+    //     window.dispatchEvent(new CustomEvent('friends-updated'))
+    // },
+    // friend_request_accepted: () => {
+    //     window.dispatchEvent(new CustomEvent('friends-updated'))
+    // } 
+
 }
 
 function connect(token) {
