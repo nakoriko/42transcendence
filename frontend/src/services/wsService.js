@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   wsService.js                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scarlucc <scarlucc@student.42firenze.it    +#+  +:+       +#+        */
+/*   By: nakoriko <nakoriko@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/11 10:34:36 by scarlucc         ###   ########.fr       */
+/*   Updated: 2026/07/11 21:18:54 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ export { connect, disconnect, send}
 let socket = null
 
 const messageHandlers = {
-    auth_success: () => console.log('WS: authenticated'),
     chat_message: (data) =>  {
         const chatStore = useChatStore()
         chatStore.receiveMessage(data)
@@ -35,7 +34,6 @@ const messageHandlers = {
         presenceStore.setCount(data.count)
     },
     presence_update: (data) => {
-        console.log('friend change online status')
         const presenceStore = usePresenceStore()
         presenceStore.setStatus(data.user_id, data.is_online)
     },

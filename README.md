@@ -34,7 +34,7 @@ The goal of the project is to demonstrate a full-featured, containerized, real-t
 - **Account and profile management** — registration, login (JWT), avatar upload, editable nickname, win/loss statistics.
 - **Friends system** — send/accept/decline friend requests, real-time online status display.
 - **Real-time chat** — private messages between users over WebSocket.
-- **Local and remote Pong** — Pong on canvas, available on a single keyboard (locally)
+- **Local Pong** — Pong on canvas, available on a single keyboard (locally)
 - **Post-match analytics dashboard** — force-graph of match events, rally timeline, global leaderboard, per-period player stats, PDF export.
 - **Online presence** — real-time online/offline status via WebSocket.
 
@@ -45,7 +45,7 @@ The goal of the project is to demonstrate a full-featured, containerized, real-t
 | Member | Login | Role(s) | Area of responsibility |
 |---|---|---|---|
 | [Natalia] | `nakoriko` | Product Owner · Technical Lead · Developer | Defined the product vision and feature priorities; responsible for architecture, stack choices, and code quality; implemented the framework setup, authentication system, DB schema, standard user management, the Pong game, the design system, and analytics. |
-| [Name] | `<login2>` | Developer | Implemented the WebSocket infrastructure (auth, presence, chat transport) and remote multiplayer. |
+| [Sabino] | `scarlucc` | Developer | Implemented the WebSocket infrastructure (auth, presence, chat transport). |
 
 > With a team of 2–4 people, roles overlap by definition (see subject §II.1.1): the same person can simultaneously be PO, PM, and Tech Lead.
 
@@ -56,7 +56,7 @@ The goal of the project is to demonstrate a full-featured, containerized, real-t
 **Work organization:** the project is split into three zones so that a small (and growing) team can work in parallel safely:
 
 1. **Foundation** (Docker setup, repo structure, auth, DB schema, Pong core, standard user management) — built solo first, as the base that all other modules depend on.
-2. **Modules in progress, contract-based** (analytics, design system, WebSockets, remote players) — the Tech Lead designs the API/data contract for the module in advance; each teammate then implements their module independently against that contract, in their own part of the repository.
+2. **Modules in progress, contract-based** (analytics, design system, WebSockets) — the Tech Lead designs the API/data contract for the module in advance; each teammate then implements their module independently against that contract, in their own part of the repository.
 3. **Modules open to the team** (tournaments, OAuth, 2FA, PWA, AI opponent, etc.) — isolated, self-contained modules that a new or additional teammate can pick up, implement, and deliver without touching anyone else's code.
 
 Every new module goes through the same four-step cycle: **study** the concept → **design the architecture** before writing code → **implementation** → **defense** (a self-check confirming the module is genuinely understood before it's considered done).
@@ -198,13 +198,12 @@ docker-compose down -v
 - **No prior experience with web frameworks before the project.** Vue, Django, PostgreSQL, and WebSockets were learned from scratch while working on the project. Solution — a strict "study → architecture → implementation → self-check" cycle for every new concept before writing code (see [Resources](#resources)).
 - **Parallel requests during token refresh.** Resolved with proactive refresh — added a check for the token's expiration before it actually expires.
 
-### `<login2>` — Developer
+### scarlucc — Developer
 
 - Implemented the WebSocket layer on the backend: authentication over WebSocket, online-presence broadcasting, and the chat transport (consumers, routing).
-- Implemented remote multiplayer matchmaking and gameplay.
 
 **Challenges faced:**
-- **[TODO: describe a real challenge `<login2>` faced — e.g. keeping presence state consistent across reconnects, synchronizing paddle/ball state for remote play, a Channels/Redis routing issue — and how it was resolved.]**
+- **No prior experience with websockets before the project.** Key concepts were learned while working on the project.
 
 ---
 
