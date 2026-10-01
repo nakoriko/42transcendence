@@ -146,7 +146,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 #add localhost as  secure addres for MIDDLEWARE
-CSRF_TRUSTED_ORIGINS = ['https://localhost']
+CSRF_TRUSTED_ORIGINS = ['https://localhost', 'https://localhost:5001']
 
 REST_FRAMEWORK = {
     #define  authentication method (JWTAuthentication). So, it will search jwt in heeader inside every http request
