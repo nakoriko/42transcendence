@@ -6,14 +6,14 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/02 15:36:17 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/02 18:06:59 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from django.contrib.auth import get_user_model
 # from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Count, Avg #object to calculate aberege reaction_time for all users
-from django.db.models.functions import TruncDate
+from django.db.models import Q, Count, Avg, Max, F, Case, When #object to calculate aberege reaction_time for all users
+from django.db.models.functions import TruncDate, Least, Greatest
 from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import status
@@ -21,6 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from game.models import Match, MatchEvent
 from datetime import timedelta 
 from django.utils import timezone
+from collections import Counter
 
 User = get_user_model()
 
@@ -209,6 +210,120 @@ class PlayerGraphView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-            #Implementation here
-            pass
+        period = request.query_params.get('period', 'all') #7 days /30 d/ all, readds from ?period=7d from url
+        since = None
+        if(period == '7d'):
+            since = timezone.now() - timedelta(days=7)
+        elif (period == '30d'):
+            since = timezone.now() - timedelta(days=30)
+
+        base_matches_qs = Match.objects.filter(
+            mode='local',
+            status=Match.Status.FINISHED,
+        )
+        if since:
+            base_matches_qs = base_matches_qs.filter(ended_at__gte=since)
+        
+        me_id = request.user.id
+        my_matches = base_matches_qs.filter(
+            Q(player1=request.user) | Q(player2=request.user)
+        )
+        first_circle_ids = set()
+        for m in my_matches.values('player1_id', 'player2_id'):
+            first_circle_ids.add(m['player1_id'])
+            first_circle_ids.add(m['player2_id'])
+        first_circle_ids.discard(me_id)
+
+        TOP_N = 5
+        second_circle_ids = set()
+        for uid in first_circle_ids:
+            partner_counts = (
+                base_matches_qs
+                .filter(Q(player1_id=uid) | Q(player2_id=uid))
+                .annotate(
+                    partner_id=Case(
+                        When(player1_id=uid, then=F('player2_id')),
+                        default=F('player1_id'),
+                    )
+                )
+                .exclude(partner_id=me_id)
+                .exclude(partner_id=uid)
+                .values('partner_id')
+                .annotate(
+                    cnt=Count('id')
+                )
+                .order_by('-cnt')[:TOP_N]
+            )
+            for row in partner_counts:
+                second_circle_ids.add(row['partner_id'])
+            
+        all_node_ids = {me_id} | first_circle_ids | second_circle_ids
+
+        edges_qs = (
+            base_matches_qs
+            .filter(player1_id__in=all_node_ids, player2_id__in=all_node_ids)
+            .annotate(
+                source = Least('player1_id', 'player2_id'),
+                target = Greatest('player1_id', 'player2_id'),
+            )
+            .values('source', 'target')
+            .annotate(
+                matches=Count('id'),
+                wins_source=Count('id', filter=Q(winner_id=F('source'))),
+                wins_target=Count('id', filter=Q(winner_id=F('target'))),
+                draws=Count('id', filter=Q(winner__isnull=True)),
+                last_played_at=Max('ended_at'),
+            )
+        )
+
+        edges = []
+        degree_counter = Counter()
+        for e in edges_qs:
+            if e['source'] == e['target']:
+                continue
+            edges.append({
+                'source': e['source'],
+                'target': e['target'],
+                'matches': e['matches'],
+                'wins_source': e['wins_source'],
+                'wins_target': e['wins_target'],
+                'draws': e['draws'],
+                'last_played_at': e['last_played_at'].isoformat() if e['last_played_at'] else None,
+            })
+            degree_counter[e['source']] += 1
+            degree_counter[e['target']] +=1
+
+        nodes = []
+        users = User.objects.filter(id__in=all_node_ids)
+        for user in users:
+            user_matches = base_matches_qs.filter(
+                Q(player1=user) | Q(player2=user)
+            )
+            total = user_matches.count()
+            wins = user_matches.filter(winner=user).count()
+            draws = user_matches.filter(winner__isnull=True).count()
+            losses = total - wins - draws
+
+            nodes.append({
+                'id': user.id,
+                'nickname': user.nickname or user.email,
+                'avatar': user.avatar.url if getattr(user, 'avatar', None) else None,
+                'wins': wins,
+                'losses': losses,
+                'draws': draws,
+                'degree': degree_counter.get(user.id, 0),
+                'is_current': user.id == me_id,
+            })
+        
+        return Response({
+            'nodes': nodes,
+            'edges': edges,
+            'meta': {
+                'period': period,
+                'nodes_count': len(nodes),
+                'edges_count': len(edges),
+                'generated_at': timezone.now().isoformat(),
+            },
+        })
+
 
