@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/02 15:26:06 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/02 15:36:17 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -145,7 +145,7 @@ class PlayerGraphView(APIView):
 
             "edges": [
                 {
-                    "source": int, 	#node id, always cource < target
+                    "source": int, 	#node id, always source < target
                     "target": int, 	#node id(normilized pair ordering)
                     "mathces": int, 	#total matches between the pair
                     "wins_source": int, 	#wins by the 'source' user
