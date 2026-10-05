@@ -5,6 +5,7 @@ import DashMatchHistory from '@/components/dashboard/DashMatchHistory.vue';
 import DashPlayerStats from '@/components/dashboard/DashPlayerStats.vue';
 import DashRallyTimeline from '@/components/dashboard/DashRallyTimeline.vue';
 import DashUniverse from '@/components/dashboard/DashUniverse.vue';
+import DashPlayerGraph from '@/components/dashboard/DashPlayerGraph.vue';
 import  { usePresenceStore } from '@/stores/presence'
 import AppBadge from '@/components/AppBadge.vue';
 import AppButton from '@/components/AppButton.vue';
@@ -16,6 +17,7 @@ import jsPDF from 'jspdf'
 const statsRef = ref(null)
 const universeRef = ref(null)
 const historyRef = ref(null)
+const playerGraphRef = ref(null)
 
 async function captureSection(el) {
     const canvas = await html2canvas(el, {
@@ -101,6 +103,11 @@ onMounted(async () => {
         </div>
         <!--TItle-->
 
+        <!--PLayer graph -->
+        <section ref="playerGraphRef" class="py-10 border-b border-white/[0.04]">
+            <!---PLayer graph-->
+           <DashPlayerGraph></DashPlayerGraph>
+        </section>
 
 
 
