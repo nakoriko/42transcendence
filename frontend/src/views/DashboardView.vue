@@ -103,6 +103,13 @@ onMounted(async () => {
         </div>
         <!--TItle-->
 
+        <!--Pong Universe-->
+        <section ref="universeRef" class="py-10 border-b border-white/[0.04]">
+            <!--DashUNiverse will be here-->
+           <DashUniverse></DashUniverse>
+        </section>
+
+
         <!--PLayer graph -->
         <section ref="playerGraphRef" class="py-10 border-b border-white/[0.04]">
             <!---PLayer graph-->
@@ -126,11 +133,6 @@ onMounted(async () => {
             </div>
         </section>
 
-        <!--Pong Universe-->
-        <section ref="universeRef" class="py-10 border-b border-white/[0.04]">
-            <!--DashUNiverse will be here-->
-           <DashUniverse></DashUniverse>
-        </section>
 
 
 
