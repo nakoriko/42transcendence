@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue' 
 import RecentMatchesList from '../RecentMatchesList.vue'
+import DashRallyTimeline from './DashRallyTimeline.vue'
 import MatchEchoViz from './MatchEchoViz.vue'
 import { apiFetch } from '@/utils/apiFetch.js'
 
@@ -69,6 +70,7 @@ const filteredMatches = computed(() => {
         :showScore="true"
         @filter-change="activeFilter = $event"
         @match-click="selectedMatch = $event" />
-    <MatchEchoViz :match="selectedMatch" :events="events" /> 
+    <DashRallyTimeline :match="selectedMatch" :events="events" />
+    <!-- <MatchEchoViz :match="selectedMatch" :events="events" />  -->
 </div>
 </template>
