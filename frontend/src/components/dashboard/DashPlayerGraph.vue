@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, watch, reactive, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
+import AppFilterTabs from '../AppFilterTabs.vue'
 import { apiFetch } from '@/utils/apiFetch'
 import { formatShortDate } from '@/utils/date.js'
 
@@ -70,19 +71,27 @@ const ttEdgeData = reactive (({
 const container = ref(null)
 let simulation = null
 const isEmpty = ref(false)
+const isLoading = ref(false)
+const period = ref('All')
+const emptyMessage = computed(() =>
+    period.value === 'All'
+    ? "Play some matches to see your network grow"
+    : "No matches in this period. Try a wider range"
+)
 
 
 async function renderGraph(data) {
     if(!container.value) return
-    if(!data?.nodes?.length) {
+    d3.select(container.value).selectAll('*').remove()
+    if (simulation) simulation.stop()
+
+    if(!data?.nodes?.length || !data?.edges?.length) {
         isEmpty.value = true
         return
     }
     isEmpty.value = false
 
     
-    d3.select(container.value).selectAll('*').remove()
-    if (simulation) simulation.stop()
 
     const W = container.value.clientWidth - 50
     const H = (container.value.clientHeight || 400) - 50
@@ -142,7 +151,7 @@ async function renderGraph(data) {
         .data(data.nodes).join('circle')
         .attr('r', d => d.is_current ? r(d.degree) + 4 : r(d.degree))
         .attr('fill', d => color (d.wins / (d.wins + d.losses) || 0))
-        .attr('filter', 'url(#glow)')
+        // .attr('filter', 'url(#glow)')
         .style('cursor', 'grab')
 
     //drag
@@ -275,7 +284,7 @@ async function renderGraph(data) {
         .force('charge',  d3.forceManyBody().strength(-300))
         .force('center',  d3.forceCenter(W / 2, H / 2).strength(0.05))
         .force('collide', d3.forceCollide().radius(d => r(d.degree) + 5))
-        .alphaDecay(0.01)
+        .alphaDecay(0.05)
         .alphaMin(0.001)
         .on('tick', () => {
             linkEls
@@ -296,95 +305,126 @@ async function renderGraph(data) {
     simulation.alphaTarget(0.02)
 }
 
+async function loadGraph() {
+    isLoading.value = true
+    try {
+        const res = await apiFetch(`/api/analytics/player-graph/?period=${period.value.toLowerCase()}`)
+        if(!res) return
+        const data = await res.json()
+        renderGraph(data)
+    } finally {
+        isLoading.value = false
+    }
+}
 
-
-onMounted(async () => {
-    const res = await apiFetch('/api/analytics/player-graph/?period=all')
-    if(!res) return
-    const data = await res.json()
-    renderGraph(data)
+watch(period, () => {
+    loadGraph()
 })
 
+onMounted(async () => {
+    loadGraph()
+})
 </script>
 
 <template>
-<div class="relative w-full h-full min-h-[400px]">
-    <div ref="container" class="w-full h-full min-h-[400px] flex items-center justify-center"></div>
-    <div v-if="isEmpty" class="absolute inset-0 flex items-center justify-center">
-        <span class="text-sm text-muted"> No events recorded - match was stopped early</span>
+<div class="flex flex-col h-full">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <div class="input-label">Player network</div>
+            <div class="text-sm text-muted mt-1">Who you've played, and how often</div>
+        </div>
+        <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']"></AppFilterTabs>
     </div>
-    <AppTooltip ref="tt">
-        <!-- Avatar -->
-        <div class="flex items-center gap-2 mb-2">
-            <img
-                v-if="ttData.avatar"
-                :src="ttData.avatar"
-                class = "w-6 h-6 rounded-full object-cover"
-                alt=""></img>
-            <div
-                v-else
-                class="w-6 h-6 rounded-full bg-muted/30 flex items-center justify-center text-[10px]">
-            {{ ttData.nickname?.[0]?.toUpperCase() }}
+
+
+    <div class="flex-1 relative w-full min-h-[400px]">
+        <div ref="container" class="w-full h-full min-h-[400px] flex items-center justify-center"></div>
+        <div v-if="isEmpty" class="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="text-muted/40">
+                <circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="12" cy="18" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="7.5" y1="7" x2="11" y2="16" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
+                <line x1="16.5" y1="7" x2="13" y2="16" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
+            </svg>
+            <span class="text-sm text-muted">{{ emptyMessage }}</span>
+        </div>
+        <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div class="w-8 h-8 border-2 border-muted/20 border-t-teal rounded-full animate-spin"></div>
+        </div>
+        <AppTooltip ref="tt">
+            <!-- Avatar -->
+            <div class="flex items-center gap-2 mb-2">
+                <img
+                    v-if="ttData.avatar"
+                    :src="ttData.avatar"
+                    class = "w-6 h-6 rounded-full object-cover"
+                    alt=""></img>
+                <div
+                    v-else
+                    class="w-6 h-6 rounded-full bg-muted/30 flex items-center justify-center text-[10px]">
+                {{ ttData.nickname?.[0]?.toUpperCase() }}
+                </div>
+                <span class="text-xs font-medium"> {{ ttData.nickname }}</span>
+                <span
+                    v-if="ttData.isCurrent"
+                    class="text-[9px] px-1.5 py-0.5 rounded bg-teal/20 text-teal uppercase tracking-wide">you</span>
             </div>
-            <span class="text-xs font-medium"> {{ ttData.nickname }}</span>
-            <span
-                v-if="ttData.isCurrent"
-                class="text-[9px] px-1.5 py-0.5 rounded bg-teal/20 text-teal uppercase tracking-wide">you</span>
-        </div>
 
-        <!-- WLD -->
-        <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] text-muted">Record</span>
-            <span class="text-[10px] tabular-nums">
-                {{ ttData.wins }}-{{ ttData.losses }}<span v-if="ttData.draws">-{{ ttData.draws }}</span>
-            </span>
-        </div>
+            <!-- WLD -->
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] text-muted">Record</span>
+                <span class="text-[10px] tabular-nums">
+                    {{ ttData.wins }}-{{ ttData.losses }}<span v-if="ttData.draws">-{{ ttData.draws }}</span>
+                </span>
+            </div>
 
-        <!-- WinRate -->
-         <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] text-muted">Win rate</span>
-            <span class="text-[10px] tabular-nums">
-                {{ ttData.winRate === null ? '-' : (ttData.winRate * 100).toFixed(0) + '%' }}
-            </span>
-        </div>
+            <!-- WinRate -->
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] text-muted">Win rate</span>
+                <span class="text-[10px] tabular-nums">
+                    {{ ttData.winRate === null ? '-' : (ttData.winRate * 100).toFixed(0) + '%' }}
+                </span>
+            </div>
 
-        
-        <!-- Degree -->
-        <div class="flex justify-between items-center">
-            <span class="text-[10px] text-muted">Opponents</span>
-            <span class="text-[10px] tabular-nums">{{ ttData.degree }}</span>
-        </div>
-    </AppTooltip>
-    <AppTooltip ref="ttEdge">
-        <!-- pair -->
-         <div class="flex items-center justify-center gap-1.5 mb-1">
-            <span class="text-xs font-medium">{{ ttEdgeData.sourceName }}</span>
-            <span class="text-xs text-muted">vs</span>
-            <span class="text-xs font-medium">{{ ttEdgeData.targetName }}</span>
+            
+            <!-- Degree -->
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] text-muted">Opponents</span>
+                <span class="text-[10px] tabular-nums">{{ ttData.degree }}</span>
+            </div>
+        </AppTooltip>
+        <AppTooltip ref="ttEdge">
+            <!-- pair -->
+            <div class="flex items-center justify-center gap-1.5 mb-1">
+                <span class="text-xs font-medium">{{ ttEdgeData.sourceName }}</span>
+                <span class="text-xs text-muted">vs</span>
+                <span class="text-xs font-medium">{{ ttEdgeData.targetName }}</span>
 
-         </div>
-        <!-- matches -->
-         <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] text-muted">Matches</span>
-            <span class="text-[10px] tabular-nums">{{ ttEdgeData.matches }}</span>
-         </div>
-        <!-- verdict -->
-         <div class="flex justify-between items-center mb-1">
-            <span class="text-[10px] text-muted">Score</span>
-            <span class="text-[10px]">{{ ttEdgeData.verdict }}</span>
+            </div>
+            <!-- matches -->
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] text-muted">Matches</span>
+                <span class="text-[10px] tabular-nums">{{ ttEdgeData.matches }}</span>
+            </div>
+            <!-- verdict -->
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[10px] text-muted">Score</span>
+                <span class="text-[10px]">{{ ttEdgeData.verdict }}</span>
 
-         </div>
-        <!-- draws (if) -->
-         <div v-if="ttEdgeData.draws" class="flex justify-between items-center mb-1">
-            <span class="text-[10px]  text-muted">Draws</span>
-            <span class="text-[10px] tabular-nums">{{ ttEdgeData.draws }}</span>
-         </div>
-        <!-- last played -->
-         <div class="flex justify-between items-center">
-            <span class="text-[10px]  text-muted">Last played</span>
-            <span class="text-[10px]">{{ ttEdgeData.lastPlayed }}</span>
-         </div>
+            </div>
+            <!-- draws (if) -->
+            <div v-if="ttEdgeData.draws" class="flex justify-between items-center mb-1">
+                <span class="text-[10px]  text-muted">Draws</span>
+                <span class="text-[10px] tabular-nums">{{ ttEdgeData.draws }}</span>
+            </div>
+            <!-- last played -->
+            <div class="flex justify-between items-center">
+                <span class="text-[10px]  text-muted">Last played</span>
+                <span class="text-[10px]">{{ ttEdgeData.lastPlayed }}</span>
+            </div>
 
-    </AppTooltip>
+        </AppTooltip>
+    </div>
 </div>
 </template>
