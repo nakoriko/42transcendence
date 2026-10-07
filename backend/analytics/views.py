@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/02 18:06:59 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/07 17:03:57 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,26 +36,71 @@ class PongUniverseView(APIView):
         elif (period == '30d'):
             since = timezone.now() - timedelta(days=30)
 
-        users = User.objects.all().order_by('date_joined')
+        matches_qs = Match.objects.filter(
+            status=Match.Status.FINISHED
+        )
+        if since:
+            matches_qs = matches_qs.filter(ended_at__gte=since)
+
+        p1_stats = (
+            matches_qs
+            .values('player1_id')
+            .annotate(
+                total=Count('id'),
+                wins=Count('id', filter=Q(winner_id=F('player1_id'))),
+            )
+        )
+
+        p2_stats  = (
+            matches_qs
+            .values('player2_id')
+            .annotate(
+                total=Count('id'),
+                wins=Count('id', filter=Q(winner_id=F('player2_id'))),
+            )
+        )
+        total_counter = Counter()
+        wins_counter = Counter()
+
+        for row in p1_stats:
+            uid = row['player1_id']
+            total_counter[uid] += row['total']
+            wins_counter[uid] += row['wins']
+
+        for row in p2_stats:
+            uid = row['player2_id']
+            total_counter[uid] += row['total']
+            wins_counter[uid] += row['wins']
+        
+        event_stats = (
+            MatchEvent.objects
+            .filter(match__in=matches_qs)
+            .values('player_id')
+            .annotate(
+                hits=Count('id', filter=Q(event_type=MatchEvent.EventType.HIT)),
+                misses=Count('id', filter=Q(event_type=MatchEvent.EventType.MISS)),
+            )
+        )
+        hits_counter = Counter()
+        misses_counter = Counter()
+
+        for row in event_stats:
+            uid = row['player_id']
+            hits_counter[uid] = row['hits']
+            misses_counter[uid] = row['misses']
+
+        users = (
+            User.objects
+            .only('id', 'nickname', 'email', 'date_joined')
+            .order_by('date_joined')
+        )
         result = []
 
         for user in users:
-            match_qs = Match.objects.filter(
-                Q(player1=user) | Q(player2=user),
-                status=Match.Status.FINISHED
-            )
-            if since:
-                match_qs = match_qs.filter(ended_at__gte=since)
-            total = match_qs.count()
-            wins = match_qs.filter(winner=user).count()
-            event_qs = MatchEvent.objects.filter(match__in=match_qs, player=user)
-            hits = event_qs.filter(event_type=MatchEvent.EventType.HIT).count()
-            misses = event_qs.filter(event_type=MatchEvent.EventType.MISS).count()
-
-            avg_reaction = event_qs.filter(
-                event_type=MatchEvent.EventType.HIT,
-                reaction_time_ms__isnull=False
-            ).aggregate(avg=Avg('reaction_time_ms'))['avg']
+            total = total_counter.get(user.id, 0)
+            wins = wins_counter.get(user.id, 0)
+            hits = hits_counter.get(user.id, 0)
+            misses = misses_counter.get(user.id, 0)
 
             result.append({
                 'id': user.id,
@@ -65,10 +110,45 @@ class PongUniverseView(APIView):
                 'wins': wins,
                 'losses': total - wins,
                 'win_rate': round(wins / total, 2) if total > 0 else 0,
-                'avg_reaction_ms': round(avg_reaction) if avg_reaction else None,
                 'hit_accuracy': round(hits / (hits + misses), 2) if (hits + misses) > 0 else None,
             })
+
         return Response(result)
+
+
+        
+
+
+        # for user in users:
+        #     match_qs = Match.objects.filter(
+        #         Q(player1=user) | Q(player2=user),
+        #         status=Match.Status.FINISHED
+        #     )
+        #     if since:
+        #         match_qs = match_qs.filter(ended_at__gte=since)
+        #     total = match_qs.count()
+        #     wins = match_qs.filter(winner=user).count()
+        #     event_qs = MatchEvent.objects.filter(match__in=match_qs, player=user)
+        #     hits = event_qs.filter(event_type=MatchEvent.EventType.HIT).count()
+        #     misses = event_qs.filter(event_type=MatchEvent.EventType.MISS).count()
+
+        #     avg_reaction = event_qs.filter(
+        #         event_type=MatchEvent.EventType.HIT,
+        #         reaction_time_ms__isnull=False
+        #     ).aggregate(avg=Avg('reaction_time_ms'))['avg']
+
+        #     result.append({
+        #         'id': user.id,
+        #         'nickname': user.nickname or user.email,
+        #         'date_joined': user.date_joined.isoformat(),
+        #         'total_matches': total,
+        #         'wins': wins,
+        #         'losses': total - wins,
+        #         'win_rate': round(wins / total, 2) if total > 0 else 0,
+        #         'avg_reaction_ms': round(avg_reaction) if avg_reaction else None,
+        #         'hit_accuracy': round(hits / (hits + misses), 2) if (hits + misses) > 0 else None,
+        #     })
+        # return Response(result)
 
 class PlayerStatsView(APIView):
     permission_classes = [IsAuthenticated]
