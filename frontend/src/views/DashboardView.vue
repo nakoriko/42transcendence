@@ -6,7 +6,8 @@ import DashPlayerStats from '@/components/dashboard/DashPlayerStats.vue';
 import DashRallyTimeline from '@/components/dashboard/DashRallyTimeline.vue';
 import DashUniverse from '@/components/dashboard/DashUniverse.vue';
 import DashPlayerGraph from '@/components/dashboard/DashPlayerGraph.vue';
-import  { usePresenceStore } from '@/stores/presence'
+import  { usePresenceStore } from '@/stores/presence';
+import { useMatchesStore } from '@/stores/matches';
 import AppBadge from '@/components/AppBadge.vue';
 import AppButton from '@/components/AppButton.vue';
 import { Download } from 'lucide-vue-next';
@@ -18,6 +19,10 @@ const statsRef = ref(null)
 const universeRef = ref(null)
 const historyRef = ref(null)
 const playerGraphRef = ref(null)
+const matchesStore = useMatchesStore()
+const lastEvents = ref([])
+const presenceStore = usePresenceStore()
+const activeMatchId = ref(null)
 
 async function captureSection(el) {
     const canvas = await html2canvas(el, {
@@ -63,23 +68,17 @@ async function exportToPdf() {
     pdf.save('dashboard-analytics.pdf')
 }
 
-const presenceStore = usePresenceStore()
 
-const matches = ref([])
-const lastEvents = ref([])
-
-const activeMatchId = ref(null)
 
 function onMatchSelected(matchId) {
     activeMatchId.value = matchId
 }
 
 onMounted(async () => {
-    const [matchRes, eventsRes ] = await Promise.all([
-        apiFetch('/api/game/matches/?limit=200'),
+    const [, eventsRes ] = await Promise.all([
+        matchesStore.load(),
         apiFetch('/api/game/events/')
     ])
-    if(matchRes) matches.value = (await (matchRes.json()))
     if(eventsRes) lastEvents.value = (await(eventsRes.json()))
 })
 
@@ -126,7 +125,7 @@ onMounted(async () => {
                 </div>
                 <div class="min-h-[380px] lg:min-h-0">
                     <DashRallyTimeline 
-                    :matches="matches" 
+                    :matches="matchesStore.matches" 
                     :events="lastEvents"
                     @matchSelected="onMatchSelected"></DashRallyTimeline>
                 </div>

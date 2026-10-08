@@ -2,32 +2,36 @@
 import { ref, computed, onMounted, watch } from 'vue' 
 import RecentMatchesList from '../RecentMatchesList.vue'
 import DashRallyTimeline from './DashRallyTimeline.vue'
-import MatchEchoViz from './MatchEchoViz.vue'
 import { apiFetch } from '@/utils/apiFetch.js'
+import { useMatchesStore } from '@/stores/matches.js'
+import { useUserStore } from '@/stores/user.js'
 
-const matches       = ref([])
+const matchesStore = useMatchesStore()
+const userStore = useUserStore()
 const activeFilter  = ref('all')
 const selectedMatch = ref(null)
 const events        = ref([])         
-const currentUserId = ref(null)       
+// const currentUserId = computed(() => userStore.currentUser?.id ?? null)      
 
 const props = defineProps({
     activeMatchId: { type: Number, default: null }
 })
 
-onMounted(async () => {
-    const [matchRes, profileRes] = await Promise.all([
-        apiFetch('/api/game/matches/?limit=200'),
-        apiFetch('/api/users/profile/')
-    ])
-    if (matchRes)   matches.value = await matchRes.json()
-    if (profileRes) currentUserId.value = (await profileRes.json()).id
+onMounted(() => {
+    matchesStore.load()
+})
+
+const filteredMatches = computed(() => {
+    const list = matchesStore.matches
+    if (activeFilter.value === 'wins')   return list.filter(m => m.result === 'win')
+    if (activeFilter.value === 'losses') return list.filter(m => m.result === 'loss')
+    return list
 })
 
 watch(() => props.activeMatchId, (id) => {
 
     if(!id) return
-    const match = matches.value.find(m =>m.id === id)
+    const match = matchesStore.matches.find(m =>m.id === id)
     if(!match) return
     selectedMatch.value = match
     const isVisible = filteredMatches.value.some(m => m.id === match.id)
@@ -43,11 +47,7 @@ watch(selectedMatch, async (match) => {
     if (res) events.value = await res.json()
 })
 
-const filteredMatches = computed(() => {
-    if (activeFilter.value === 'wins')   return matches.value.filter(m => m.result === 'win')
-    if (activeFilter.value === 'losses') return matches.value.filter(m => m.result === 'loss')
-    return matches.value
-})
+
 
 // const stats = computed(() => {
 //     if (!events.value.length) return null
