@@ -132,11 +132,15 @@ class MatchHistoryView(APIView):
 
     def get(self, request):
         limit = int(request.query_params.get('limit', 10))
-        matches = Match.objects.filter(
-            Q(player1=request.user) | Q(player2=request.user),
-            ended_at__isnull=False
-        ).order_by('-ended_at')[:limit]
-
+        matches = (
+            Match.objects
+            .select_related('player1', 'player2', 'winner')
+            .filter (
+                Q(player1=request.user) | Q(player2=request.user),
+                ended_at__isnull=False
+            )
+            .order_by('-ended_at')[:limit]
+        )
         serializer = MatchHistorySerializer(matches, many=True, context={'request': request})
         return Response(serializer.data)
 
