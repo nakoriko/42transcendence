@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    views.py                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: scarlucc <scarlucc@student.42firenze.it    +#+  +:+       +#+         #
+#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/09 17:24:31 by scarlucc         ###   ########.fr        #
+#    Updated: 2026/10/08 10:30:30 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -85,17 +85,24 @@ class UserListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
             users = User.objects.exclude(id=request.user.id)
+            friend_pairs = FriendRelation.objects.filter (
+                    Q(from_user=request.user) | Q(to_user=request.user),
+                    status='accepted'
+            ).values_list('from_user_id', 'to_user_id')
+
+            my_friend_ids = set() 
+            for pair in friend_pairs:
+                for uid in pair:
+                    my_friend_ids.add(uid)
+            
+            my_friend_ids.discard(request.user.id)
             data = [
                 {"id": u.id, 
                 "nickname": u.nickname,
                 "wins": u.wins,
                 "is_online": u.is_online,
                 "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None,
-                "is_friend": FriendRelation.objects.filter (
-                    Q(from_user=request.user, to_user=u) | #Q permits to check both directions: from to and to from
-                    Q(from_user=u, to_user=request.user),
-                    status='accepted'
-                ).exists() #bolean exists - returns TRUE o FAlse
+                "is_friend": u.id in my_friend_ids,
                 }
                 for u in users
             ]
@@ -163,19 +170,31 @@ class FriendsListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         #filter all relations where "self" is presented
-        friends = FriendRelation.objects.filter(
-            Q(from_user = request.user) | Q(to_user=request.user), 
-            status='accepted'
+        friends = (
+            FriendRelation.objects
+            .select_related('from_user', 'to_user')
+            .filter(
+                Q(from_user = request.user) | Q(to_user=request.user), 
+                status='accepted'
+            )
         )
 
-        incoming = FriendRelation.objects.filter(
-            to_user=request.user,
-            status='pending'
+        incoming = (
+            FriendRelation.objects
+            .select_related('from_user', 'to_user')
+            .filter(
+                to_user=request.user,
+                status='pending'
+            )
         )
 
-        outgoing = FriendRelation.objects.filter(
-            from_user=request.user,
-            status='pending'
+        outgoing = (
+            FriendRelation.objects
+            .select_related('from_user', 'to_user')
+            .filter(
+                from_user=request.user,
+                status='pending'
+            ) 
         )
         return Response({
             'friends': FriendRelationSerializer (
