@@ -211,14 +211,20 @@ class AllUserEventsView(APIView):
 #         return Response(result)
 
 class BulkMatchEventView(APIView):
-        permission_classes = [IsAuthenticated]
-        def post(self, request):
-            serializer = MatchEventSerializer(data=request.data, many=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=201)
-            return Response(serializer.errors, status=400)
-
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = MatchEventSerializer(data=request.data, many=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        for event in serializer.validated_data:
+            match = event['match']
+            if request.user.id not in (match.player1_id, match.player2_id):
+                return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+            if match.status != Match.Status.ACTIVE:
+                return Response({'error': 'Match is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 # class MatchHistoryChartView(APIView):
 #     permission_classes = [IsAuthenticated]

@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 from rest_framework.test import APITestCase
 
-from .models import Match
+from .models import Match, MatchEvent
 User = get_user_model()
 
 TEST_CHANNEL_LAYERS = {'default' : {'BACKEND': 'channels.layers.InMemoryChannelLayer'}} #change redis to channelk layer in memory
@@ -64,6 +64,55 @@ class FinishMatchTests(APITestCase):
         self.client.force_authenticate(self.outsider)
         res = self.finish(self.p1.id)
         self.assertEqual(res.status_code, 403)
+
+class BulkMatchEventView(APITestCase):
+    url = '/api/game/matches/events/bulk/'
+
+    def setUp(self):
+        self.p1 = User.objects.create_user(email='p1@test.com', password='pass12345', nickname='p1')
+        self.p2 = User.objects.create_user(email='p2@test.com', password='pass12345', nickname='p2')
+        self.outsider = User.objects.create_user(email='out@test.com', password='pass12345', nickname='out')
+        self.match = Match.objects.create(
+            player1=self.p1, player2=self.p2,
+            status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL,
+        )
+        self.client.force_authenticate(self.p1)
+
+    def event(self, match_id, player_id, event_type='hit'):
+        return {'match': match_id, 'event_type': event_type, 'player': player_id,
+                'pos_x': 0.5, 'pos_y': 0.5, 'reaction_time_ms': None}
+    
+    def post(self, events):
+        return self.client.post(self.url, events, format='json')
+
+    def test_participant_can_log_events(self):
+        res = self.post([self.event(self.match.id, self.p1.id), 
+            self.event(self.match.id, self.p2.id, 'goal')])
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(MatchEvent.objects.filter(match=self.match).count(), 2)
+
+    def test_outsider_cannot_log_events(self):
+        self.client.force_authenticate(self.outsider)
+        res = self.post([self.event(self.match.id, self.p1.id)])
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(MatchEvent.objects.count(), 0)
+
+    def test_cannot_log_events_to_finished_match(self):
+        self.match.status = Match.Status.FINISHED
+        self.match.save(update_fields=['status'])
+        res = self.post([self.event(self.match.id, self.p1.id)])
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(MatchEvent.objects.count(), 0)
+
+    def test_batch_with_one_foreign_match(self):
+        other = Match.objects.create(player1=self.p2, player2=self.outsider,
+            status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL)
+        res = self.post([self.event(self.match.id, self.p1.id),
+                        self.event(other.id, self.p2.id)])
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(MatchEvent.objects.count(), 0)
+    
+
 
 
 
