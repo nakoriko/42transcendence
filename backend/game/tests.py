@@ -65,7 +65,7 @@ class FinishMatchTests(APITestCase):
         res = self.finish(self.p1.id)
         self.assertEqual(res.status_code, 403)
 
-class BulkMatchEventView(APITestCase):
+class BulkMatchEventTests(APITestCase):
     url = '/api/game/matches/events/bulk/'
 
     def setUp(self):
@@ -111,6 +111,54 @@ class BulkMatchEventView(APITestCase):
                         self.event(other.id, self.p2.id)])
         self.assertEqual(res.status_code, 403)
         self.assertEqual(MatchEvent.objects.count(), 0)
+
+
+class StartMatchTests(APITestCase):
+    url='/api/game/matches/start/'
+
+    def setUp(self):
+        self.p1 = User.objects.create_user(email='p1@test.com', password='pass12345', nickname='p1')
+        self.p2 = User.objects.create_user(email='p2@test.com', password='pass12345', nickname='p2')
+        self.outsider = User.objects.create_user(email='out@test.com', password='pass12345', nickname='out')
+        self.client.force_authenticate(self.p1)
+
+    def start(self, payload):
+        return self.client.post(self.url, payload, format='json')
+
+    def test_start_match_as_froentend_does(self):
+        res = self.start({'player1': self.p1.id, 'player2': self.p2.id})
+        self.assertEqual(res.status_code, 201)
+
+        match = Match.objects.get(id=res.data['id'])
+        self.assertEqual(match.player1, self.p1)
+        self.assertEqual(match.player2, self.p2)
+        self.assertEqual(match.status, Match.Status.ACTIVE)
+        self.assertEqual(match.mode, Match.Mode.LOCAL)
+
+    def test_player1_from_body_is_ignored(self):
+        res = self.start({'player1': self.outsider.id, 'player2': self.p2.id})
+        self.assertEqual(res.status_code, 201)
+
+        match = Match.objects.get(id=res.data['id'])
+        self.assertEqual(match.player1, self.p1)
+
+    def test_player1_is_set_even_when_omitted(self):
+        res = self.start({'player2': self.p2.id})
+        self.assertEqual(res.status_code, 201)
+
+        match = Match.objects.get(id=res.data['id'])
+        self.assertEqual(match.player1, self.p1)
+
+    def test_player2_is_required(self):
+        res =self.start({})
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(Match.objects.count(), 0)
+
+    def test_cannot_play_against_yourseld(self):
+        res = self.start({'player2': self.p1.id})
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(Match.objects.count(), 0)
+    
     
 
 

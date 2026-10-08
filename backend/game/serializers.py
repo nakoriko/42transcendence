@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/08 12:36:42 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/08 17:37:43 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ class MatchCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
         fields = ['id', 'status', 'mode', 'player1', 'player2', 'started_at']
-        read_only_fields = ['id', 'status', 'mode', 'started_at']
+        read_only_fields = ['id', 'status', 'mode', 'player1', 'started_at']
+        extra_kwargs = {'player2': {'required': True, 'allow_null': False}}
 
 class MatchInviteSerializer(serializers.ModelSerializer):
     class Meta:

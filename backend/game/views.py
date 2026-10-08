@@ -21,10 +21,12 @@ class StartMatchView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         serializer = MatchCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.validated_data['player2'] == request.user:
+            return Response({'error': 'Cannot play againts yourself'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(player1=request.user, status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 #Use for websocket (invites people top game)
 class InviteMatchView(APIView):
