@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/27 18:52:34 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/08 12:36:42 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,7 +37,7 @@ class MatchEventSerializer(serializers.ModelSerializer):
 class MatchFinishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
-        fields = ['winner', 'score_player1', 'score_player2', 'ended_at']
+        fields = ['winner', 'score_player1', 'score_player2']
 
 class MatchHistorySerializer(serializers.ModelSerializer):
     opponent_nickname = serializers.SerializerMethodField()

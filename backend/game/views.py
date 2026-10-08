@@ -87,13 +87,20 @@ class FinishMatchView(APIView):
         #protection from changing match status by other users
         if(request.user != match.player1 and request.user != match.player2):
             return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+        if(match.status == Match.Status.FINISHED):
+            return Response({'error': 'Match is already finished'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = MatchFinishSerializer(match, data=request.data, partial=True) #without partial - jango wants all fields
         if serializer.is_valid():
+            winner = serializer.validated_data.get('winner')
+            if winner is None or winner.id not in (match.player1_id, match.player2_id):
+                return Response({'error': 'Winner must be a participant of the match'}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             # serializer.save( updates just fields which frontend sent with http reequest (scores, winner, endet at)
             #backend should update status as well
             match.status = Match.Status.FINISHED
-            match.save(update_fields=['status'])
+            match.ended_at=timezone.now()
+            match.save(update_fields=['status', 'ended_at'])
             winner = match.winner
             loser = match.player1 if match.winner == match.player2 else match.player2
             winner.wins += 1

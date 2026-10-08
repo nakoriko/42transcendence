@@ -1,3 +1,71 @@
-from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.test import override_settings
+from rest_framework.test import APITestCase
 
-# Create your tests here.
+from .models import Match
+User = get_user_model()
+
+TEST_CHANNEL_LAYERS = {'default' : {'BACKEND': 'channels.layers.InMemoryChannelLayer'}} #change redis to channelk layer in memory
+
+@override_settings(CHANNEL_LAYERS = TEST_CHANNEL_LAYERS)
+class FinishMatchTests(APITestCase):
+    def setUp(self):
+        self.p1 = User.objects.create_user(email='p1@test.com', password='pass12345', nickname='p1')
+        self.p2 = User.objects.create_user(email='p2@test.com', password='pass12345', nickname='p2')
+        self.outsider = User.objects.create_user(email='out@test.com', password='pass12345', nickname='out')
+        self.match = Match.objects.create(
+            player1=self.p1, player2=self.p2,
+            status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL,
+        )
+        self.url = f'/api/game/matches/{self.match.id}/finish/'
+        self.client.force_authenticate(self.p1)
+    
+    def finish(self, winner_id, s1=5, s2=3):
+            return self.client.patch(
+                self.url,
+                {'winner': winner_id, 'score_player1': s1, 'score_player2': s2},
+                format='json',
+            )
+
+    def test_finish_updates_match_and_stats(self):
+        res = self.finish(self.p1.id)
+        self.assertEqual(res.status_code, 200)
+
+        self.match.refresh_from_db()
+        self.p1.refresh_from_db()
+        self.p2.refresh_from_db()
+
+        self.assertEqual(self.match.status, Match.Status.FINISHED)
+        self.assertIsNotNone(self.match.ended_at)
+        self.assertEqual((self.p1.wins, self.p1.losses), (1, 0))
+        self.assertEqual((self.p2.wins, self.p2.losses), (0, 1))
+
+
+    def test_cannot_finish_twice(self):
+        self.finish(self.p1.id)
+        res = self.finish(self.p1.id)
+        self.assertEqual(res.status_code, 400)
+
+        self.p1.refresh_from_db()
+        self.assertEqual(self.p1.wins, 1) #check if after second attempt to finish is still right result
+
+    def test_winner_must_be_paricipant(self):
+        res = self.finish(self.outsider.id)
+        self.assertEqual(res.status_code, 400)
+
+        self.outsider.refresh_from_db()
+        self.assertEqual(self.outsider.wins, 0)
+
+    def test_missing_winner_returns_400(self):
+        res = self.client.patch(self.url, {'score_player1': 2, 'score_player2': 2}, format='json')
+        self.assertEqual(res.status_code, 400)
+
+    def test_outsider_cannot_finish(self):
+        self.client.force_authenticate(self.outsider)
+        res = self.finish(self.p1.id)
+        self.assertEqual(res.status_code, 403)
+
+
+
+
+
