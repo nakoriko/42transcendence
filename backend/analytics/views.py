@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/07 17:03:57 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/07 18:23:32 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -358,30 +358,43 @@ class PlayerGraphView(APIView):
 
         edges = []
         degree_counter = Counter()
+        total_counter = Counter()
+        wins_counter = Counter()
+        draws_counter = Counter()
+
         for e in edges_qs:
             if e['source'] == e['target']:
                 continue
+            s, t = e['source'], e['target']
+
             edges.append({
-                'source': e['source'],
-                'target': e['target'],
+                'source': s,
+                'target': t,
                 'matches': e['matches'],
                 'wins_source': e['wins_source'],
                 'wins_target': e['wins_target'],
                 'draws': e['draws'],
                 'last_played_at': e['last_played_at'].isoformat() if e['last_played_at'] else None,
             })
-            degree_counter[e['source']] += 1
-            degree_counter[e['target']] +=1
+            degree_counter[s] += 1
+            degree_counter[t] +=1
 
+            total_counter[s] += e['matches']
+            total_counter[t] += e['matches']
+            wins_counter[s] += e['wins_source']
+            wins_counter[t] += e['wins_target']
+            draws_counter[s] += e['draws']
+            draws_counter[t] += e['draws']
+
+
+        users = User.objects.filter(id__in=all_node_ids).only(
+            'id', 'nickname', 'email', 'avatar'
+        )
         nodes = []
-        users = User.objects.filter(id__in=all_node_ids)
         for user in users:
-            user_matches = base_matches_qs.filter(
-                Q(player1=user) | Q(player2=user)
-            )
-            total = user_matches.count()
-            wins = user_matches.filter(winner=user).count()
-            draws = user_matches.filter(winner__isnull=True).count()
+            total = total_counter.get(user.id, 0)
+            wins = wins_counter.get(user.id, 0)
+            draws = draws_counter.get(user.id, 0)
             losses = total - wins - draws
 
             nodes.append({
