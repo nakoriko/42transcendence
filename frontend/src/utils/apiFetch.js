@@ -39,6 +39,13 @@
         return result
 
     }
+
+    //refresh failed: sessien is dead, stops redidrect to /profile
+    function clearSessionAndRedirect(){
+        localStorage.removeItem('access')
+        localStorage.removeItem('refresh')
+        router.push('/login')
+    }
     
     export async function apiFetch(url, options = {}) {
         let token = localStorage.getItem('access')
@@ -51,7 +58,7 @@
         if(isTokenExpiring(token)) {
             const refreshed = await tryRefresh()
             if(!refreshed) {
-                router.push('/login')
+                clearSessionAndRedirect()
                 return null
             }
             token = localStorage.getItem('access')
@@ -68,7 +75,7 @@
         if(response.status === 401) {
             const refreshed = await tryRefresh()
             if(!refreshed) {
-                router.push('/login')
+                clearSessionAndRedirect()
                 return null
             }
             const newToken = localStorage.getItem('access')
