@@ -1,6 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from rest_framework.test import APITestCase
+from io import StringIO
+from unittest.mock import patch
+from django.apps import apps
+from django.core.management import call_command
+
 
 from .models import FriendRelation
 User = get_user_model()
@@ -155,5 +160,30 @@ class PublicProfileTests(APITestCase):
         res = self.client.get(self.url)
         self.assertEqual(res.status_code, 401)
 
+
+class PresenceResetTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email='on@test.com', password='pass12345', nickname='online', is_online=True,
+        )
+    
+    @patch('redis.Redis')
+    def test_app_startuo_does_not_reset_presence(self, mock_redis):
+        apps.get_app_config('users').ready()
+
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_online)
+        mock_redis.assert_not_called()
+
+    @patch('redis.Redis')
+    def test_reset_presence_command(self, mock_redis):
+        r = mock_redis.return_value
+        r.scan_iter.return_value = [b'ws_conn_count:1', b'ws_conn_count:2']
+
+        call_command('reset_presence', stdout=StringIO())
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_online)
+        r.scan_iter.assert_called_once_with('ws_conn_count:*')
+        self.assertEqual(r.delete.call_count, 2)
 
     
