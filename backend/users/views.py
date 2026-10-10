@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/10 11:36:30 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/10 12:23:16 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -141,13 +141,14 @@ class FriendRequestView(APIView):
             return Response({'error': 'User not found'}, status=404)
         
         #check if there's active invitations
-        already_exits = FriendRelation.objects.filter(
+        existing = FriendRelation.objects.filter(
             Q(from_user=request.user, to_user_id=to_user_id) |
             Q(from_user_id=to_user_id, to_user=request.user)
-        ).exists()
+        )
 
-        if already_exits:
-            return Response({'error': 'Realtion  already exists'}, status=400)
+        if existing.exclude(status='rejected').exists():
+            return Response({'error': 'Relation  already exists'}, status=400)
+        existing.filter(status='rejected').delete()
 
         #SABINO modifica per vedere richieste amicizia in tempo reale
         relation = FriendRelation.objects.create (

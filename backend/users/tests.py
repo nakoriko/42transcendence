@@ -58,5 +58,68 @@ class FriendDetailTests(APITestCase):
         self.assertEqual(res.status_code, 204)
         self.assertFalse(FriendRelation.objects.filter(id=self.relation.id).exists())
 
+    
+
+    #Multiply request sending
+@override_settings (CHANNEL_LAYERS=TEST_CHANNEL_LAYERS)
+class FriendRequestTests(APITestCase):
+    url = '/api/users/friends/request/'
+    
+    def setUp(self):
+        self.sender = User.objects.create_user(email='s@test.com', password='pass12345', nickname='sender')
+        self.recipient = User.objects.create_user(email='r@test.com', password='pass12345', nickname='recipient')
+
+    def send(self, from_user, to_user):
+        self.client.force_authenticate(from_user)
+        return self.client.post(self.url, {'to_user_id': to_user.id}, format='json')
+
+    def relations(self):
+        return FriendRelation.objects.filter(
+            from_user__in=[self.sender, self.recipient],
+            to_user__in=[self.sender, self.recipient],
+        )
+
+    def test_can_send_request(self):
+        res=self.send(self.sender, self.recipient)
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(self.relations().get().status, 'pending')
+
+    def test_cannot_duplicate_request(self):
+        self.send(self.sender, self.recipient)
+        res=self.send(self.sender, self.recipient)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(self.relations().count(), 1)
+
+    def test_cannot_request_existing_friend(self):
+        FriendRelation.objects.create(from_user=self.sender, to_user=self.recipient, status='accepted')
+        res=self.send(self.recipient, self.sender)
+        self.assertEqual(res.status_code, 400)
+
+
+    def test_sender_can_resend_after_rejection(self):
+        FriendRelation.objects.create(from_user=self.sender, to_user=self.recipient, status='rejected')
+        res=self.send(self.sender, self.recipient)
+        self.assertEqual(res.status_code, 201)
+
+        relation = self.relations().get()
+        self.assertEqual(relation.status, 'pending')
+
+    def test_recipient_can_send_after_rejecting(self):
+        FriendRelation.objects.create(from_user=self.sender, to_user=self.recipient, status='rejected')
+        res=self.send(from_user=self.recipient, to_user=self.sender)
+        self.assertEqual(res.status_code, 201)
+
+        relation = self.relations().get()
+        self.assertEqual(relation.from_user, self.recipient)
+        self.assertEqual(relation.status, 'pending')
+
+    def test_full_flow_request_reject_request_again(self):
+        self.send(self.sender, self.recipient)
+        relation = self.relations().get()
+        self.client.force_authenticate(self.recipient)
+        self.client.patch(f'/api/users/friends/{relation.id}/', {'action': 'reject'}, format='json')
+
+        res=self.send(self.sender, self.recipient)
+        self.assertEqual(res.status_code, 201)
 
     
