@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/08 10:30:30 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/10 11:36:30 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -225,6 +225,8 @@ class FriendDetailView(APIView):
         relation = self.get_object(pk, request.user)
         if not relation:
                 return Response({'error': 'Not Found'}, status=404)
+        if relation.to_user_id != request.user.id:
+                return Response({'error': 'Only recipient can accept or reject'}, status=403)
 
         action = request.data.get('action')
         if action == 'accept':
