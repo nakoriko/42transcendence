@@ -6,8 +6,10 @@ import { ref, reactive, onMounted, onUnmounted} from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { apiFetch } from '@/utils/apiFetch'
+import { useMatchesStore } from '@/stores/matches'
 
     const userStore = useUserStore()
+    const matchStore = useMatchesStore()
     const gameCanvas = ref(null)
     const route = useRoute()
     const player1 = reactive({id:null, nickname: 'Player 1'})
@@ -33,14 +35,11 @@ import { apiFetch } from '@/utils/apiFetch'
     }
 
     async function finishMatch(winnerId) {
-        await apiFetch(`/api/game/matches/${matchId}/finish/`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                winner: winnerId,
-                score_player1: score_p1.value,
-                score_player2: score_p2.value,
-                ended_at: new Date().toISOString() //convert to ISO 8601: 2026-06-05T14:23:11...., because jangpo is waiting for this format
-            })
+        await matchStore.finishMatch(matchId, {
+            winner: winnerId,
+            score_player1: score_p1.value,
+            score_player2: score_p2.value,
+
         })
     }
 

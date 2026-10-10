@@ -31,5 +31,14 @@ export const useMatchesStore = defineStore('matches', () => {
         loaded.value = false
         matches.value = []
     }
-    return { matches, loaded, load, invalidate }
+
+    async function finishMatch(matchId, result) {
+        const res = await apiFetch(`/api/game/matches/${matchId}/finish/`, {
+            method: 'PATCH',
+            body: JSON.stringify(result),
+        })
+        invalidate()
+        return res
+    }
+    return { matches, loaded, load, invalidate, finishMatch }
 })
