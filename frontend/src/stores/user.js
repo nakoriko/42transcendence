@@ -2,6 +2,9 @@ import  { defineStore } from 'pinia'
 import  { ref } from 'vue'
 import { apiFetch } from '@/utils/apiFetch'
 import  * as wsService from '@/services/wsService.js'
+import { useMatchesStore } from './matches'
+import { useChatStore } from './chat'
+import { usePresenceStore } from './presence'
 
 export const useUserStore = defineStore('user', () => {
     const currentUser = ref(null)
@@ -47,6 +50,9 @@ export const useUserStore = defineStore('user', () => {
         localStorage.removeItem('refresh')
         wsService.disconnect()
         clear()
+        useMatchesStore().invalidate()
+        useChatStore().$reset()
+        usePresenceStore().$reset()
     }
 
     async function refreshUser() {
