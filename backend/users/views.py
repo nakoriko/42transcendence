@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/10 12:23:16 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/10 13:07:57 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -73,7 +73,6 @@ class PublicProfileView(APIView):
         user = get_object_or_404(User, pk=pk)
         return Response({
             "id": user.id,
-            "email": user.email,
             "nickname": user.nickname,
             "wins": user.wins,
             "losses": user.losses,

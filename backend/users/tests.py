@@ -122,4 +122,38 @@ class FriendRequestTests(APITestCase):
         res=self.send(self.sender, self.recipient)
         self.assertEqual(res.status_code, 201)
 
+class PublicProfileTests(APITestCase):
+    def setUp(self):
+        self.me =User.objects.create_user(email='me@test.com', password='pass12345', nickname='me')
+        self.other =User.objects.create_user(email='other@test.com', password='pass12345', nickname='other')
+        self.url= f'/api/users/{self.other.id}/'
+        self.client.force_authenticate(self.me)
+
+    def test_public_profile_hides_email(self):
+        res=self.client.get(self.url)
+        self.assertEqual(res.status_code, 200)
+        self.assertNotIn('email', res.data)
+
+    def test_public_profile_returns_public_fields(self):
+        res=self.client.get(self.url)
+        self.assertEqual(res.data['id'], self.other.id)
+        self.assertEqual(res.data['nickname'], 'other')
+        for filed in('wins', 'losses', 'avatar'):
+                self.assertIn(filed, res.data)
+
+    def test_own_profile_still_has_email(self):
+        res=self.client.get('/api/users/profile/')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['email'], 'me@test.com')
+
+    def test_unknown_user_returns_404(self):
+        res = self.client.get('/api/users/999999/')
+        self.assertEqual(res.status_code, 404)
+
+    def test_anonymous_cannot_view_profile(self):
+        self.client.force_authenticate(None)
+        res = self.client.get(self.url)
+        self.assertEqual(res.status_code, 401)
+
+
     
