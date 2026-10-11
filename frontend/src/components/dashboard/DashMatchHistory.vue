@@ -42,9 +42,12 @@ watch(() => props.activeMatchId, (id) => {
 
 watch(selectedMatch, async (match) => {
     events.value = []
-    if (!match) { events.value = []; return }
+    if(!match) return
     const res = await apiFetch(`/api/game/matches/${match.id}/events/`)
-    if (res) events.value = await res.json()
+    if(!res) return
+    const data = await res.json()
+    if(selectedMatch.value?.id !== match.id) return 
+    events.value = data
 })
 
 
