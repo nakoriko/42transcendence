@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/07 18:23:32 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/11 20:59:00 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -91,7 +91,7 @@ class PongUniverseView(APIView):
 
         users = (
             User.objects
-            .only('id', 'nickname', 'email', 'date_joined')
+            .only('id', 'nickname', 'date_joined')
             .order_by('date_joined')
         )
         result = []
@@ -104,7 +104,7 @@ class PongUniverseView(APIView):
 
             result.append({
                 'id': user.id,
-                'nickname': user.nickname or user.email,
+                'nickname': user.nickname,
                 'date_joined': user.date_joined.isoformat(),
                 'total_matches': total,
                 'wins': wins,
@@ -388,7 +388,7 @@ class PlayerGraphView(APIView):
 
 
         users = User.objects.filter(id__in=all_node_ids).only(
-            'id', 'nickname', 'email', 'avatar'
+            'id', 'nickname', 'avatar'
         )
         nodes = []
         for user in users:
@@ -399,7 +399,7 @@ class PlayerGraphView(APIView):
 
             nodes.append({
                 'id': user.id,
-                'nickname': user.nickname or user.email,
+                'nickname': user.nickname,
                 'avatar': user.avatar.url if getattr(user, 'avatar', None) else None,
                 'wins': wins,
                 'losses': losses,
