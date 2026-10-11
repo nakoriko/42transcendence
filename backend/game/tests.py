@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import override_settings
+from django.utils import timezone
+
 from rest_framework.test import APITestCase
 
 from .models import Match, MatchEvent
@@ -158,6 +160,42 @@ class StartMatchTests(APITestCase):
         res = self.start({'player2': self.p1.id})
         self.assertEqual(res.status_code, 400)
         self.assertEqual(Match.objects.count(), 0)
+
+class MatchHistoryTests(APITestCase):
+    url = '/api/game/matches/'
+
+    def setUp(self):
+        self.p1 = User.objects.create_user(email='p1@test.com', password='pass12345', nickname='p1')
+        self.p2 = User.objects.create_user(email='p2@test.com', password='pass12345', nickname='p2')
+
+        now = timezone.now()
+        Match.objects.bulk_create([
+            Match(player1=self.p1, player2=self.p2, winner=self.p1,
+                    status=Match.Status.FINISHED, ended_at=now)
+            for _ in range(12)
+        ])
+        self.client.force_authenticate(self.p1)
+
+    def test_default_limit_is_10(self):
+        res = self.client.get(self.url)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(len(res.data), 10)
+
+    def test_limit_param_is_respected(self):
+        res = self.client.get(self.url, {'limit': 5})
+        self.assertEqual(len(res.data), 5)
+
+
+    def test_non_numeric_limit_returns_400(self):
+        res=self.client.get(self.url, {'limit': 'abc'})
+        self.assertEqual(res.status_code, 400)
+
+    def test_negative_limit_is_clamped(self):
+        res=self.client.get(self.url, {'limit': -1})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(len(res.data), 1)
+
+
     
     
 

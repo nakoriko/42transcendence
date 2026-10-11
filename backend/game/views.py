@@ -138,9 +138,14 @@ class MatchEventsView(APIView):
 
 class MatchHistoryView(APIView):
     permission_classes = [IsAuthenticated]
+    MAX_LIMIT = 200
 
     def get(self, request):
-        limit = int(request.query_params.get('limit', 10))
+        try:
+            limit = int(request.query_params.get('limit', 10))
+        except ValueError:
+            return Response({'error': 'limit must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
+        limit = max(1, min(limit, self.MAX_LIMIT))
         matches = (
             Match.objects
             .select_related('player1', 'player2', 'winner')
