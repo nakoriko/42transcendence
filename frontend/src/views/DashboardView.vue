@@ -25,6 +25,7 @@ const presenceStore = usePresenceStore()
 const activeMatchId = ref(null)
 
 async function captureSection(el) {
+    // throw new Error('debug B26: simulated capture failure')
     const canvas = await html2canvas(el, {
         backgroundColor: '#0f1629',
         scale: 2,
@@ -34,7 +35,8 @@ async function captureSection(el) {
 }
 
 async function exportToPdf() {
-    document.querySelectorAll('.scroll-thin').forEach(el => {
+    const scrollables = document.querySelectorAll('.scroll-thin')
+    scrollables.forEach(el => {
         el.dataset.prevMaxHeight = el.style.maxHeight
         el.style.maxHeight = 'none'
         el.style.overflow = 'visible'
@@ -43,14 +45,17 @@ async function exportToPdf() {
 
     const sections = [universeRef.value, statsRef.value, historyRef.value]
     const canvases = []
-    for (const section of sections) {
-        canvases.push(await captureSection(section))
+    try {
+        for (const section of sections) {
+            canvases.push(await captureSection(section))
+        }
+    } finally {
+        //always restore layout, even if html2canvas fails
+        scrollables.forEach(el => {
+            el.style.maxHeight = el.dataset.prevMaxHeight || ''
+            el.style.overflow = ''
+        })
     }
-    //puts list elements on how it was before
-    document.querySelectorAll('.scroll-thin').forEach(el => {
-        el.style.maxHeight = el.dataset.prevMaxHeight || ''
-        el.style.overflow = ''
-    })
 
 
     const pdf = new jsPDF({
