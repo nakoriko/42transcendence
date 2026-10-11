@@ -9,6 +9,10 @@ describe('calcWinRate', () => {
         expect(calcWinRate(1, 2)).toBe(33)
         expect(calcWinRate(3, 1)).toBe(75)
     })
+    it('treats missing wins as 0', () => {
+        expect(calcWinRate(undefined, 3)).toBe(0)
+        expect(calcWinRate(null, 2)).toBe(0)
+    })
 })
 
 describe('calcTotalMathces', () => {
