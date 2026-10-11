@@ -5,7 +5,7 @@ from django.test import SimpleTestCase
 from django.conf import settings
 
 class StaticFilesTest(SimpleTestCase):
-    def test_coollectstatic_is_configured(self):
+    def test_collectstatic_is_configured(self):
         call_command('collectstatic', '--noinput', '--dry-run', stdout=StringIO())
         
 class RedisSettingsTests(SimpleTestCase):

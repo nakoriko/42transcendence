@@ -12,7 +12,7 @@ describe('calcWinRate', () => {
 })
 
 describe('calcTotalMathces', () => {
-    it('treats missin values as 0', () => {
+    it('treats missing values as 0', () => {
         expect(calcTotalMatches(undefined, 3)).toBe(3)
         expect(calcTotalMatches(null, null)).toBe(0)
     })

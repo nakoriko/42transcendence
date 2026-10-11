@@ -69,7 +69,7 @@ describe('userStore.refreshUser', () => {
         expect(apiFetch).toHaveBeenCalledTimes(1)
     })
 
-    it('keeps current user while reloading, then replace it', async () => {
+    it('keeps current user while reloading, then replaces it', async () => {
         const store = useUserStore()
         apiFetch.mockResolvedValueOnce(profile('old'))
         await store.fetchUser()

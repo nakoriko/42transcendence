@@ -49,7 +49,7 @@ class FinishMatchTests(APITestCase):
         self.p1.refresh_from_db()
         self.assertEqual(self.p1.wins, 1) #check if after second attempt to finish is still right result
 
-    def test_winner_must_be_paricipant(self):
+    def test_winner_must_be_participant(self):
         res = self.finish(self.outsider.id)
         self.assertEqual(res.status_code, 400)
 
@@ -125,7 +125,7 @@ class StartMatchTests(APITestCase):
     def start(self, payload):
         return self.client.post(self.url, payload, format='json')
 
-    def test_start_match_as_froentend_does(self):
+    def test_start_match_as_frontend_does(self):
         res = self.start({'player1': self.p1.id, 'player2': self.p2.id})
         self.assertEqual(res.status_code, 201)
 
@@ -154,7 +154,7 @@ class StartMatchTests(APITestCase):
         self.assertEqual(res.status_code, 400)
         self.assertEqual(Match.objects.count(), 0)
 
-    def test_cannot_play_against_yourseld(self):
+    def test_cannot_play_against_yourself(self):
         res = self.start({'player2': self.p1.id})
         self.assertEqual(res.status_code, 400)
         self.assertEqual(Match.objects.count(), 0)
