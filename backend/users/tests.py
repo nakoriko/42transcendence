@@ -63,6 +63,21 @@ class FriendDetailTests(APITestCase):
         self.assertEqual(res.status_code, 204)
         self.assertFalse(FriendRelation.objects.filter(id=self.relation.id).exists())
 
+    def test_cannot_accept_already_accepted(self):
+        self.relation.status = 'accepted'
+        self.relation.save()
+
+        res = self.act(self.recipient, 'accept')
+        self.assertEqual(res.status_code, 400)
+
+    def test_cannot_accept_rejected(self):
+        self.relation.status = 'rejected'
+        self.relation.save()
+        res = self.act(self.recipient, 'accept')
+        self.assertEqual(res.status_code, 400)
+        self.relation.refresh_from_db()
+        self.assertEqual(self.relation.status, 'rejected')
+
     
 
     #Multiply request sending
@@ -217,5 +232,7 @@ class RegisterTests(APITestCase):
         user = User.objects.get(email='new@test.com')
         self.assertTrue(user.check_password('Pong-Ultra-2026'))
         self.assertNotIn('password', res.data)
+
+    
 
     

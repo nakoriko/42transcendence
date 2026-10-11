@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/10 13:07:57 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/11 21:35:27 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -227,6 +227,9 @@ class FriendDetailView(APIView):
                 return Response({'error': 'Not Found'}, status=404)
         if relation.to_user_id != request.user.id:
                 return Response({'error': 'Only recipient can accept or reject'}, status=403)
+        if relation.status != 'pending':
+                return Response({'error': 'Request already processed'}, status=400)
+ 
 
         action = request.data.get('action')
         if action == 'accept':
