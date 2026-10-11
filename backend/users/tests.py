@@ -186,4 +186,10 @@ class PresenceResetTests(APITestCase):
         r.scan_iter.assert_called_once_with('ws_conn_count:*')
         self.assertEqual(r.delete.call_count, 2)
 
+    @override_settings(REDIS_HOST='redis-test')
+    @patch('redis.Redis')
+    def test_reset_presence_uses_configured_redis_host(seld, mock_redis):
+        call_command('reset_presence', stdout=StringIO())
+        mock_redis.assert_called_once_with(host='redis-test', port=6379)
+
     

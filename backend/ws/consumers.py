@@ -6,11 +6,12 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from users.models import FriendRelation
 import redis.asyncio as redis
+from django.conf import settings
 
 
 User = get_user_model()
 
-redis_client = redis.Redis(host='redis', port=6379)
+redis_client = redis.Redis(host=settings.REDIS_HOST, port=6379)
 
 class PresenceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
