@@ -50,3 +50,41 @@ describe('userStore.logout', () => {
         expect(presence.online).toEqual({})
     })
 })
+
+describe('userStore.refreshUser', () => {
+    const profile = (nickname) => ({ ok: true, json: async() => ({ id: 1, nickname, avatar: null }) })
+
+    beforeEach(() => {
+        setActivePinia(createPinia())
+        apiFetch.mockReset()
+    })
+
+    it('fetchUser does not refetch when user is already loaded', async () => {
+        apiFetch.mockResolvedValue(profile('old'))
+        const store = useUserStore()
+
+        await store.fetchUser()
+        await store.fetchUser()
+
+        expect(apiFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('keeps current user while reloading, then replace it', async () => {
+        const store = useUserStore()
+        apiFetch.mockResolvedValueOnce(profile('old'))
+        await store.fetchUser()
+
+        let resolve 
+        apiFetch.mockReturnValueOnce(new Promise( r=> { resolve = r }))
+        const pending = store.refreshUser()
+
+        expect(store.currentUser).not.toBeNull()
+        expect(store.currentUser.nickname).toBe('old')
+
+        resolve(profile('new'))
+        await pending
+
+        expect(store.currentUser.nickname).toBe('new')
+        expect(apiFetch).toHaveBeenCalledTimes(2)
+    })
+})

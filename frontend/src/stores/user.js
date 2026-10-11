@@ -9,8 +9,8 @@ import { usePresenceStore } from './presence'
 export const useUserStore = defineStore('user', () => {
     const currentUser = ref(null)
 
-    async function fetchUser() {
-        if(currentUser.value) return
+    async function fetchUser(force = false) {
+        if(currentUser.value && !force) return
         const res = await apiFetch('/api/users/profile/') 
         if(!res) return 
         const data = await res.json()
@@ -56,8 +56,8 @@ export const useUserStore = defineStore('user', () => {
     }
 
     async function refreshUser() {
-        currentUser.value = null
-        await fetchUser()
+        // currentUser.value = null
+        await fetchUser(true)
     }
 
     return { currentUser, fetchUser, clear, login, logout, refreshUser }
