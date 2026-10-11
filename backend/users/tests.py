@@ -192,4 +192,30 @@ class PresenceResetTests(APITestCase):
         call_command('reset_presence', stdout=StringIO())
         mock_redis.assert_called_once_with(host='redis-test', port=6379)
 
+class RegisterTests(APITestCase):
+    url = '/api/users/register/'
+
+    def register(self, password):
+        return self.client.post(self.url, {
+            'email': 'new@test.com', 'password': password, 'nickname': 'newbie',
+        }, format='json')
+
+    def test_too_short_password_is_rejected(self):
+        res = self.register('1')
+        self.assertEqual(res.status_code, 400)
+        self.assertIn('password', res.data)
+        self.assertFalse(User.objects.filter(email='new@test.com').exists())
+
+    def test_numeric_password_rejected(self):
+        res = self.register('12345678')
+        self.assertEqual(res.status_code, 400)
+        self.assertIn('password', res.data)
+
+    def test_strong_password_register(self):
+        res = self.register('Pong-Ultra-2026')
+        self.assertEqual(res.status_code, 201)
+        user = User.objects.get(email='new@test.com')
+        self.assertTrue(user.check_password('Pong-Ultra-2026'))
+        self.assertNotIn('password', res.data)
+
     
