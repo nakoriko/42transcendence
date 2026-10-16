@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/11 21:35:27 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/16 12:38:17 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -234,6 +234,14 @@ class FriendDetailView(APIView):
         action = request.data.get('action')
         if action == 'accept':
             relation.status = 'accepted'
+        elif action == 'reject':
+            relation.status = 'rejected'
+        else:
+            return Response({'error': 'Invalid action'}, status=400)
+        relation.save()
+        
+        #notify sender only after new status is saved
+        if action == 'accept':
             #SABINO modifica per vedere richieste amicizia in tempo reale
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(f"user_{relation.from_user_id}", {
@@ -241,11 +249,6 @@ class FriendDetailView(APIView):
                 "user_id": request.user.id,
                 "nickname": request.user.nickname,
             })
-        elif action == 'reject':
-            relation.status = 'rejected'
-        else:
-            return Response({'error': 'Invalid action'}, status=400)
-        relation.save()
         return Response({'message': 'Done'}, status=200)
 
     #delete

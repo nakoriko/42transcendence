@@ -78,6 +78,14 @@ class FriendDetailTests(APITestCase):
         self.relation.refresh_from_db()
         self.assertEqual(self.relation.status, 'rejected')
 
+    def test_accept_is_saved_even_if_ws_notify_fails(self):
+        with patch('users.views.get_channel_layer', side_effect=RuntimeError('redis dow')):
+            with self.assertRaises(RuntimeError):
+                self.act(self.recipient, 'accept')
+        self.relation.refresh_from_db()
+        self.assertEqual(self.relation.status, 'accepted')
+
+
     
 
     #Multiply request sending
