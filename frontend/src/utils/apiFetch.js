@@ -34,9 +34,13 @@
             return false
         }) ()
 
-        const result = await refreshPromise
-        refreshPromise = null // reset for next exp token and new refresh
-        return result
+        try {
+            return await refreshPromise
+        } finally {
+            refreshPromise = null // reset for next exp token and new refresh
+        }
+        // const result = await refreshPromise
+        // return result
 
     }
 

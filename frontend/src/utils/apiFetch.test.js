@@ -78,4 +78,19 @@ describe('apiFetch', () => {
         expect(localStorage.getItem('refresh')).toBeNull()
     })
 
+    it('retries refresh after a network error', async () => {
+        localStorage.setItem('access', makeToken(-60))
+        localStorage.setItem('refresh', 'refresh-token')
+        const newToken = makeToken(3600)
+        const fetchMock = vi.fn()
+            .mockRejectedValueOnce(new Error('network down'))
+            .mockResolvedValueOnce(response(200, { access: newToken }))
+            .mockResolvedValueOnce(response(200))
+        vi.stubGlobal('fetch', fetchMock)
+
+        await expect(apiFetch('/api/x/')).rejects.toThrow('network down')
+        const res = await apiFetch('/api/x/')
+        expect(res.status).toBe(200)
+    })
+
 })
