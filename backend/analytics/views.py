@@ -6,13 +6,13 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/11 20:59:00 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/16 18:42:33 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 from django.contrib.auth import get_user_model
 # from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Count, Avg, Max, F, Case, When #object to calculate aberege reaction_time for all users
+from django.db.models import Q, Count, Avg, Max, F #object to calculate aberege reaction_time for all users
 from django.db.models.functions import TruncDate, Least, Greatest
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated
 from game.models import Match, MatchEvent
 from datetime import timedelta 
 from django.utils import timezone
-from collections import Counter
+from collections import Counter, defaultdict
 
 User = get_user_model()
 
@@ -282,7 +282,7 @@ class PlayerGraphView(APIView):
     Future: ?limit=N top-N by match count
     - No caching: computed on every request. Future: Redis cache keyed by (user.id, period)
     with invalidation on Match.finish
-    - Known N+1 risk in Match queries 
+
 
     Permissions:
         IsAuthenticated
@@ -316,26 +316,20 @@ class PlayerGraphView(APIView):
 
         TOP_N = 5
         second_circle_ids = set()
-        for uid in first_circle_ids:
-            partner_counts = (
-                base_matches_qs
-                .filter(Q(player1_id=uid) | Q(player2_id=uid))
-                .annotate(
-                    partner_id=Case(
-                        When(player1_id=uid, then=F('player2_id')),
-                        default=F('player1_id'),
-                    )
-                )
-                .exclude(partner_id=me_id)
-                .exclude(partner_id=uid)
-                .values('partner_id')
-                .annotate(
-                    cnt=Count('id')
-                )
-                .order_by('-cnt')[:TOP_N]
-            )
-            for row in partner_counts:
-                second_circle_ids.add(row['partner_id'])
+        partner_counts = defaultdict(Counter)
+        rows = base_matches_qs.filter(
+            Q(player1_id__in=first_circle_ids) | Q(player2_id__in=first_circle_ids)
+        ).values_list('player1_id', 'player2_id')
+        for p1, p2 in rows:
+            if p1 in first_circle_ids:
+                partner_counts[p1][p2] += 1
+            if p2 in first_circle_ids:
+                partner_counts[p2][p1] += 1
+
+        for uid, counter in partner_counts.items():
+           counter.pop(me_id, None)
+           counter.pop(uid, None)
+           second_circle_ids.update(pid for pid, _ in counter.most_common(TOP_N))
             
         all_node_ids = {me_id} | first_circle_ids | second_circle_ids
 
