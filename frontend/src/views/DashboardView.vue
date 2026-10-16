@@ -13,6 +13,7 @@ import AppButton from '@/components/AppButton.vue';
 import { Download } from 'lucide-vue-next';
 import html2canvas from 'html2canvas-pro'
 import jsPDF from 'jspdf'
+import { fitPdfPage } from '@/utils/pdf';
 
 
 const statsRef = ref(null)
@@ -57,18 +58,19 @@ async function exportToPdf() {
         })
     }
 
-
+    const pages = canvases.map(c => fitPdfPage(c.width, c.height))
     const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: [canvases[0].width, canvases[0].height] //creates page ruight to image 
+        orientation: pages[0].orientation,
+        unit: 'pt',
+        format: [pages[0].width, pages[0].height] //creates page ruight to image 
     })
 
     canvases.forEach((canvas, i) => {
+        const { width, height, orientation } = pages[i]
         if (i > 0) {
-            pdf.addPage([canvas.width, canvas.height], 'landscape')
+            pdf.addPage([width, height], orientation)
         }
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width, canvas.height)
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, width, height)
     })
     pdf.save('dashboard-analytics.pdf')
 }
