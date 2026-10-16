@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.utils import timezone
-
+from django.test.utils import CaptureQueriesContext
+from django.db import connection
 from rest_framework.test import APITestCase
 from .serializers import MatchFinishSerializer
 from .models import Match, MatchEvent
@@ -139,6 +140,23 @@ class BulkMatchEventTests(APITestCase):
         res = self.post([self.event(self.match.id, self.outsider.id)])
         self.assertEqual(res.status_code, 400)
         self.assertEqual(MatchEvent.objects.count(), 0)
+
+    def test_uknown_match_returns_400(self):
+        res = self.post([self.event(999999, self.p1.id)])
+        self.assertEqual(res.status_code, 400)
+
+    def test_bulk_response_contains_created_events(self):
+        res = self.post([self.event(self.match.id, self.p1.id)])
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.data[0]['match'], self.match.id)
+        self.assertIn('id', res.data[0])
+
+    def test_query_count_does_not_grow_with_events(self):
+        def count(n):
+            with CaptureQueriesContext(connection) as ctx:
+                self.post([self.event(self.match.id, self.p1.id) for _ in range(n)])
+            return (len(ctx.captured_queries))
+        self.assertEqual(count(2), count(20))
 
 
 class StartMatchTests(APITestCase):

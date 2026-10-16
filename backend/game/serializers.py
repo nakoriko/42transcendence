@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/16 14:41:24 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/16 17:38:09 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,6 +34,14 @@ class MatchEventSerializer(serializers.ModelSerializer):
         model = MatchEvent
         fields = ['id', 'match', 'event_type', 'player', 'timestamp', 'pos_x', 'pos_y', 'reaction_time_ms']
         read_only_fields= ['id', 'timestamp']
+
+class MatchEventInputSerializer(serializers.Serializer):
+    match = serializers.IntegerField()
+    player = serializers.IntegerField(allow_null=True, required=False)
+    event_type=serializers.ChoiceField(choices=MatchEvent.EventType.choices)
+    pos_x = serializers.FloatField(allow_null=True, required=False)
+    pos_y = serializers.FloatField(allow_null=True, required=False)
+    reaction_time_ms = serializers.IntegerField(allow_null=True, required=False)
 
 class MatchFinishSerializer(serializers.ModelSerializer):
     class Meta:

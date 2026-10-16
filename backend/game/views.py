@@ -12,7 +12,7 @@ from channels.layers import get_channel_layer #sab: per dashboard in tempo reale
 from asgiref.sync import async_to_sync  #sab: per dashboard in tempo reale
 
 from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer, \
-    MatchHistorySerializer, MatchInviteSerializer
+    MatchHistorySerializer, MatchInviteSerializer, MatchEventInputSerializer 
 
 User = get_user_model()
 
@@ -225,21 +225,39 @@ class AllUserEventsView(APIView):
 class BulkMatchEventView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        serializer = MatchEventSerializer(data=request.data, many=True)
+        serializer = MatchEventInputSerializer(data=request.data, many=True)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        for event in serializer.validated_data:
-            match = event['match']
+        events = serializer.validated_data
+
+        match_ids = { e['match'] for e in events}
+        matches = Match.objects.in_bulk(match_ids)
+        if len(matches) != len(match_ids):
+            return Response({ 'error': 'Uknown match'},
+            status=status.HTTP_400_BAD_REQUEST)
+
+        for e in events:
+            match = matches[e['match']]
             if request.user.id not in (match.player1_id, match.player2_id):
                 return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
             if match.status != Match.Status.ACTIVE:
                 return Response({'error': 'Match is not active'}, status=status.HTTP_400_BAD_REQUEST)
-            player = event.get('player')
-            if player is not None and player.id not in (match.player1_id, match.player2_id):
-                return Response({ 'error': 'PLayer is not a participant'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            player_id = e.get('player')
+            if player_id is not None and player_id not in (match.player1_id, match.player2_id):
+                return Response({ 'error': 'Player is not a participant'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        created = MatchEvent.objects.bulk_create([
+            MatchEvent(
+                match_id=e['match'],
+                player_id=e.get('player'),
+                event_type=e['event_type'],
+                pos_x=e.get('pos_x'),
+                pos_y=e.get('pos_y'),
+                reaction_time_ms=e.get('reaction_time_ms')
+            )
+            for e in events
+        ])
+        return Response(MatchEventSerializer(created, many=True).data, status=status.HTTP_201_CREATED)
 
 # class MatchHistoryChartView(APIView):
 #     permission_classes = [IsAuthenticated]
