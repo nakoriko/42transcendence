@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/08 17:37:43 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/10/16 14:41:24 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -63,6 +63,8 @@ class MatchHistorySerializer(serializers.ModelSerializer):
 
     def get_result(self, obj):
         request_user = self.context['request'].user
-        return 'win' if obj.winner == request_user else 'loss'
+        if obj.winner_id is None:
+            return 'draw'
+        return 'win' if obj.winner_id == request_user.id else 'loss'
 
 

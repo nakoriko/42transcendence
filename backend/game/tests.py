@@ -86,6 +86,8 @@ class FinishMatchTests(APITestCase):
 
 
 
+
+
 class BulkMatchEventTests(APITestCase):
     url = '/api/game/matches/events/bulk/'
 
@@ -213,6 +215,12 @@ class MatchHistoryTests(APITestCase):
         res=self.client.get(self.url, {'limit': -1})
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(res.data), 1)
+
+    def test_match_without_winner_is_draw(self):
+        Match.objects.create(player1=self.p1, player2=self.p2, status=Match.Status.FINISHED,
+            mode=Match.Mode.LOCAL, ended_at=timezone.now(), winner=None)
+        res = self.client.get(f'{self.url}?limit=1')
+        self.assertEqual(res.data[0]['result'], 'draw')
 
 
     
