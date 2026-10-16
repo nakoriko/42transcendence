@@ -50,6 +50,14 @@
         localStorage.removeItem('refresh')
         router.push('/login')
     }
+
+    function buildHeaders(token, options) {
+        const headers = { 'Authorization': `Bearer ${token}` }
+        if(!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json'
+        }
+        return { ...headers, ...options.headers }
+    }
     
     export async function apiFetch(url, options = {}) {
         let token = localStorage.getItem('access')
@@ -70,12 +78,9 @@
 
         const response = await fetch(url, {
             ...options,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                ...options.headers //...options - spred operator, that recognise what was passed as method, body etc
-            }
+            headers: buildHeaders(token, options)
         })
+
         if(response.status === 401) {
             const refreshed = await tryRefresh()
             if(!refreshed) {
@@ -85,11 +90,7 @@
             const newToken = localStorage.getItem('access')
             return fetch(url, {
                 ...options,
-                headers: {
-                    'Authorization': `Bearer ${newToken}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers //...options - spred operator, that recognise what was passed as method, body etc
-                }
+                headers: buildHeaders(newToken, options)
             })
         }
         return response

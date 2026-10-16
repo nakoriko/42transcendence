@@ -93,4 +93,13 @@ describe('apiFetch', () => {
         expect(res.status).toBe(200)
     })
 
+    it('does not set JSON content type for FromDataa body', async () => {
+        localStorage.setItem('access', makeToken(3600))
+        const fetchMock = vi.fn().mockResolvedValue(response(200))
+        vi.stubGlobal('fetch', fetchMock)
+
+        await apiFetch('/api/users/avatar/', { method: 'PATCH', body: new FormData () })
+        expect(fetchMock.mock.calls[0][1].headers['Content-Type']).toBeUndefined()
+    })
+
 })

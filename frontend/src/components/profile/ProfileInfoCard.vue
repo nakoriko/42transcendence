@@ -58,13 +58,12 @@ async function uploadAvatar(file) {
     formData.append('avatar', file)
 
     const token = localStorage.getItem('access')
-    const response = await fetch('/api/users/avatar/', {
+    const response = await apiFetch('/api/users/avatar/', {
         method: 'PATCH', //updates user tha already exist
-        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
     })
 
-    if(response.ok) {
+    if(response?.ok) {
         await userStore.refreshUser()
         emit('updated')
     } 
