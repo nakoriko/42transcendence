@@ -5,6 +5,7 @@ from io import StringIO
 from unittest.mock import patch
 from django.apps import apps
 from django.core.management import call_command
+from django.core.exceptions import ValidationError
 
 
 from .models import FriendRelation
@@ -240,6 +241,23 @@ class RegisterTests(APITestCase):
         user = User.objects.get(email='new@test.com')
         self.assertTrue(user.check_password('Pong-Ultra-2026'))
         self.assertNotIn('password', res.data)
+
+class NicknameLengthTests(APITestCase):
+    def test_model_rejects_nickname_longer_than_15(self):
+        user = User(email='long@example.com',
+        username='long',
+        nickname='a' * 16)
+        user.set_password('Str0ng-pass-42')
+        with self.assertRaises(ValidationError) as cm:
+            user.full_clean()
+        self.assertIn('nickname', cm.exception.message_dict)
+
+    def test_model_accepts_nickname_of_15(self):
+        user = User(email='ok@example.com', username='ok', nickname='a' * 15)
+        user.set_password('Str0ng-pass-42')
+        user.full_clean()
+
+
 
     
 
