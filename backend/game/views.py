@@ -235,6 +235,9 @@ class BulkMatchEventView(APIView):
                 return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
             if match.status != Match.Status.ACTIVE:
                 return Response({'error': 'Match is not active'}, status=status.HTTP_400_BAD_REQUEST)
+            player = event.get('player')
+            if player is not None and player.id not in (match.player1_id, match.player2_id):
+                return Response({ 'error': 'PLayer is not a participant'}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

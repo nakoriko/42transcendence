@@ -135,6 +135,11 @@ class BulkMatchEventTests(APITestCase):
         self.assertEqual(res.status_code, 403)
         self.assertEqual(MatchEvent.objects.count(), 0)
 
+    def test_event_player_must_be_participant(self):
+        res = self.post([self.event(self.match.id, self.outsider.id)])
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(MatchEvent.objects.count(), 0)
+
 
 class StartMatchTests(APITestCase):
     url='/api/game/matches/start/'
