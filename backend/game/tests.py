@@ -3,8 +3,10 @@ from django.test import override_settings
 from django.utils import timezone
 
 from rest_framework.test import APITestCase
-
+from .serializers import MatchFinishSerializer
 from .models import Match, MatchEvent
+from unittest.mock import patch
+
 User = get_user_model()
 
 TEST_CHANNEL_LAYERS = {'default' : {'BACKEND': 'channels.layers.InMemoryChannelLayer'}} #change redis to channelk layer in memory
@@ -66,6 +68,23 @@ class FinishMatchTests(APITestCase):
         self.client.force_authenticate(self.outsider)
         res = self.finish(self.p1.id)
         self.assertEqual(res.status_code, 403)
+
+    def test_finish_does_not_overwrite_concurrent_user_changes(self):
+        original_save = MatchFinishSerializer.save
+        def save_then_change_users(serializer, **kwargs):
+            result = original_save(serializer, **kwargs)
+            User.objects.filter(pk=self.p1.pk).update(is_online=True, wins=10)
+            User.objects.filter(pk=self.p2.pk).update(losses=10)
+            return result
+        with patch.object(MatchFinishSerializer, 'save', save_then_change_users):
+            res = self.finish(self.p1.id)
+            self.assertEqual(res.status_code, 200)
+            self.p1.refresh_from_db(); self.p2.refresh_from_db()
+            self.assertTrue(self.p1.is_online)
+            self.assertEqual(self.p1.wins, 11)
+            self.assertEqual(self.p2.losses, 11)
+
+
 
 class BulkMatchEventTests(APITestCase):
     url = '/api/game/matches/events/bulk/'

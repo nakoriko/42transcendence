@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Avg #object to calculate aberege reaction_time for all users
+from django.db.models import Q, Avg, F #object to calculate aberege reaction_time for all users
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -103,12 +103,17 @@ class FinishMatchView(APIView):
             match.status = Match.Status.FINISHED
             match.ended_at=timezone.now()
             match.save(update_fields=['status', 'ended_at'])
-            winner = match.winner
-            loser = match.player1 if match.winner == match.player2 else match.player2
-            winner.wins += 1
-            loser.losses += 1
-            winner.save()
-            loser.save()
+            
+            #F(): database adds + 1 itself, other user fieled are not overwritten
+            loser_id = match.player1_id if match.winner_id == match.player2_id else match.player2_id
+            User.objects.filter(pk=match.winner_id).update(wins=F('wins') + 1)
+            User.objects.filter(pk=loser_id).update(losses=F('losses') + 1)
+            # winner = match.winner
+            # loser = match.player1 if match.winner == match.player2 else match.player2
+            # winner.wins += 1
+            # loser.losses += 1
+            # winner.save()
+            # loser.save()
 
             #sab: per dashboard in tempo reale
             channel_layer = get_channel_layer()
@@ -117,7 +122,7 @@ class FinishMatchView(APIView):
                 "match_id": match.id,
                 "player1_id": match.player1_id,
                 "player2_id": match.player2_id,
-                "winner_id": winner.id,
+                "winner_id": match.winner_id,
                 "score_player1": match.score_player1,
                 "score_player2": match.score_player2,
             })
