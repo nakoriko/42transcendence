@@ -13,7 +13,7 @@ import html2canvas from 'html2canvas-pro'
 import jsPDF from 'jspdf'
 import { fitPdfPage } from '@/utils/pdf';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
-
+import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
 
 
 const statsRef = ref(null)
@@ -115,6 +115,9 @@ onMounted(async () => {
                 </aside>
             </div>
         </section>
+
+        <!-- KPI row -->
+        <DashKpiRow></DashKpiRow>
 
         <!--PLayer Stats + Rally timeline-->
         <section ref="statsRef" class="panel">
