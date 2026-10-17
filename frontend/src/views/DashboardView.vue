@@ -12,6 +12,8 @@ import { Download } from 'lucide-vue-next';
 import html2canvas from 'html2canvas-pro'
 import jsPDF from 'jspdf'
 import { fitPdfPage } from '@/utils/pdf';
+import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
+
 
 
 const statsRef = ref(null)
@@ -106,7 +108,12 @@ onMounted(async () => {
         <!--PLayer graph -->
         <section ref="playerGraphRef" class="panel">
             <!---PLayer graph-->
-           <DashPlayerGraph></DashPlayerGraph>
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
+                <DashPlayerGraph></DashPlayerGraph>
+                <aside class="border-t lg:border-t-0 lg:border-l border-white/[0.07] pt-6 lg:pt-0 lg:pl-6">
+                    <DashNodeInfo></DashNodeInfo>
+                </aside>
+            </div>
         </section>
 
         <!--PLayer Stats + Rally timeline-->
