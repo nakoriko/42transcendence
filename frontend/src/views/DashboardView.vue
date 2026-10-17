@@ -1,9 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
-import { apiFetch } from '@/utils/apiFetch';
 import DashMatchHistory from '@/components/dashboard/DashMatchHistory.vue';
 import DashPlayerStats from '@/components/dashboard/DashPlayerStats.vue';
-import DashRallyTimeline from '@/components/dashboard/DashRallyTimeline.vue';
 import DashUniverse from '@/components/dashboard/DashUniverse.vue';
 import DashPlayerGraph from '@/components/dashboard/DashPlayerGraph.vue';
 import  { usePresenceStore } from '@/stores/presence';
@@ -21,7 +19,6 @@ const universeRef = ref(null)
 const historyRef = ref(null)
 const playerGraphRef = ref(null)
 const matchesStore = useMatchesStore()
-const lastEvents = ref([])
 const presenceStore = usePresenceStore()
 const activeMatchId = ref(null)
 
@@ -75,18 +72,12 @@ async function exportToPdf() {
     pdf.save('dashboard-analytics.pdf')
 }
 
-
-
 function onMatchSelected(matchId) {
     activeMatchId.value = matchId
 }
 
 onMounted(async () => {
-    const [, eventsRes ] = await Promise.all([
-        matchesStore.load(),
-        apiFetch('/api/game/events/')
-    ])
-    if(eventsRes) lastEvents.value = (await(eventsRes.json()))
+    await matchesStore.load()
 })
 
 
@@ -120,16 +111,8 @@ onMounted(async () => {
 
         <!--PLayer Stats + Rally timeline-->
         <section ref="statsRef" class="panel">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch lg:min-h-[380px]">
-                <div class="min-h-[380px] lg:min-h-0">
+            <div class="min-h-[380px]">
                     <DashPlayerStats></DashPlayerStats>
-                </div>
-                <div class="min-h-[380px] lg:min-h-0">
-                    <DashRallyTimeline 
-                    :matches="matchesStore.matches" 
-                    :events="lastEvents"
-                    @matchSelected="onMatchSelected"></DashRallyTimeline>
-                </div>
             </div>
         </section>
 
