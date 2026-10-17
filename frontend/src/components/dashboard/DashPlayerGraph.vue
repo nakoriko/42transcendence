@@ -6,6 +6,7 @@ import AppTooltip from '../AppTooltip.vue'
 import AppFilterTabs from '../AppFilterTabs.vue'
 import { apiFetch } from '@/utils/apiFetch'
 import { formatShortDate } from '@/utils/date.js'
+import { useResizeObserver } from '@/composables/useResizeObserver.js'
 
 
 
@@ -25,7 +26,6 @@ import { formatShortDate } from '@/utils/date.js'
 // - Edge thickness fixed at 1px (scaled width postponed — see "Future" below).
 
 // Known limitations:
-// - Resize observer not re-added yet (was tied to old props-based renderViz).
 //   Graph does not re-render on container resize. TODO 
 // - Tooltip (AppTooltip) kept from skeleton but not yet wired to graph data.
 //   Content template still shows event-type fields — to be remapped in Step 5
@@ -70,6 +70,7 @@ const ttEdgeData = reactive (({
 }))
 const container = ref(null)
 let simulation = null
+let lastData = null
 const isEmpty = ref(false)
 const isLoading = ref(false)
 const period = ref('All')
@@ -323,6 +324,7 @@ async function loadGraph() {
         const res = await apiFetch(`/api/analytics/player-graph/?period=${period.value.toLowerCase()}`)
         if(!res) return
         const data = await res.json()
+        lastData = data
         renderGraph(data)
     } finally {
         isLoading.value = false
@@ -332,6 +334,9 @@ async function loadGraph() {
 watch(period, () => {
     loadGraph()
 })
+
+useResizeObserver(container, () => {
+    if (lastData) renderGraph(lastData) }, 200)
 
 onMounted(async () => {
     loadGraph()
