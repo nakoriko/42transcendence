@@ -43,7 +43,7 @@ async function exportToPdf() {
     }) //temporary opens full list, to make all render after
     await nextTick() // aspettiamo finche browser redraw actual layout
 
-    const sections = [universeRef.value, statsRef.value, historyRef.value]
+    const sections = [playerGraphRef.value, statsRef.value, historyRef.value, universeRef.value]
     const canvases = []
     try {
         for (const section of sections) {
@@ -117,18 +117,20 @@ onMounted(async () => {
         </section>
 
         <!-- KPI row -->
-        <DashKpiRow></DashKpiRow>
-
-        <!--PLayer perfomance + insights -->
-        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">
-            <section ref="statsRef" class="panel">
-                <div class="min-h-[380px]">
-                    <DashPlayerStats></DashPlayerStats>
-                </div>
-            </section>
-            <section class="panel">
-                <DashInsights></DashInsights>
-            </section>
+        <div ref="statsRef" class="flex flex-col gap-5">
+            <DashKpiRow></DashKpiRow>
+        
+            <!--PLayer perfomance + insights -->
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">
+                <section class="panel">
+                    <div class="min-h-[380px]">
+                        <DashPlayerStats></DashPlayerStats>
+                    </div>
+                </section>
+                <section class="panel">
+                    <DashInsights></DashInsights>
+                </section>
+            </div>
         </div>
 
         <!--Match history + rally timeline-->
