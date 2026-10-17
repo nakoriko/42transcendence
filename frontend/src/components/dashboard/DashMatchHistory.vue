@@ -65,7 +65,7 @@ watch(selectedMatch, async (match) => {
 </script>
 
 <template>
-<div class="grid grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-4">
+<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-4">
     <div class="panel">
         <RecentMatchesList
             :matches="filteredMatches"
