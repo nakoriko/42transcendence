@@ -100,7 +100,7 @@ async function renderGraph(data) {
         .append('svg')
         .attr('width', W)
         .attr('height', H)
-        .style('overflow', 'visible')
+        // .style('overflow', 'visible')
 
     const defs = svg.append('defs')
     const filter = defs.append('filter')
@@ -121,6 +121,8 @@ async function renderGraph(data) {
     const r = d3.scaleSqrt()
         .domain([0, d3.max(data.nodes, d => d.degree)])
         .range([5, 20])
+
+    const nodeR = d => d.is_current ? r(d.degree) + 4 : r(d.degree)
 
     //define color by winRate (coral -> sage -> teal)
     const color = d3.scaleLinear()
@@ -149,7 +151,7 @@ async function renderGraph(data) {
         .attr('class', 'nodes')
         .selectAll('circle')
         .data(data.nodes).join('circle')
-        .attr('r', d => d.is_current ? r(d.degree) + 4 : r(d.degree))
+        .attr('r', nodeR)
         .attr('fill', d => color (d.wins / (d.wins + d.losses) || 0))
         // .attr('filter', 'url(#glow)')
         .style('cursor', 'grab')
@@ -163,8 +165,8 @@ async function renderGraph(data) {
             d3.select(this).style('cursor', 'grabbing') 
         })
         .on('drag', function(event, d) {
-            d.fx = event.x
-            d.fy = event.y
+            d.fx = clampX(event.x, d)
+            d.fy = clampY(event.y, d)
         })
         .on('end', function(event, d) {
             if(!event.active) simulation.alphaTarget(0.02)
@@ -211,6 +213,10 @@ async function renderGraph(data) {
         const rect = container.value.getBoundingClientRect()
         return [event.clientX - rect.left + 12, event.clientY - rect.top + 12]
     }
+
+    const clampX = (x, d) => Math.max(nodeR(d), Math.min(W - nodeR(d), x))
+    const clampY = (y, d) => Math.max(nodeR(d), Math.min(H - nodeR(d), y))
+
 
     nodeEls
         .on('mouseover', function(event, d) {
@@ -284,9 +290,15 @@ async function renderGraph(data) {
         .force('charge',  d3.forceManyBody().strength(-300))
         .force('center',  d3.forceCenter(W / 2, H / 2).strength(0.05))
         .force('collide', d3.forceCollide().radius(d => r(d.degree) + 5))
+        .force('x', d3.forceX(W / 2).strength(0.06))
+        .force('y', d3.forceY(H / 2).strength(0.08))
         .alphaDecay(0.05)
         .alphaMin(0.001)
         .on('tick', () => {
+            data.nodes.forEach(d => {
+                d.x = clampX(d.x, d)
+                d.y = clampY(d.y, d)
+            })
             linkEls
                 .attr('x1', d=> d.source.x)
                 .attr('y1', d=> d.source.y)
@@ -338,7 +350,7 @@ onMounted(async () => {
 
 
     <div class="flex-1 relative w-full min-h-[400px]">
-        <div ref="container" class="w-full h-full min-h-[400px] flex items-center justify-center"></div>
+        <div ref="container" class="w-full h-full min-h-[400px] flex items-center justify-center overflow-hidden"></div>
         <div v-if="isEmpty" class="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" class="text-muted/40">
                 <circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.5"/>
