@@ -123,7 +123,7 @@ onMounted(async () => {
             <!--PLayer perfomance + insights -->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">
                 <section class="panel">
-                    <div class="min-h-[380px]">
+                    <div class="h-[380px]">
                         <DashPlayerStats></DashPlayerStats>
                     </div>
                 </section>
