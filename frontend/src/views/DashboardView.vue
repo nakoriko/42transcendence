@@ -93,8 +93,8 @@ onMounted(async () => {
 
 </script>
 <template>
-    <div class="pb-16">
-        <div class="mb-10 flex items-center justify-between flex-wrap gap-4">
+    <div class="pb-16 flex flex-col gap-5">
+        <div class="flex items-center justify-between flex-wrap gap-4">
             <div> <!--protection while assync fetchUsers finish his a request: v-if="currentUser"-->
                 <p class="input-label mb-1">Transcend · Dashboard</p>
                 <h1 class="page-title">Analytics</h1>
@@ -113,21 +113,13 @@ onMounted(async () => {
 
 
         <!--PLayer graph -->
-        <section ref="playerGraphRef" class="py-10 border-b border-white/[0.04]">
+        <section ref="playerGraphRef" class="panel">
             <!---PLayer graph-->
            <DashPlayerGraph></DashPlayerGraph>
         </section>
 
-        <!--Pong Universe-->
-        <section ref="universeRef" class="py-10 border-b border-white/[0.04]">
-            <!--DashUNiverse will be here-->
-           <DashUniverse></DashUniverse>
-        </section>
-
-
-
         <!--PLayer Stats + Rally timeline-->
-        <section ref="statsRef" class="py-10 border-b border-white/[0.04]">
+        <section ref="statsRef" class="panel">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch lg:min-h-[380px]">
                 <div class="min-h-[380px] lg:min-h-0">
                     <DashPlayerStats></DashPlayerStats>
@@ -141,13 +133,16 @@ onMounted(async () => {
             </div>
         </section>
 
-
-
-
         <!--Match history-->
-        <section ref="historyRef" class="py-10">
+        <section ref="historyRef" class="panel">
             <!--DashMatch Stats-->
             <DashMatchHistory :activeMatchId></DashMatchHistory>
+        </section>
+
+        <!--Pong Universe-->
+        <section ref="universeRef" class="panel">
+            <!--DashUNiverse will be here-->
+           <DashUniverse></DashUniverse>
         </section>
     </div>
 </template>
