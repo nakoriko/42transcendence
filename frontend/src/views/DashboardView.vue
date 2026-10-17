@@ -14,7 +14,7 @@ import jsPDF from 'jspdf'
 import { fitPdfPage } from '@/utils/pdf';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
-
+import DashInsights from '@/components/dashboard/DashInsights.vue';
 
 const statsRef = ref(null)
 const universeRef = ref(null)
@@ -119,12 +119,17 @@ onMounted(async () => {
         <!-- KPI row -->
         <DashKpiRow></DashKpiRow>
 
-        <!--PLayer Stats + Rally timeline-->
-        <section ref="statsRef" class="panel">
-            <div class="min-h-[380px]">
+        <!--PLayer perfomance + insights -->
+        <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">
+            <section ref="statsRef" class="panel">
+                <div class="min-h-[380px]">
                     <DashPlayerStats></DashPlayerStats>
-            </div>
-        </section>
+                </div>
+            </section>
+            <section class="panel">
+                <DashInsights></DashInsights>
+            </section>
+        </div>
 
         <!--Match history-->
         <section ref="historyRef" class="panel">
