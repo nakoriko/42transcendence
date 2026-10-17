@@ -131,8 +131,8 @@ onMounted(async () => {
             </section>
         </div>
 
-        <!--Match history-->
-        <section ref="historyRef" class="panel">
+        <!--Match history + rally timeline-->
+        <section ref="historyRef">
             <!--DashMatch Stats-->
             <DashMatchHistory :activeMatchId></DashMatchHistory>
         </section>

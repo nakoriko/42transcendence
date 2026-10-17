@@ -65,15 +65,19 @@ watch(selectedMatch, async (match) => {
 </script>
 
 <template>
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-    <RecentMatchesList
-        :matches="filteredMatches"
-        :activeFilter="activeFilter"
-        :selectedMatchId="selectedMatch?.id ?? null"
-        :showScore="true"
-        @filter-change="activeFilter = $event"
-        @match-click="selectedMatch = $event" />
-    <DashRallyTimeline :match="selectedMatch" :events="events" />
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="panel">
+        <RecentMatchesList
+            :matches="filteredMatches"
+            :activeFilter="activeFilter"
+            :selectedMatchId="selectedMatch?.id ?? null"
+            :showScore="true"
+            @filter-change="activeFilter = $event"
+            @match-click="selectedMatch = $event" />
+    </div>
+    <div class="panel min-h-[380px]">
+        <DashRallyTimeline :match="selectedMatch" :events="events" />
+    </div>
     <!-- <MatchEchoViz :match="selectedMatch" :events="events" />  -->
 </div>
 </template>
