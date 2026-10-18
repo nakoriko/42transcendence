@@ -21,8 +21,17 @@ export function summarizeRecord (matches) {
 
 export function currentStreak(matches) {
     const first = matches[0]?.result
-    if( first != 'win' && first !== 'loss') return { result: null, count: 0}
+    if( first !== 'win' && first !== 'loss') return { result: null, count: 0}
     let count = 0
     while( count < matches.length && matches[count].result === first) count++
     return { result: first, count}
+}
+
+export function calcRank(players, userId) {
+    const ranked = players.filter(p => p.total_matches > 0)
+    const me = ranked.find( p => p.id === userId)
+    if (!me) return { rank: null, of: ranked.length }
+    const better = ranked.filter( p => 
+        p.wins > me.wins || (p.wins === me.wins && p.win_rate > me.win_rate))
+    return { rank: better.length + 1, of: ranked.length }
 }

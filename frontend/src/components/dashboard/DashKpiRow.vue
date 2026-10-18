@@ -1,8 +1,10 @@
 <script setup>
-    import { computed } from 'vue'
+    import { computed, ref, watch } from 'vue'
     import { useMatchesStore } from '@/stores/matches';
+    import { useUserStore } from '@/stores/user';
+    import { apiFetch } from '@/utils/apiFetch';
     import { filterByPeriod } from '@/utils/period';
-    import { calcWinRate, summarizeRecord , currentStreak } from '@/utils/stats';
+    import { calcWinRate, summarizeRecord , currentStreak, calcRank } from '@/utils/stats';
 
     const props = defineProps({ period: { type: String, default: 'All' } })
     const matchesStore = useMatchesStore()
@@ -12,6 +14,22 @@
     const winRate = computed(() => calcWinRate(record.value.wins, record.value.losses ))
     const streak = computed(() => currentStreak(matchesStore.matches))
     const last7 = computed(() => matchesStore.matches.slice(0, 7).reverse())
+    const userStore = useUserStore()
+    const players = ref([])
+
+    async function loadPlayers() {
+        const requested = props.period
+        const res = await apiFetch(`/api/analytics/universe/?period=${requested.toLocaleLowerCase()}`)
+        if(!res) return
+        const data = await res.json()
+        if (requested !== props.period) return
+        players.value = data        
+    }
+
+    watch(() => props.period, loadPlayers, {
+        immediate: true })
+
+    const rank = computed(() => calcRank(players.value, userStore.currentUser?.id))
 
 </script>
 
@@ -58,9 +76,10 @@
         <div class="panel flex flex-col gap-2.5">
             <div class="card-label mb-0">Rank</div>
             <div class="text-4xl font-light leading-none">
-                #—<span class="text-base text-muted ml-1">of —</span>
+                #{{ rank.rank ?? '-'}}<span class="text-base text-muted ml-1">
+                    of  {{  rank.of || '-' }}</span>
             </div>
-            <div class="text-xs text-muted">—</div>
+            <div class="text-xs text-muted">by wins, then win rate</div>
         </div>
     </div>
 </template>
