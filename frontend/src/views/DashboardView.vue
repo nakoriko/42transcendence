@@ -15,6 +15,7 @@ import { fitPdfPage } from '@/utils/pdf';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
 import DashInsights from '@/components/dashboard/DashInsights.vue';
+import AppFilterTabs from '@/components/AppFilterTabs.vue';
 
 const statsRef = ref(null)
 const universeRef = ref(null)
@@ -23,6 +24,7 @@ const playerGraphRef = ref(null)
 const matchesStore = useMatchesStore()
 const presenceStore = usePresenceStore()
 const activeMatchId = ref(null)
+const period = ref('All')
 
 async function captureSection(el) {
     // throw new Error('debug B26: simulated capture failure')
@@ -94,6 +96,7 @@ onMounted(async () => {
             </div>
             <div class="flex items-center gap-4">
                 <AppBadge :label="presenceStore.onlineCount+' online'" variant="teal" />
+                <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" class="no-capture"></AppFilterTabs>
                 <AppButton variant="tag" @click="exportToPdf" class="no-capture">
                     <Download :size="11"></Download>
                     Export PDF
@@ -109,7 +112,7 @@ onMounted(async () => {
         <section ref="playerGraphRef" class="panel">
             <!---PLayer graph-->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
-                <DashPlayerGraph></DashPlayerGraph>
+                <DashPlayerGraph :period="period"></DashPlayerGraph>
                 <aside class="border-t lg:border-t-0 lg:border-l border-white/[0.07] pt-6 lg:pt-0 lg:pl-6">
                     <DashNodeInfo></DashNodeInfo>
                 </aside>
@@ -124,7 +127,7 @@ onMounted(async () => {
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">
                 <section class="panel">
                     <div class="h-[380px]">
-                        <DashPlayerStats></DashPlayerStats>
+                        <DashPlayerStats :period="period"></DashPlayerStats>
                     </div>
                 </section>
                 <section class="panel">

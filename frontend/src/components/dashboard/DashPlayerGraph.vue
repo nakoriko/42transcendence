@@ -3,7 +3,6 @@ import { ref, onMounted, watch, reactive, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
-import AppFilterTabs from '../AppFilterTabs.vue'
 import { apiFetch } from '@/utils/apiFetch'
 import { formatShortDate } from '@/utils/date.js'
 import { useResizeObserver } from '@/composables/useResizeObserver.js'
@@ -32,7 +31,6 @@ import { useResizeObserver } from '@/composables/useResizeObserver.js'
 //   to show nick / W-L / winRate / degree.
 
 // Future (deferred by plan):
-// - Period filter (7d/30d/all) via AppFilterTabs — Step 5.
 // - Edge thickness scaled by edges[].matches — Step 5.
 // - Empty state message ("Play some matches to see your network grow") — Step 5.
 // - Loader during fetch — Step 5.
@@ -73,9 +71,9 @@ let simulation = null
 let lastData = null
 const isEmpty = ref(false)
 const isLoading = ref(false)
-const period = ref('All')
+const props = defineProps({ period: { type: String, default: 'All' } })
 const emptyMessage = computed(() =>
-    period.value === 'All'
+    props.period === 'All'
     ? "Play some matches to see your network grow"
     : "No matches in this period. Try a wider range"
 )
@@ -321,7 +319,7 @@ async function renderGraph(data) {
 async function loadGraph() {
     isLoading.value = true
     try {
-        const res = await apiFetch(`/api/analytics/player-graph/?period=${period.value.toLowerCase()}`)
+        const res = await apiFetch(`/api/analytics/player-graph/?period=${props.period.toLowerCase()}`)
         if(!res) return
         const data = await res.json()
         lastData = data
@@ -331,9 +329,7 @@ async function loadGraph() {
     }
 }
 
-watch(period, () => {
-    loadGraph()
-})
+watch(() => props.period, () => loadGraph())
 
 useResizeObserver(container, () => {
     if (lastData) renderGraph(lastData) }, 200)
@@ -345,12 +341,11 @@ onMounted(async () => {
 
 <template>
 <div class="flex flex-col h-full">
-    <div class="flex items-center justify-between mb-4">
+    <div class="mb-4">
         <div>
             <div class="input-label">Player network</div>
             <div class="text-sm text-muted mt-1">Who you've played, and how often</div>
         </div>
-        <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']"></AppFilterTabs>
     </div>
 
 

@@ -1,5 +1,4 @@
 <script setup>
-import AppFilterTabs from '../AppFilterTabs.vue';
 import { ref, onMounted, watch, onUnmounted, computed, nextTick, reactive } from 'vue'
 import * as d3 from 'd3'
 import { apiFetch } from '@/utils/apiFetch.js';
@@ -9,7 +8,7 @@ import AppTooltip from '../AppTooltip.vue';
 const tt = ref(null)
 const ttData = reactive({ date: 0, wins: 0, losses: 0, total: 0})
 
-const period = ref('All')
+const props = defineProps({ period: { type: String, default: 'All' } })
 const visibleSeries = ref({ wins: true, losses: true, total: true })
 
 const totalWins = computed(() =>chartData.value?.wins?.reduce((s, v) => s + v, 0) ?? 0)
@@ -28,7 +27,7 @@ function toggleSeries(key) {
 }
 
 async function loadData(){
-    const res = await apiFetch(`/api/analytics/player-stats/?period=${period.value.toLowerCase()}`)
+    const res = await apiFetch(`/api/analytics/player-stats/?period=${props.period.toLowerCase()}`)
     if(!res) return
     chartData.value = await res.json()
 }
@@ -253,7 +252,7 @@ onMounted(() => {
     resizeObserver.observe(chartEl.value)
 })
 
-watch(period, loadData)
+watch(() => props.period, loadData)
 watch(chartData, async () => {
     await nextTick()
     drawChart()
@@ -268,10 +267,7 @@ onUnmounted(() => {
 <template>
     <div class="flex flex-col h-full">
         <!-- строка 1: заголовок + фильтр периода -->
-        <div class="flex items-center justify-between mb-2">
-            <div class="input-label">Player Stats</div>
-            <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" />
-        </div>
+            <div class="input-label mb-2">Player Stats</div>
         <!-- строка 3: график -->
         <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1  sm:gap-6 text-xs text-muted">
