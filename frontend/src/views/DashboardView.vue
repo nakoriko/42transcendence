@@ -121,7 +121,7 @@ onMounted(async () => {
 
         <!-- KPI row -->
         <div ref="statsRef" class="flex flex-col gap-5">
-            <DashKpiRow></DashKpiRow>
+            <DashKpiRow :period="period"></DashKpiRow>
         
             <!--PLayer perfomance + insights -->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">

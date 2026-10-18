@@ -1,8 +1,7 @@
 <script setup>
-import { ref, onMounted, watch, onUnmounted, computed, nextTick, reactive } from 'vue'
+import { ref, onMounted, watch, onUnmounted, nextTick, reactive } from 'vue'
 import * as d3 from 'd3'
 import { apiFetch } from '@/utils/apiFetch.js';
-import { calcWinRate } from '@/utils/stats.js';
 import AppTooltip from '../AppTooltip.vue';
 
 const tt = ref(null)
@@ -11,9 +10,6 @@ const ttData = reactive({ date: 0, wins: 0, losses: 0, total: 0})
 const props = defineProps({ period: { type: String, default: 'All' } })
 const visibleSeries = ref({ wins: true, losses: true, total: true })
 
-const totalWins = computed(() =>chartData.value?.wins?.reduce((s, v) => s + v, 0) ?? 0)
-const totalLosses = computed(() => chartData.value?.losses?.reduce((s, v) => s + v, 0) ?? 0)
-const winRate = computed(() => calcWinRate(totalWins.value, totalLosses.value))
 
 
 let resizeObserver = null
@@ -269,14 +265,7 @@ onUnmounted(() => {
         <!-- строка 1: заголовок + фильтр периода -->
             <div class="input-label mb-2">Player Stats</div>
         <!-- строка 3: график -->
-        <div class="flex flex-col gap-3 mt-6 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1  sm:gap-6 text-xs text-muted">
-                <span>Wins <span class="text-teal font-medium">{{ totalWins }}</span></span>
-                <span class="opacity-30 hidden sm:inline">|</span>
-                <span>Losses <span class="text-coral font-medium">{{ totalLosses }}</span></span>
-                <span class="opacity-30 hidden sm:inline">|</span>
-                <span>Win Rate <span class="text-sage font-medium">{{ winRate }}%</span></span>
-            </div>
+        <div class="flex mt-6 sm:justify-end">
             <div class="flex flex-wrap gap-4">
                 <button v-for="s in ['wins', 'losses', 'total']"
                     :key="s"
