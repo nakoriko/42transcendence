@@ -2,13 +2,13 @@
     import { computed } from 'vue'
     import { useMatchesStore } from '@/stores/matches';
     import { filterByPeriod } from '@/utils/period';
-    import { calcWinRate, summerizeRecord, currentStreak } from '@/utils/stats';
+    import { calcWinRate, summarizeRecord , currentStreak } from '@/utils/stats';
 
     const props = defineProps({ period: { type: String, default: 'All' } })
     const matchesStore = useMatchesStore()
 
     const record = computed(() =>
-        summerizeRecord(filterByPeriod(matchesStore.matches, 'ended_at', props.period)))
+        summarizeRecord (filterByPeriod(matchesStore.matches, 'ended_at', props.period)))
     const winRate = computed(() => calcWinRate(record.value.wins, record.value.losses ))
     const streak = computed(() => currentStreak(matchesStore.matches))
     const last7 = computed(() => matchesStore.matches.slice(0, 7).reverse())

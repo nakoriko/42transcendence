@@ -9,7 +9,7 @@ export function calcTotalMatches(wins, losses) {
 }
 
 
-export function summerizeRecord(matches) {
+export function summarizeRecord (matches) {
     const rec = { wins: 0, losses: 0, draws: 0, total: matches.length}
     for (const m of matches) {
         if (m.result === 'win') rec.wins++
