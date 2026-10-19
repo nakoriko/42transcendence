@@ -6,7 +6,7 @@ const props = defineProps({ node: { type: Object, default: null } })
 const rows = computed(() => {
     const n = props.node
     return [
-        { label: 'Record', value: n ? `${n.wons}W - ${n.losses}L` : '-'},
+        { label: 'Record', value: n ? `${n.wins}W - ${n.losses}L` : '-'},
         { label: 'Draws', value: n ? n.draws : '-' },
         { label: 'Opponents', value: n ? n.degree : '-' },
     ]
