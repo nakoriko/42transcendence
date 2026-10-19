@@ -14,7 +14,7 @@ const periodMatches = computed(() =>
 const events = ref([])
 
 onMounted(async() => {
-    const res=  await apiFetch('/api/game/events')
+    const res=  await apiFetch('/api/game/events/')
     if (res) events.value = await res.json()
 })
 
