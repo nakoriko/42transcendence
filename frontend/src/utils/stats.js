@@ -58,3 +58,19 @@ export function pickOpponent(opponents, key, other) {
     return top
 }
 
+
+export function avgRally(events, matchIds) {
+    let hits = 0, total = 0, rallies = 0
+    for (const e of events) {
+        if(!matchIds.has(e.match)) continue
+        if(e.event_type === 'hit') hits++
+        else if (e.event_type === 'goal') {
+            total += hits || 1
+            rallies++
+            hits = 0
+        }
+    }
+    if(rallies === 0) return null
+    return { avg: Math.round(total / rallies * 10) / 10, rallies }
+}
+

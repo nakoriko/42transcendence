@@ -1,14 +1,26 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useMatchesStore } from '@/stores/matches';
 import { filterByPeriod } from '@/utils/period';
-import { opponentStats, pickOpponent } from '@/utils/stats';
+import { apiFetch } from '@/utils/apiFetch';
+import { opponentStats, pickOpponent, avgRally } from '@/utils/stats';
 
 
 const props = defineProps({ period: { type: String, default: 'All' } })
 const matchesStore = useMatchesStore()
 const periodMatches = computed(() =>
     filterByPeriod(matchesStore.matches, 'ended_at', props.period ))
+
+const events = ref([])
+
+onMounted(async() => {
+    const res=  await apiFetch('/api/game/events')
+    if (res) events.value = await res.json()
+})
+
+const rally = computed(() => 
+    avgRally(events.value, new Set(periodMatches.value.map(m => m.id))))
+
 
 const rows = computed(() => {
     const opponents = opponentStats(periodMatches.value)
@@ -22,7 +34,8 @@ const rows = computed(() => {
         { label: 'Toughest matchup',
             value: toughest?.name ?? '-',
             note: toughest ? `${toughest.wins}W - ${toughest.losses}L` : 'no losses yet'},
-        { label: 'Avg rally length', value: '-', note: ''},
+        { label: 'Avg rally length', value: rally.value ? `${rally.value.avg} hits` : '-',
+            note: rally.value ? `across ${rally.value.rallies} points` : ''},
     ]
 })
 
