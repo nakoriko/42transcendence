@@ -61,7 +61,7 @@ let lastData = null
 const isEmpty = ref(false)
 const isLoading = ref(false)
 const props = defineProps({ period: { type: String, default: 'All' } })
-const emit = defineEmits(['node-hover'])
+const emit = defineEmits(['node-hover', 'node-click'])
 const toNodeInfo = d => ({
     nickname: d.nickname,
     wins: d.wins,
@@ -176,6 +176,9 @@ async function renderGraph(data) {
         })
 
     nodeEls.call(drag)
+    nodeEls.on('click', (event, d) => {
+        if(!d.is_current) emit('node-click', d.nickname)
+    })
 
     //helper: get neighbors
     function getNeighbors(nodeId) {

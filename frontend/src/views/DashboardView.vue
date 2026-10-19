@@ -77,8 +77,14 @@ async function exportToPdf() {
     pdf.save('dashboard-analytics.pdf')
 }
 
-function onMatchSelected(matchId) {
-    activeMatchId.value = matchId
+async function onNodeClick(nickname) {
+    const match = matchesStore.matches.find(m => m.opponent_nickname === nickname)
+    if(!match) return
+    activeMatchId.value = null
+    await nextTick()
+    activeMatchId.value = match.id
+    historyRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start'})
+
 }
 
 onMounted(async () => {
@@ -113,7 +119,9 @@ onMounted(async () => {
         <section ref="playerGraphRef" class="panel">
             <!---PLayer graph-->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
-                <DashPlayerGraph :period="period" @node-hover="hoveredNode = $event"></DashPlayerGraph>
+                <DashPlayerGraph :period="period" 
+                @node-hover="hoveredNode = $event"
+                @node-click="onNodeClick"></DashPlayerGraph>
                 <aside class="border-t lg:border-t-0 lg:border-l border-white/[0.07] pt-6 lg:pt-0 lg:pl-6">
                     <DashNodeInfo :node="hoveredNode"></DashNodeInfo>
                 </aside>
