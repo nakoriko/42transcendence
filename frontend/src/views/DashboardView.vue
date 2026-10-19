@@ -131,7 +131,7 @@ onMounted(async () => {
                     </div>
                 </section>
                 <section class="panel">
-                    <DashInsights></DashInsights>
+                    <DashInsights :period="period"></DashInsights>
                 </section>
             </div>
         </div>
