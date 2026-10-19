@@ -25,6 +25,7 @@ const matchesStore = useMatchesStore()
 const presenceStore = usePresenceStore()
 const activeMatchId = ref(null)
 const period = ref('All')
+const hoveredNode = ref(null)
 
 async function captureSection(el) {
     // throw new Error('debug B26: simulated capture failure')
@@ -112,9 +113,9 @@ onMounted(async () => {
         <section ref="playerGraphRef" class="panel">
             <!---PLayer graph-->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
-                <DashPlayerGraph :period="period"></DashPlayerGraph>
+                <DashPlayerGraph :period="period" @node-hover="hoveredNode = $event"></DashPlayerGraph>
                 <aside class="border-t lg:border-t-0 lg:border-l border-white/[0.07] pt-6 lg:pt-0 lg:pl-6">
-                    <DashNodeInfo></DashNodeInfo>
+                    <DashNodeInfo :node="hoveredNode"></DashNodeInfo>
                 </aside>
             </div>
         </section>

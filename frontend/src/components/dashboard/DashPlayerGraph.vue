@@ -44,17 +44,6 @@ import { useResizeObserver } from '@/composables/useResizeObserver.js'
 
 
 const userStore = useUserStore()
-const tt = ref(null)
-const ttData = reactive(({ 
-    nickname: '', 
-    avatar: null,
-    wins: 0,
-    losses: 0,
-    draws: 0,
-    winRate: null,
-    degree: 0,
-    isCurrent: false,  
-    }))
 const ttEdge = ref(null)
 const ttEdgeData = reactive (({
     sourceName: '',
@@ -72,6 +61,17 @@ let lastData = null
 const isEmpty = ref(false)
 const isLoading = ref(false)
 const props = defineProps({ period: { type: String, default: 'All' } })
+const emit = defineEmits(['node-hover'])
+const toNodeInfo = d => ({
+    nickname: d.nickname,
+    wins: d.wins,
+    losses: d.losses,
+    draws: d.draws,
+    degree: d.degree,
+    isCurrent: d.is_current,
+})
+
+
 const emptyMessage = computed(() =>
     props.period === 'All'
     ? "Play some matches to see your network grow"
@@ -220,20 +220,9 @@ async function renderGraph(data) {
     nodeEls
         .on('mouseover', function(event, d) {
             if(event.buttons) return //do not trigger if it's on drag
-            const total = d.wins + d.losses
-            const [x, y] = tooltipXY(event)
-            ttData.nickname = d.nickname
-            ttData.avatar = d.avatar
-            ttData.wins = d.wins
-            ttData.losses = d.losses
-            ttData.draws = d.draws
-            ttData.winRate = total > 0 ? d.wins / total : null
-            ttData.degree = d.degree
-            ttData.isCurrent = d.is_current
-            tt.value?.show(x, y)
+            emit('node-hover', toNodeInfo(d))
 
             const neighbors = getNeighbors(d.id)
-
             nodeEls
                 .transition().duration(200)
                 .attr('fill-opacity', n =>
@@ -245,12 +234,12 @@ async function renderGraph(data) {
                     l.source.id === d.id || l.target.id === d.id ? 0.6 : 0.05
                 )
         })
-        .on('mousemove', function(event) {
-            const [x, y] = tooltipXY(event)
-            tt.value?.show(x, y)
-        })
+        // .on('mousemove', function(event) {
+        //     const [x, y] = tooltipXY(event)
+        //     tt.value?.show(x, y)
+        // })
         .on('mouseout', function() {
-            tt.value?.hide()
+            // tt.value?.hide()
             nodeEls
                 .transition().duration(200)
                 .attr('fill-opacity', 0.85)
@@ -324,6 +313,8 @@ async function loadGraph() {
         const data = await res.json()
         lastData = data
         renderGraph(data)
+        const me = data.nodes?.find(n => n.is_current)
+        emit('node-hover', me ? toNodeInfo(me) : null)
     } finally {
         isLoading.value = false
     }
@@ -364,48 +355,6 @@ onMounted(async () => {
         <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div class="w-8 h-8 border-2 border-muted/20 border-t-teal rounded-full animate-spin"></div>
         </div>
-        <AppTooltip ref="tt">
-            <!-- Avatar -->
-            <div class="flex items-center gap-2 mb-2">
-                <img
-                    v-if="ttData.avatar"
-                    :src="ttData.avatar"
-                    class = "w-6 h-6 rounded-full object-cover"
-                    alt=""></img>
-                <div
-                    v-else
-                    class="w-6 h-6 rounded-full bg-muted/30 flex items-center justify-center text-[10px]">
-                {{ ttData.nickname?.[0]?.toUpperCase() }}
-                </div>
-                <span class="text-xs font-medium"> {{ ttData.nickname }}</span>
-                <span
-                    v-if="ttData.isCurrent"
-                    class="text-[9px] px-1.5 py-0.5 rounded bg-teal/20 text-teal uppercase tracking-wide">you</span>
-            </div>
-
-            <!-- WLD -->
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[10px] text-muted">Record</span>
-                <span class="text-[10px] tabular-nums">
-                    {{ ttData.wins }}-{{ ttData.losses }}<span v-if="ttData.draws">-{{ ttData.draws }}</span>
-                </span>
-            </div>
-
-            <!-- WinRate -->
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[10px] text-muted">Win rate</span>
-                <span class="text-[10px] tabular-nums">
-                    {{ ttData.winRate === null ? '-' : (ttData.winRate * 100).toFixed(0) + '%' }}
-                </span>
-            </div>
-
-            
-            <!-- Degree -->
-            <div class="flex justify-between items-center">
-                <span class="text-[10px] text-muted">Opponents</span>
-                <span class="text-[10px] tabular-nums">{{ ttData.degree }}</span>
-            </div>
-        </AppTooltip>
         <AppTooltip ref="ttEdge">
             <!-- pair -->
             <div class="flex items-center justify-center gap-1.5 mb-1">
