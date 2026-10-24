@@ -321,13 +321,12 @@ onUnmounted(() => {
 
 <template>
     <div class="flex flex-col h-full">  <!--DashRally timeline-->
-        <div class="flex items-center justify-between mb-4">
+        <!-- <div class="flex items-center justify-between mb-4">
             <div class="input-label">Rally timeline</div>
             <div v-if="props.match" class="text-[10px] text-muted">
                 vs {{  props.match.opponent_nickname }} | {{ formatShortDate(props.match.ended_at) }}
             </div>
-            <!-- <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" /> -->
-        </div>
+        </div> -->
         <div class="flex-1 relative" ref="container">
             <div v-if="!props.match"
                 class="absolute inset-0 flex items-center justify-center text-muted text-xs">
