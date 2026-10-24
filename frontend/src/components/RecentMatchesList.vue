@@ -56,7 +56,7 @@ watch(() => props.selectedMatchId, async(id) => {
             No matches yet
         </div>
 
-        <div v-else class="flex flex-col gap-1.5 max-h-[400px] overflow-y-auto scroll-thin [scrollbar-gutter:stable]">
+        <div v-else class="flex-1 min-h-0 flex flex-col gap-1.5 max-h-[400px] overflow-y-auto scroll-thin [scrollbar-gutter:stable]">
             <div v-for="(match, index) in matches" :key="match.id"
                 :ref="el => itemRefs[index] = el"
                 @click="emit('match-click', match)"

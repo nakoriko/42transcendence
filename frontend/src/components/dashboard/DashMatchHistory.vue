@@ -66,8 +66,9 @@ watch(selectedMatch, async (match) => {
 
 <template>
 <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-4">
-    <div class="panel">
+    <div class="panel flex flex-col lg:h-[440px]">
         <RecentMatchesList
+            class="flex-1 min-h-0"
             :matches="filteredMatches"
             :activeFilter="activeFilter"
             :selectedMatchId="selectedMatch?.id ?? null"
@@ -75,7 +76,7 @@ watch(selectedMatch, async (match) => {
             @filter-change="activeFilter = $event"
             @match-click="selectedMatch = $event" />
     </div>
-    <div class="panel min-h-[380px]">
+    <div class="panel min-h-[380px] lg:h-[440px]">
         <DashRallyTimeline :match="selectedMatch" :events="events" />
     </div>
     <!-- <MatchEchoViz :match="selectedMatch" :events="events" />  -->
