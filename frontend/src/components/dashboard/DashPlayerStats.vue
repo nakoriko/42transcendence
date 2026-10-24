@@ -262,10 +262,9 @@ onUnmounted(() => {
 
 <template>
     <div class="flex flex-col h-full">
-        <!-- строка 1: заголовок + фильтр периода -->
-            <div class="input-label mb-2">Player Stats</div>
-        <!-- строка 3: график -->
-        <div class="flex mt-6 sm:justify-end">
+        <!-- header: title + series legend, same height and line as Recent Matches -->
+        <div class="flex items-center justify-between gap-4 h-11 border-b border-white/[0.07] mb-4">
+            <div class="input-label">Player Stats</div>
             <div class="flex flex-wrap gap-4">
                 <button v-for="s in ['wins', 'losses', 'total']"
                     :key="s"

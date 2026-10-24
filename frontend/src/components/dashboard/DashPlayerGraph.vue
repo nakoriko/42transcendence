@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, reactive, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, reactive, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
@@ -313,7 +313,7 @@ async function loadGraph() {
         if(!res) return
         const data = await res.json()
         lastData = data
-        renderGraph(data)
+        if (isVisible) renderGraph(data)
         const me = data.nodes?.find(n => n.is_current)
         emit('node-hover', me ? toNodeInfo(me) : null)
     } finally {
@@ -324,11 +324,22 @@ async function loadGraph() {
 watch(() => props.period, () => loadGraph())
 
 useResizeObserver(container, () => {
-    if (lastData) renderGraph(lastData) }, 200)
+    if (lastData && isVisible) renderGraph(lastData) }, 200)
 
-onMounted(async () => {
+let isVisible = false
+const visibilityObserver = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return
+    isVisible = true
+    visibilityObserver.disconnect()
+    if (lastData) renderGraph(lastData)
+}, { threshold: 0.3 })
+
+onMounted(() => {
+    if(container.value) visibilityObserver.observe(container.value)
     loadGraph()
 })
+
+onUnmounted(() => visibilityObserver.disconnect())
 </script>
 
 <template>
@@ -336,7 +347,7 @@ onMounted(async () => {
     <div class="mb-4">
         <div>
             <div class="input-label">Player network</div>
-            <div class="text-sm text-muted mt-1">Who you've played, and how often</div>
+            <div class="text-xs text-muted mt-1">Who you've played, and how often</div>
         </div>
     </div>
 

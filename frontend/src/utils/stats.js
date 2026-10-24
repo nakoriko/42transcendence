@@ -36,41 +36,10 @@ export function calcRank(players, userId) {
     return { rank: better.length + 1, of: ranked.length }
 }
 
-export function opponentStats(matches) {
-    const byName = {}
-    for (const m of matches) {
-        const name = m.opponent_nickname
-        if(!name || name === 'Unknown') continue
-        byName[name] ??= { name, wins: 0, losses: 0, total: 0 }
-        byName[name].total++
-        if(m.result === 'win') byName[name].wins++
-        else if (m.result === 'loss') byName[name].losses++
-    }
-    return Object.values(byName)
-}
-
-export function pickOpponent(opponents, key, other) {
-    let top = null
-    for (const o of opponents) {
-        if(o[key] === 0) continue
-        if(!top || o[key] > top[key] || (o[key] === top[key] && o[other] < top[other])) top = o
-    }
-    return top
-}
 
 
-export function avgRally(events, matchIds) {
-    let hits = 0, total = 0, rallies = 0
-    for (const e of events) {
-        if(!matchIds.has(e.match)) continue
-        if(e.event_type === 'hit') hits++
-        else if (e.event_type === 'goal') {
-            total += hits || 1
-            rallies++
-            hits = 0
-        }
-    }
-    if(rallies === 0) return null
-    return { avg: Math.round(total / rallies * 10) / 10, rallies }
-}
+
+
+
+
 

@@ -1,5 +1,4 @@
 <script setup>
-import AppFilterTabs from '@/components/AppFilterTabs.vue';
 import AppMetric from '@/components/AppMetric.vue';
 import AppTooltip from '../AppTooltip.vue';
 import { calcWinRate } from '@/utils/stats';
@@ -10,7 +9,7 @@ import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore()
 
-const period = ref('All')
+const props = defineProps({ period: { type: String, default: 'All' } })
 const chartEl = ref(null)
 const players = ref([])
 const stats = ref({
@@ -35,7 +34,7 @@ const ttData = reactive({
 
 
 async function loadData(){
-    const period_param = period.value === 'All' ? 'all' : period.value.toLowerCase()
+    const period_param = props.period === 'All' ? 'all' : props.period.toLowerCase()
     const res = await apiFetch(`/api/analytics/universe/?period=${period_param}`)
     if (!res) return
     const data = await res.json()
@@ -179,7 +178,7 @@ onMounted(async () => {
     if(chartEl.value) resizeObserver.observe(chartEl.value)
  })
 
-watch(period, loadData)
+watch(props.period, loadData)
 watch(players, drawChart)
 watch(() => userStore.currentUser, drawChart, { deep: true }) 
 
@@ -189,68 +188,63 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div>
-        <div class="flex items-center justify-between mb-5">
-            <div class="text-2xl uppercase mb-4">Pong universe</div>
-            <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']"></AppFilterTabs>
+    <div class="flex flex-col lg:flex-row gap-8">
+        <div class="flex flex-col gap-6 lg:gap-0 lg:justify-between w-full lg:w-56 lg:flex-shrink-0">
+            <div class="flex flex-col gap-3">
+                <div class="input-label">Platform Stats</div>
+                <AppMetric :value="String(stats.players)" label="Total players" color="sage" ></AppMetric>
+                <AppMetric :value="String(stats.matches)" label="Matches played" color="sage" ></AppMetric>
+                <!-- <AppMetric :value="stats.reaction ? String(stats.reaction + ' ms') : '-'" label="Global avg reaction" color="teal" ></AppMetric> -->
+            </div>
+
+            <div class="border-t border-white/[0.07]"></div>  
+
+            <div class="flex flex-col gap-2">
+                <div class="input-label">Activity Legend</div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[9px] text-muted uppercase tracking-widest">new</span>
+                    <div class="flex-1 h-px bg-gradient-to-r from-teal via-sage to-coral mb-1"></div>
+                    <span class="text-[9px] text-muted uppercase tracking-widest">veteran</span>
+                </div>
+            </div>
+
+            <div class="border-t border-white/[0.07]"></div>  
+            <div class="text-xs text-muted">All players ranked by first match date. Height = total matches played. Color = activity level. Hover any spike to see full player stats.</div>
+
         </div>
-        <div class="flex flex-col lg:flex-row gap-8">
-            <div class="flex flex-col gap-6 lg:gap-0 lg:justify-between w-full lg:w-56 lg:flex-shrink-0">
-                <div class="flex flex-col gap-3">
-                    <div class="input-label">Platform Stats</div>
-                    <AppMetric :value="String(stats.players)" label="Total players" color="biege" ></AppMetric>
-                    <AppMetric :value="String(stats.matches)" label="Matches played" color="sage" ></AppMetric>
-                    <!-- <AppMetric :value="stats.reaction ? String(stats.reaction + ' ms') : '-'" label="Global avg reaction" color="teal" ></AppMetric> -->
+        <div class="flex-1 relative min-w-0">
+            <!-- lg: chart height follows the screen so the whole block fits the first screen together with the page title -->
+            <div ref="chartEl" class="w-full h-[400px] lg:h-[clamp(320px,calc(100svh_-_280px),600px)] overflow-hidden"></div>
+            <AppTooltip ref="tt">
+                <div class="text-xs font-medium mb-3" :style="{color: ttData.color}">{{ ttData.nickname }}</div>
+                <div class="flex justify-between gap-4 mb-1">
+                    <span class="text-[10px] text-muted">First match</span>
+                    <span class="text-[10px]">{{ ttData.date_joined }}</span>
                 </div>
-
-                <div class="border-t border-white/[0.07]"></div>  
-
-                <div class="flex flex-col gap-2">
-                    <div class="input-label">Activity Legend</div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[9px] text-muted uppercase tracking-widest">new</span>
-                        <div class="flex-1 h-px bg-gradient-to-r from-teal via-sage to-coral mb-1"></div>
-                        <span class="text-[9px] text-muted uppercase tracking-widest">veteran</span>
-                    </div>
+                <div class="flex justify-between gap-4 mb-3">
+                    <span class="text-[10px] text-muted">Total matches</span>
+                    <span class="text-[10px]">{{ ttData.total_matches }}</span>
                 </div>
-
-                <div class="border-t border-white/[0.07]"></div>  
-                <div class="text-xs text-muted">All players ranked by first match date. Height = total matches played. Color = activity level. Hover any spike to see full player stats.</div>
-
-            </div>
-            <div class="flex-1 relative min-w-0">
-                <div ref="chartEl" class="w-full h-[400px] overflow-hidden"></div>
-                <AppTooltip ref="tt">
-                    <div class="text-xs font-medium mb-3" :style="{color: ttData.color}">{{ ttData.nickname }}</div>
-                    <div class="flex justify-between gap-4 mb-1">
-                        <span class="text-[10px] text-muted">First match</span>
-                        <span class="text-[10px]">{{ ttData.date_joined }}</span>
-                    </div>
-                    <div class="flex justify-between gap-4 mb-3">
-                        <span class="text-[10px] text-muted">Total matches</span>
-                        <span class="text-[10px]">{{ ttData.total_matches }}</span>
-                    </div>
-                    <div class="border-b border-white/[0.07] my-2"></div>
-                    <div class="text-[9px] text-muted uppercase tracking-widest mb-2">Stats</div>
-                    <div class="flex justify-between gap-4 mb-1">
-                        <span class="text-[10px] text-muted">Wins</span>
-                        <span class="text-[10px]">{{ ttData.wins }}</span>
-                    </div>
-                    <div class="flex justify-between gap-4 mb-1">
-                        <span class="text-[10px] text-muted">Losses</span>
-                        <span class="text-[10px]">{{ ttData.losses }}</span>
-                    </div>
-                    <div class="flex justify-between gap-4 mb-3">
-                        <span class="text-[10px] text-muted">Win Rate</span>
-                        <span class="text-[10px]">{{ calcWinRate(ttData.wins, ttData.losses) }}%</span>
-                    </div>
-                    <div class="border-b border-white/[0.07] my-2"></div>
-                    <div class="flex justify-between gap-4">
-                        <span class="text-[10px] text-muted">Accuracy</span>
-                        <span class="text-[10px]">{{ ttData.hit_accuracy ? Math.round(ttData.hit_accuracy * 100) + '%' : '-' }}</span>
-                    </div>
-                </AppTooltip>
-            </div>
+                <div class="border-b border-white/[0.07] my-2"></div>
+                <div class="text-[9px] text-muted uppercase tracking-widest mb-2">Stats</div>
+                <div class="flex justify-between gap-4 mb-1">
+                    <span class="text-[10px] text-muted">Wins</span>
+                    <span class="text-[10px]">{{ ttData.wins }}</span>
+                </div>
+                <div class="flex justify-between gap-4 mb-1">
+                    <span class="text-[10px] text-muted">Losses</span>
+                    <span class="text-[10px]">{{ ttData.losses }}</span>
+                </div>
+                <div class="flex justify-between gap-4 mb-3">
+                    <span class="text-[10px] text-muted">Win Rate</span>
+                    <span class="text-[10px]">{{ calcWinRate(ttData.wins, ttData.losses) }}%</span>
+                </div>
+                <div class="border-b border-white/[0.07] my-2"></div>
+                <div class="flex justify-between gap-4">
+                    <span class="text-[10px] text-muted">Accuracy</span>
+                    <span class="text-[10px]">{{ ttData.hit_accuracy ? Math.round(ttData.hit_accuracy * 100) + '%' : '-' }}</span>
+                </div>
+            </AppTooltip>
         </div>
     </div>
 </template>

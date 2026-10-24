@@ -22,7 +22,7 @@ const winRate = computed(() => {
 <template>
     <div class="flex flex-col h-full">
         <div class="input-label">Hover a node</div>
-        <div class="text-2xl font-semibold mt-2 truncate">{{ node?.nickname ?? '—' }}</div>
+        <div class="text-2xl  mt-2 truncate">{{ node?.nickname ?? '—' }}</div>
         <div class="text-xs text-muted mb-6">{{ node?.isCurrent ? 'you' : ' ' }}</div>
 
         <div class="flex flex-col gap-3">

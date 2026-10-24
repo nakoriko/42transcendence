@@ -14,8 +14,8 @@ import jsPDF from 'jspdf'
 import { fitPdfPage } from '@/utils/pdf';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
-import DashInsights from '@/components/dashboard/DashInsights.vue';
 import AppFilterTabs from '@/components/AppFilterTabs.vue';
+import { polygonCentroid } from 'd3';
 
 const statsRef = ref(null)
 const universeRef = ref(null)
@@ -46,7 +46,7 @@ async function exportToPdf() {
     }) //temporary opens full list, to make all render after
     await nextTick() // aspettiamo finche browser redraw actual layout
 
-    const sections = [playerGraphRef.value, statsRef.value, historyRef.value, universeRef.value]
+    const sections = [playerGraphRef.value, statsRef.value, universeRef.value]
     const canvases = []
     try {
         for (const section of sections) {
@@ -90,12 +90,10 @@ async function onNodeClick(nickname) {
 onMounted(async () => {
     await matchesStore.load()
 })
-
-
-
 </script>
+
 <template>
-    <div class="pb-16 flex flex-col gap-5">
+    <div class="pb-16 flex flex-col gap-20">
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div> <!--protection while assync fetchUsers finish his a request: v-if="currentUser"-->
                 <p class="input-label mb-1">Transcend · Dashboard</p>
@@ -113,10 +111,17 @@ onMounted(async () => {
         <!--TItle-->
 
 
+        <!--Pong Universe-->
+        <section ref="universeRef">
+            <!--DashUNiverse will be here-->
+           <DashUniverse :period="period"></DashUniverse>
+        </section>
+
+
 
 
         <!--PLayer graph -->
-        <section ref="playerGraphRef" class="panel">
+        <section ref="playerGraphRef">
             <!---PLayer graph-->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
                 <DashPlayerGraph :period="period" 
@@ -129,32 +134,25 @@ onMounted(async () => {
         </section>
 
         <!-- KPI row -->
-        <div ref="statsRef" class="flex flex-col gap-5">
+        <div ref="statsRef" class="flex flex-col gap-12">
             <DashKpiRow :period="period"></DashKpiRow>
         
-            <!--PLayer perfomance + insights -->
-            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)] gap-4">
-                <section class="panel">
-                    <div class="h-[380px]">
+            <!--Match history + player stats -->
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12">
+                <section ref="historyRef" class="lg:h-[360px]">
+                    <DashMatchHistory :activeMatchId></DashMatchHistory>
+                </section>
+                <section class="lg:h-[360px]">
+                    <div class="h-[320px] lg:h-full">
                         <DashPlayerStats :period="period"></DashPlayerStats>
                     </div>
-                </section>
-                <section class="panel">
-                    <DashInsights :period="period"></DashInsights>
                 </section>
             </div>
         </div>
 
         <!--Match history + rally timeline-->
-        <section ref="historyRef">
-            <!--DashMatch Stats-->
+        <!-- <section ref="historyRef">
             <DashMatchHistory :activeMatchId></DashMatchHistory>
-        </section>
-
-        <!--Pong Universe-->
-        <section ref="universeRef" class="panel">
-            <!--DashUNiverse will be here-->
-           <DashUniverse></DashUniverse>
-        </section>
+        </section> -->
     </div>
 </template>
