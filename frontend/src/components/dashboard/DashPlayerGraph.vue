@@ -20,7 +20,7 @@ import { useResizeObserver } from '@/composables/useResizeObserver.js'
 // - "Breathing" effect via alphaTarget(0.02) + alphaMin(0.001) — mimics Obsidian.
 // - Drag releases fx/fy on end (Obsidian-style): nodes stay in flow, not pinned.
 // - Glow via SVG filter in <defs>; applied to nodes as filter="url(#glow)".
-// - Node radius: scaleSqrt(degree), range [5,20], +4px bonus for current user.
+// - Node radius: scaleSqrt(degree), range [3,10], +2px bonus for current user.
 // - Node color: diverging scale coral→sage→teal by winRate (0 → 0.5 → 1).
 // - Edge thickness fixed at 1px (scaled width postponed — see "Future" below).
 
@@ -119,9 +119,9 @@ async function renderGraph(data) {
     //define radius for nodes by scaleSqrt, based on quantity of unique opponents
     const r = d3.scaleSqrt()
         .domain([0, d3.max(data.nodes, d => d.degree)])
-        .range([5, 20])
+        .range([3, 10])
 
-    const nodeR = d => d.is_current ? r(d.degree) + 4 : r(d.degree)
+    const nodeR = d => d.is_current ? r(d.degree) + 2 : r(d.degree)
 
     //define color by winRate (coral -> sage -> teal)
     const color = d3.scaleLinear()
@@ -219,37 +219,34 @@ async function renderGraph(data) {
     const clampX = (x, d) => Math.max(nodeR(d), Math.min(W - nodeR(d), x))
     const clampY = (y, d) => Math.max(nodeR(d), Math.min(H - nodeR(d), y))
 
+    const meId = data.nodes.find(n => n.is_current)?.id
+    function highlight(id) {
+        const neighbors = getNeighbors(id)
+        nodeEls
+            .transition().duration(200)
+            .attr('fill-opacity', n =>
+                n.id === id || neighbors.has(n.id) ? 1 : 0.2
+            )
+        linkEls
+            .transition().duration(200)
+            .attr('stroke-opacity', l =>
+                l.source.id === id || l.target.id === id ? 0.6 : 0.05
+            )
+
+    }
 
     nodeEls
         .on('mouseover', function(event, d) {
             if(event.buttons) return //do not trigger if it's on drag
             emit('node-hover', toNodeInfo(d))
-
-            const neighbors = getNeighbors(d.id)
-            nodeEls
-                .transition().duration(200)
-                .attr('fill-opacity', n =>
-                    n.id === d.id || neighbors.has(n.id) ? 1 : 0.2
-                )
-            linkEls
-                .transition().duration(200)
-                .attr('stroke-opacity', l =>
-                    l.source.id === d.id || l.target.id === d.id ? 0.6 : 0.05
-                )
+            highlight(d.id)
         })
         // .on('mousemove', function(event) {
         //     const [x, y] = tooltipXY(event)
         //     tt.value?.show(x, y)
         // })
-        .on('mouseout', function() {
-            // tt.value?.hide()
-            nodeEls
-                .transition().duration(200)
-                .attr('fill-opacity', 0.85)
-            linkEls
-                .transition().duration(200)
-                .attr('stroke-opacity', 0.3)
-        })
+        .on('mouseout', () => highlight(meId))
+
     //tooltiop matches on edges  
     linkHitEls
         .on('mouseover', function(event, d) {
@@ -280,7 +277,7 @@ async function renderGraph(data) {
             .distance(d => Math.max(40, 140 - d.matches * 8)))
         .force('charge',  d3.forceManyBody().strength(-300))
         .force('center',  d3.forceCenter(W / 2, H / 2).strength(0.05))
-        .force('collide', d3.forceCollide().radius(d => r(d.degree) + 5))
+        .force('collide', d3.forceCollide().radius(d => r(d.degree) + 3))
         .force('x', d3.forceX(W / 2).strength(0.06))
         .force('y', d3.forceY(H / 2).strength(0.08))
         .alphaDecay(0.05)
@@ -306,6 +303,7 @@ async function renderGraph(data) {
         })
 
     simulation.alphaTarget(0.02)
+    highlight(meId)
 }
 
 async function loadGraph() {
