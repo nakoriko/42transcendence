@@ -21,18 +21,7 @@ const points = computed(() => filterByPeriod(rollingWinRate(matchesStore.matches
 const isEmpty = computed(() => points.value.length < MIN_POINTS)
 
 
-let resizeObserver = null
-let resizeTimer = null
-const chartData = ref(null)
-
-function toggleSeries(key) {
-    visibleSeries.value[key] = !visibleSeries.value[key]
-    drawChart()
-}
-
-
-
- function drawChart() {
+function drawChart() {
     const el = chartEl.value
     if (!el) return
     d3.select(el).selectAll('*').remove()
@@ -49,7 +38,7 @@ function toggleSeries(key) {
     const volH = H - volTop
 
     // volume buckets: days for 7d/30d, weeks for All
-       const interval = period.value === 'All' ? d3.timeWeek : d3.timeDay
+    const interval = period.value === 'All' ? d3.timeWeek : d3.timeDay
     const now = new Date()
     const start = period.value === 'All'
         ? interval.floor(data[0].date)

@@ -15,7 +15,6 @@ import { fitPdfPage } from '@/utils/pdf';
 import { apiFetch } from '@/utils/apiFetch';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
-import { polygonCentroid } from 'd3';
 
 const statsRef = ref(null)
 const universeRef = ref(null)
@@ -113,17 +112,12 @@ onMounted(async () => {
                 </AppButton>
             </div>
         </div>
-        <!--TItle-->
-
 
         <!--Pong Universe-->
         <section ref="universeRef">
             <!--DashUNiverse will be here-->
            <DashUniverse :players="players"></DashUniverse>
         </section>
-
-
-
 
         <!--PLayer graph -->
         <section ref="playerGraphRef">
@@ -141,7 +135,6 @@ onMounted(async () => {
         <!-- KPI row -->
         <div ref="statsRef" class="flex flex-col gap-12">
             <DashKpiRow :players="players"></DashKpiRow>
-        
             <!--Match history + player stats -->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12">
                 <section ref="historyRef" class="lg:h-[360px]">
@@ -154,10 +147,5 @@ onMounted(async () => {
                 </section>
             </div>
         </div>
-
-        <!--Match history + rally timeline-->
-        <!-- <section ref="historyRef">
-            <DashMatchHistory :activeMatchId></DashMatchHistory>
-        </section> -->
     </div>
 </template>
