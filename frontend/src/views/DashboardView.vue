@@ -14,7 +14,6 @@ import jsPDF from 'jspdf'
 import { fitPdfPage } from '@/utils/pdf';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
-import AppFilterTabs from '@/components/AppFilterTabs.vue';
 import { polygonCentroid } from 'd3';
 
 const statsRef = ref(null)
@@ -24,7 +23,6 @@ const playerGraphRef = ref(null)
 const matchesStore = useMatchesStore()
 const presenceStore = usePresenceStore()
 const activeMatchId = ref(null)
-const period = ref('All')
 const hoveredNode = ref(null)
 
 async function captureSection(el) {
@@ -101,7 +99,6 @@ onMounted(async () => {
             </div>
             <div class="flex items-center gap-4">
                 <AppBadge :label="presenceStore.onlineCount+' online'" variant="teal" />
-                <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" class="no-capture"></AppFilterTabs>
                 <AppButton variant="tag" @click="exportToPdf" class="no-capture">
                     <Download :size="11"></Download>
                     Export PDF
@@ -114,7 +111,7 @@ onMounted(async () => {
         <!--Pong Universe-->
         <section ref="universeRef">
             <!--DashUNiverse will be here-->
-           <DashUniverse :period="period"></DashUniverse>
+           <DashUniverse></DashUniverse>
         </section>
 
 
@@ -124,7 +121,7 @@ onMounted(async () => {
         <section ref="playerGraphRef">
             <!---PLayer graph-->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
-                <DashPlayerGraph :period="period" 
+                <DashPlayerGraph 
                 @node-hover="hoveredNode = $event"
                 @node-click="onNodeClick"></DashPlayerGraph>
                 <aside class="border-t lg:border-t-0 lg:border-l border-white/[0.07] pt-6 lg:pt-0 lg:pl-6">
@@ -135,7 +132,7 @@ onMounted(async () => {
 
         <!-- KPI row -->
         <div ref="statsRef" class="flex flex-col gap-12">
-            <DashKpiRow :period="period"></DashKpiRow>
+            <DashKpiRow></DashKpiRow>
         
             <!--Match history + player stats -->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12">
@@ -144,7 +141,7 @@ onMounted(async () => {
                 </section>
                 <section class="lg:h-[360px]">
                     <div class="h-[320px] lg:h-full">
-                        <DashPlayerStats :period="period"></DashPlayerStats>
+                        <DashPlayerStats></DashPlayerStats>
                     </div>
                 </section>
             </div>

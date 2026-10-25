@@ -7,15 +7,17 @@ import { useMatchesStore } from '@/stores/matches.js';
 import { filterByPeriod, PERIOD_DAYS } from '@/utils/period.js';
 import { useResizeObserver } from '@/composables/useResizeObserver.js';
 import { rollingWinRate } from '@/utils/stats.js';
+import AppFilterTabs from '../AppFilterTabs.vue';
+
 
 const WINDOW = 10 //for matches in the rolling window
 const MIN_POINTS = 3
-const props = defineProps({ period: { type: String, default: 'All' } })
+const period = ref('All')
 const tt = ref(null)
 const ttData = reactive({ date: '', rate: 0, result: 0, dayCount: 0, full: true})
 const chartEl = ref(null)
 const matchesStore = useMatchesStore()
-const points = computed(() => filterByPeriod(rollingWinRate(matchesStore.matches, WINDOW), 'date', props.period))
+const points = computed(() => filterByPeriod(rollingWinRate(matchesStore.matches, WINDOW), 'date', period.value))
 const isEmpty = computed(() => points.value.length < MIN_POINTS)
 
 
@@ -47,11 +49,11 @@ function toggleSeries(key) {
     const volH = H - volTop
 
     // volume buckets: days for 7d/30d, weeks for All
-    const interval = props.period === 'All' ? d3.timeWeek : d3.timeDay
+       const interval = period.value === 'All' ? d3.timeWeek : d3.timeDay
     const now = new Date()
-    const start = props.period === 'All'
+    const start = period.value === 'All'
         ? interval.floor(data[0].date)
-        : d3.timeDay.floor(d3.timeDay.offset(now, -PERIOD_DAYS[props.period]))
+        : d3.timeDay.floor(d3.timeDay.offset(now, -PERIOD_DAYS[period.value]))
     const x = d3.scaleTime()
         .domain([start, interval.ceil(now)])
         .range([0, W])
@@ -150,8 +152,8 @@ function toggleSeries(key) {
 
     // dates under the volume zone
     const xAxis = d3.axisBottom(x)
-        .ticks(props.period === '7d' ? 7 : 5)
-        .tickFormat(d3.timeFormat(props.period === 'All' ? '%b' : '%d %b'))
+        .ticks(period.value === '7d' ? 7 : 5)
+        .tickFormat(d3.timeFormat(period.value === 'All' ? '%b' : '%d %b'))
         .tickSize(0)
     g.append('g')
         .attr('transform', `translate(0, ${H})`)
@@ -216,19 +218,22 @@ onMounted(drawChart)
 
 <template>
     <div class="flex flex-col h-full">
-        <!-- header: title + legend, same height and line as Recent Matches -->
-        <div class="flex items-center justify-between gap-4 h-11 border-b border-white/[0.07] mb-4">
+        <!-- header: title + period tabs, same height and line as Recent Matches -->
+        <div class="flex items-center justify-between gap-4 h-11 border-b border-white/[0.07]">
             <div class="input-label">Player Stats</div>
-            <div class="flex gap-4 text-xs text-muted">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-3 h-px bg-teal"></span>
-                    Win rate · last {{ WINDOW }}
-                </span>
-                <span class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-sm bg-sage/40"></span>
-                    Matches / {{ period === 'All' ? 'week' : 'day' }}
-                </span>
-            </div>
+            <AppFilterTabs v-model="period" :options="['7d', '30d', 'All']" class="no-capture" />
+        </div>
+
+        <!-- legend -->
+        <div class="flex gap-4 text-xs text-muted py-3 mb-1">
+            <span class="flex items-center gap-1.5">
+                <span class="w-3 h-px bg-teal"></span>
+                Win rate · last {{ WINDOW }}
+            </span>
+            <span class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-sm bg-sage/40"></span>
+                Matches / {{ period === 'All' ? 'week' : 'day' }}
+            </span>
         </div>
 
         <div class="relative flex-1">
