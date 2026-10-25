@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watch, reactive, computed } from 'vue'
+import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
@@ -60,7 +60,6 @@ let simulation = null
 let lastData = null
 const isEmpty = ref(false)
 const isLoading = ref(false)
-const props = defineProps({ period: { type: String, default: 'All' } })
 const emit = defineEmits(['node-hover', 'node-click'])
 const toNodeInfo = d => ({
     nickname: d.nickname,
@@ -71,12 +70,6 @@ const toNodeInfo = d => ({
     isCurrent: d.is_current,
 })
 
-
-const emptyMessage = computed(() =>
-    props.period === 'All'
-    ? "Play some matches to see your network grow"
-    : "No matches in this period. Try a wider range"
-)
 
 
 async function renderGraph(data) {
@@ -309,7 +302,7 @@ async function renderGraph(data) {
 async function loadGraph() {
     isLoading.value = true
     try {
-        const res = await apiFetch(`/api/analytics/player-graph/?period=${props.period.toLowerCase()}`)
+        const res = await apiFetch(`/api/analytics/player-graph/`)
         if(!res) return
         const data = await res.json()
         lastData = data
@@ -320,8 +313,6 @@ async function loadGraph() {
         isLoading.value = false
     }
 }
-
-watch(() => props.period, () => loadGraph())
 
 useResizeObserver(container, () => {
     if (lastData && isVisible) renderGraph(lastData) }, 200)
@@ -362,8 +353,7 @@ onUnmounted(() => visibilityObserver.disconnect())
                 <line x1="7.5" y1="7" x2="11" y2="16" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
                 <line x1="16.5" y1="7" x2="13" y2="16" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
             </svg>
-            <span class="text-sm text-muted">{{ emptyMessage }}</span>
-        </div>
+<span class="text-sm text-muted">Play some matches to see your network grow</span>        </div>
         <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div class="w-8 h-8 border-2 border-muted/20 border-t-teal rounded-full animate-spin"></div>
         </div>

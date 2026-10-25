@@ -12,6 +12,7 @@ import { Download } from 'lucide-vue-next';
 import html2canvas from 'html2canvas-pro'
 import jsPDF from 'jspdf'
 import { fitPdfPage } from '@/utils/pdf';
+import { apiFetch } from '@/utils/apiFetch';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
 import { polygonCentroid } from 'd3';
@@ -24,6 +25,7 @@ const matchesStore = useMatchesStore()
 const presenceStore = usePresenceStore()
 const activeMatchId = ref(null)
 const hoveredNode = ref(null)
+const players = ref([]) // all players: shared by Universe chart and KPI rank
 
 async function captureSection(el) {
     // throw new Error('debug B26: simulated capture failure')
@@ -85,8 +87,14 @@ async function onNodeClick(nickname) {
 
 }
 
+async function loadPlayers() {
+    const res = await apiFetch('/api/analytics/universe/')
+    if (!res?.ok) return
+    players.value = await res.json()
+}
+
 onMounted(async () => {
-    await matchesStore.load()
+    await Promise.all([matchesStore.load(), loadPlayers()])
 })
 </script>
 
@@ -111,7 +119,7 @@ onMounted(async () => {
         <!--Pong Universe-->
         <section ref="universeRef">
             <!--DashUNiverse will be here-->
-           <DashUniverse></DashUniverse>
+           <DashUniverse :players="players"></DashUniverse>
         </section>
 
 
@@ -132,7 +140,7 @@ onMounted(async () => {
 
         <!-- KPI row -->
         <div ref="statsRef" class="flex flex-col gap-12">
-            <DashKpiRow></DashKpiRow>
+            <DashKpiRow :players="players"></DashKpiRow>
         
             <!--Match history + player stats -->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12">

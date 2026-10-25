@@ -2,21 +2,20 @@
 import AppMetric from '@/components/AppMetric.vue';
 import AppTooltip from '../AppTooltip.vue';
 import { calcWinRate } from '@/utils/stats';
-import { ref, watch, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, watch, onMounted, onUnmounted, reactive, computed, toRef } from 'vue'
 import { apiFetch } from '@/utils/apiFetch';
 import * as d3 from 'd3'
 import { useUserStore } from '@/stores/user';
 
 const userStore = useUserStore()
 
-const props = defineProps({ period: { type: String, default: 'All' } })
+const props = defineProps({ players: { type: Array, default: () => [] } })
 const chartEl = ref(null)
-const players = ref([])
-const stats = ref({
-    players: 0,
-    matches: 0,
-    // reaction: null,
-})
+const players = toRef(props, 'players')
+const stats = computed(() => ({
+    players: players.value.length,
+    matches: players.value.reduce((sum, player) => sum + player.total_matches, 0),
+}))
 
 const tt = ref(null)
 const ttData = reactive({
@@ -30,19 +29,6 @@ const ttData = reactive({
     // avg_reaction_ms: null,
     hit_accuracy: null,
 })
-
-
-
-async function loadData(){
-    const period_param = props.period === 'All' ? 'all' : props.period.toLowerCase()
-    const res = await apiFetch(`/api/analytics/universe/?period=${period_param}`)
-    if (!res) return
-    const data = await res.json()
-
-    players.value = data
-    stats.value.players = data.length
-    stats.value.matches = data.reduce((sum, player) => sum + player.total_matches, 0)
-}
 
 function drawChart() {
     if(!chartEl.value || !players.value.length) return
@@ -173,13 +159,11 @@ const resizeObserver = new ResizeObserver(() => {
 
 
 onMounted(async () => {
-    await loadData()
     drawChart()
     if(chartEl.value) resizeObserver.observe(chartEl.value)
  })
 
-watch(props.period, loadData)
-watch(players, drawChart)
+ watch(players, drawChart)
 watch(() => userStore.currentUser, drawChart, { deep: true }) 
 
 onUnmounted(() => {

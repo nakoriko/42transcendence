@@ -1,36 +1,15 @@
 <script setup>
-    import { computed, ref, watch } from 'vue'
+    import { computed } from 'vue'
     import { useMatchesStore } from '@/stores/matches';
     import { useUserStore } from '@/stores/user';
-    import { apiFetch } from '@/utils/apiFetch';
-    import { filterByPeriod } from '@/utils/period';
     import { calcWinRate, summarizeRecord, calcRank } from '@/utils/stats';
 
-    const props = defineProps({ period: { type: String, default: 'All' } })
+    const props = defineProps({ players: { type: Array, default: () => [] } })
     const matchesStore = useMatchesStore()
-
-    const record = computed(() =>
-        summarizeRecord (filterByPeriod(matchesStore.matches, 'ended_at', props.period)))
-    const winRate = computed(() => calcWinRate(record.value.wins, record.value.losses ))
-    // const streak = computed(() => currentStreak(matchesStore.matches))
-    // const last7 = computed(() => matchesStore.matches.slice(0, 7).reverse())
     const userStore = useUserStore()
-    const players = ref([])
-
-    async function loadPlayers() {
-        const requested = props.period
-        const res = await apiFetch(`/api/analytics/universe/?period=${requested.toLocaleLowerCase()}`)
-        if(!res) return
-        const data = await res.json()
-        if (requested !== props.period) return
-        players.value = data        
-    }
-
-    watch(() => props.period, loadPlayers, {
-        immediate: true })
-
-    const rank = computed(() => calcRank(players.value, userStore.currentUser?.id))
-
+    const record = computed(() => summarizeRecord(matchesStore.matches))
+    const winRate = computed(() => calcWinRate(record.value.wins, record.value.losses))
+    const rank = computed(() => calcRank(props.players, userStore.currentUser?.id))
 </script>
 
 
