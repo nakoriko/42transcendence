@@ -1,308 +1,263 @@
 <script setup>
-import { ref, onMounted, watch, onUnmounted, nextTick, reactive } from 'vue'
+import { ref, onMounted, watch, computed, reactive } from 'vue'
 import * as d3 from 'd3'
-import { apiFetch } from '@/utils/apiFetch.js';
+// import { apiFetch } from '@/utils/apiFetch.js';
 import AppTooltip from '../AppTooltip.vue';
+import { useMatchesStore } from '@/stores/matches.js';
+import { filterByPeriod, PERIOD_DAYS } from '@/utils/period.js';
+import { useResizeObserver } from '@/composables/useResizeObserver.js';
+import { rollingWinRate } from '@/utils/stats.js';
 
-const tt = ref(null)
-const ttData = reactive({ date: 0, wins: 0, losses: 0, total: 0})
-
+const WINDOW = 10 //for matches in the rolling window
+const MIN_POINTS = 3
 const props = defineProps({ period: { type: String, default: 'All' } })
-const visibleSeries = ref({ wins: true, losses: true, total: true })
-
+const tt = ref(null)
+const ttData = reactive({ date: '', rate: 0, result: 0, dayCount: 0, full: true})
+const chartEl = ref(null)
+const matchesStore = useMatchesStore()
+const points = computed(() => filterByPeriod(rollingWinRate(matchesStore.matches, WINDOW), 'date', props.period))
+const isEmpty = computed(() => points.value.length < MIN_POINTS)
 
 
 let resizeObserver = null
 let resizeTimer = null
 const chartData = ref(null)
-const chartEl = ref(null)
 
 function toggleSeries(key) {
     visibleSeries.value[key] = !visibleSeries.value[key]
     drawChart()
 }
 
-async function loadData(){
-    const res = await apiFetch(`/api/analytics/player-stats/?period=${props.period.toLowerCase()}`)
-    if(!res) return
-    chartData.value = await res.json()
-}
+
 
  function drawChart() {
-
-    if(!chartData.value) return
-    const data = chartData.value
-    d3.select(chartEl.value).selectAll('*').remove()
-
-
     const el = chartEl.value
-    const labels = data.labels
+    if (!el) return
+    d3.select(el).selectAll('*').remove()
+    if (isEmpty.value) return
+
+    const data = points.value
     const { width, height } = el.getBoundingClientRect()
-    const margin = { top: 16, right: 16, bottom: 24, left: 12  }
+    const margin = { top: 12, right: 12, bottom: 24, left: 36 }
     const W = width - margin.left - margin.right
     const H = height - margin.top - margin.bottom
+    const GAP = 12
+    const rateH = Math.round(H * 0.72)   // top zone: win rate
+    const volTop = rateH + GAP           // bottom zone: volume
+    const volH = H - volTop
 
-    const xScale = d3.scalePoint() //dont need to parse the dates like scaleTime in POngUniverse
-        .domain(labels)
+    // volume buckets: days for 7d/30d, weeks for All
+    const interval = props.period === 'All' ? d3.timeWeek : d3.timeDay
+    const now = new Date()
+    const start = props.period === 'All'
+        ? interval.floor(data[0].date)
+        : d3.timeDay.floor(d3.timeDay.offset(now, -PERIOD_DAYS[props.period]))
+    const x = d3.scaleTime()
+        .domain([start, interval.ceil(now)])
         .range([0, W])
 
-    // const yMax = d3.max([...data.total, ...data.wins, ...data.losses]) //check max in every array
-    const visibleData = []
-    if(visibleSeries.value.wins) visibleData.push(...data.wins)//spread oprator for push single array elemnts instead of whole array
-    if(visibleSeries.value.losses) visibleData.push(...data.losses)
-    if(visibleSeries.value.total) visibleData.push(...data.total)
-    const yMax = d3.max(visibleData) || 1
-    const yScale = d3.scaleLinear()// (from bottom to top)
-        .domain([0, yMax * 1.2])// add 1.2 to leave space on top
-        .range([H, 0]) // in svg starts from top to bottom, like we did in pong universe
-    
+    const buckets = d3.rollups(data, v => v.length, p => +interval.floor(p.date))
+        .map(([t, count]) => ({ start: new Date(t), count }))
+    const dayCounts = d3.rollup(data, v => v.length, p => +d3.timeDay.floor(p.date))
+
+    const yRate = d3.scaleLinear().domain([0, 100]).range([rateH, 0])
+    const yVol = d3.scaleLinear()
+        .domain([0, d3.max(buckets, b => b.count)])
+        .range([volH, 0])
+
     const svg = d3.select(el)
         .append('svg')
         .attr('width', width)
         .attr('height', height)
 
-    //gradient fill
-    const defs = svg.append('defs')
-
-    const winsGrad = defs.append('linearGradient')
-        .attr('id', 'grad-wins')
-        .attr('x1', '0').attr('y1', '0')
-        .attr('x2', '0').attr('y2', '1')
-
-    winsGrad.append('stop')
-        .attr('offset', '0')
-        .attr('stop-color', '#4A8C9B')
-        .attr('stop-opacity', 0.3)
-
-    winsGrad.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', '#4A8C9B')
-        .attr('stop-opacity', 0)
-
-    const lossesGrad = defs.append('linearGradient')
-        .attr('id', 'grad-losses')
-        .attr('x1', '0').attr('y1', '0')
-        .attr('x2', '0').attr('y2', '1')
-
-    lossesGrad.append('stop')
-        .attr('offset', '0')
-        .attr('stop-color', '#F8856D')
-        .attr('stop-opacity', 0.3)
-
-
-    lossesGrad.append('stop')
-        .attr('offset', '100%')
-        .attr('stop-color', '#F8856D')
-        .attr('stop-opacity', 0)
-    
+    const grad = svg.append('defs').append('linearGradient')
+        .attr('id', 'grad-rate')
+        .attr('x1', 0).attr('y1', 0)
+        .attr('x2', 0).attr('y2', 1)
+    grad.append('stop').attr('offset', '0%').attr('stop-color', '#4A8C9B').attr('stop-opacity', 0.25)
+    grad.append('stop').attr('offset', '100%').attr('stop-color', '#4A8C9B').attr('stop-opacity', 0)
 
     const g = svg.append('g')
         .attr('transform', `translate(${margin.left}, ${margin.top})`)
 
-    //vertical line
-    const yTicks = yScale.ticks(4) // just some number of ticks
-    g.selectAll('grid')
-        .data(yTicks)
-        .join('line')
-        .attr('x1', 0).attr('x2', W)
-        .attr('y1', d => yScale(d)).attr('y2', d => yScale(d))
-        .attr('stroke', 'rgba(255,255,255,0.1)')
-        .attr('stroke-dasharray', '1.8')
-
-    //generation of coordinates
-    const lineGen = d3.line() //creates coordinates for x,Y
-        .x((_, i) => xScale(labels[i])) // since we need just its number, not a valu, we put it like '_', i
-        .y(d => yScale(d)) // here we rake the value
-        // .curve(d3.curveCatmullRom.alpha(0.05))
-        .curve(d3.curveMonotoneX)
-
-    //area generation (for fill)
-    const areaGen = d3.area()
-        .x((_, i) => xScale(labels[i]))
-        .y0(H)
-        .y1(d => yScale(d))
-        .curve(d3.curveMonotoneX)
-
-    if(visibleSeries.value.wins) {
-        g.append('path')
-            .datum(data.wins) //creates array of elemnts, instead of one element for every value (like in data())
-            .attr('fill', 'url(#grad-wins)')
-            .attr('stroke', 'none')
-            .attr('d', areaGen)
-        g.append('path')
-            .datum(data.wins) //creates array of elemnts, instead of one element for every value (like in data())
-            .attr('fill', 'none')
-            .attr('stroke', '#4A8C9B')
-            .attr('stroke-width', 0.5)
-            .attr('d', lineGen)
-    }
-
-    if(visibleSeries.value.losses) {
-        g.append('path')
-            .datum(data.losses) //creates array of elemnts, instead of one element for every value (like in data())
-            .attr('fill', 'url(#grad-losses)')
-            .attr('stroke', 'none')
-            .attr('d', areaGen)
-        g.append('path')
-            .datum(data.losses) //creates array of elemnts, instead of one element for every value (like in data())
-            .attr('fill', 'none')
-            .attr('stroke', '#F8856D')
-            .attr('stroke-width', 0.5)
-            .attr('d', lineGen)
-    }
-
-    if(visibleSeries.value.total) {
-        g.append('path')
-            .datum(data.total) //creates array of elemnts, instead of one element for every value (like in data())
-            .attr('fill', 'none')
-            .attr('stroke', '#ABC7C3')
-            .attr('stroke-width', 0.5)
-            .attr('stroke-dasharray', '2.5')
-            .attr('d', lineGen)
-    }
-
-    ///////////////LeftLine
+    // 50% line: above it - winning more than losing
     g.append('line')
-        .attr('x1', 0).attr('x2', 0)
-        .attr('y1', 0).attr('y2', H)
-        .attr('stroke', 'rgba(255,255,255,0.1)')
-        .attr('stroke-width', 1)
+        .attr('x1', 0).attr('x2', W)
+        .attr('y1', yRate(50)).attr('y2', yRate(50))
+        .attr('stroke', 'rgba(255,255,255,0.15)')
+        .attr('stroke-dasharray', '2 3')
 
+    g.selectAll('.rate-label')
+        .data([0, 50, 100])
+        .join('text')
+        .attr('class', 'rate-label')
+        .attr('x', -8)
+        .attr('y', d => yRate(d))
+        .attr('dy', '0.32em')
+        .attr('text-anchor', 'end')
+        .attr('fill', 'rgba(255,255,255,0.3)')
+        .attr('font-size', '10px')
+        .text(d => d + '%')
 
-    ///////////////Bottob line with dates
-    const MAX_LABELS = 10
+    // bottom of the rate zone
+    g.append('line')
+        .attr('x1', 0).attr('x2', W)
+        .attr('y1', rateH).attr('y2', rateH)
+        .attr('stroke', 'rgba(255,255,255,0.07)')
 
-    const xAxis = d3.axisBottom(xScale)
-        .tickSize(-H)
+    const area = d3.area()
+        .x(p => x(p.date))
+        .y0(rateH)
+        .y1(p => yRate(p.rate))
+        .curve(d3.curveMonotoneX)
 
-    const axisG = g.append('g')
+    const line = d3.line()
+        .x(p => x(p.date))
+        .y(p => yRate(p.rate))
+        .curve(d3.curveMonotoneX)
+
+    g.append('path')
+        .datum(data)
+        .attr('fill', 'url(#grad-rate)')
+        .attr('d', area)
+
+    // whole line dashed, then solid on top where the window is full
+    g.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', '#4A8C9B')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', '3 3')
+        .attr('d', line)
+    g.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', '#4A8C9B')
+        .attr('stroke-width', 1.5)
+        .attr('d', line.defined(p => p.full))
+
+    // volume bars
+    g.append('g')
+        .attr('transform', `translate(0, ${volTop})`)
+        .selectAll('rect')
+        .data(buckets)
+        .join('rect')
+        .attr('x', b => x(b.start))
+        .attr('width', b => Math.max(1, x(interval.offset(b.start, 1)) - x(b.start) - 2))
+        .attr('y', b => yVol(b.count))
+        .attr('height', b => volH - yVol(b.count))
+        .attr('fill', 'rgba(171,199,195,0.25)')
+
+    // dates under the volume zone
+    const xAxis = d3.axisBottom(x)
+        .ticks(props.period === '7d' ? 7 : 5)
+        .tickFormat(d3.timeFormat(props.period === 'All' ? '%b' : '%d %b'))
+        .tickSize(0)
+    g.append('g')
         .attr('transform', `translate(0, ${H})`)
         .call(xAxis)
-
-    const ticks = axisG.selectAll('.tick')
-    
-    ticks.select('line')
-        .attr('stroke', 'rgba(255,255,255,0.07)')
-    ticks.select('text')
+        .call(a => a.select('.domain').attr('stroke', 'rgba(255,255,255,0.1)'))
+        .selectAll('text')
         .attr('fill', 'rgba(255,255,255,0.3)')
         .attr('font-size', '10px')
         .attr('dy', '1.2em')
-    ticks.style('display', labels.length > MAX_LABELS ? 'none' : null)
-    
-    axisG.select('.domain')
-        .attr('stroke', 'rgba(255,255,255,0.1)')
-        .attr('stroke-width', 1)
 
-    //helpline for tooltip
+    // crosshair: snaps to the nearest match
     const hoverLine = g.append('line')
-        .attr('y1', 0)
-        .attr('y2', H)
+        .attr('y1', 0).attr('y2', H)
         .attr('stroke', 'rgba(255,255,255,0.2)')
-        .attr('stroke-width', 1)
-        .attr('stroke-dasharray', '3.3')
+        .attr('stroke-dasharray', '3 3')
+        .attr('opacity', 0)
+    const hoverDot = g.append('circle')
+        .attr('r', 3.5)
+        .attr('fill', '#4A8C9B')
         .attr('opacity', 0)
 
-    //invisible hover dots for tooltip
-    labels.forEach((label, i) => {
-        const x = xScale(label)
-        const yVal = visibleSeries.value.total ? data.total[i]
-                    : visibleSeries.value.wins ? data.wins[i]
-                    :data.losses[i]
-        g.append('circle')
-            .attr('cx', x)
-            .attr('cy', yScale(yVal))
-            .attr('r', 10)
-            .attr('fill', 'transparent') 
-            .style('cursor', 'crosshair')
-            .on('mouseover', () => {
-                if(!tt.value) return
-                ttData.date = label
-                ttData.wins = data.wins[i]
-                ttData.losses = data.losses[i]
-                ttData.total = data.total[i]
-                const tooltipWidth = 170
-                const tooltipX = (tooltipWidth + x + 16 > W)
-                    ? (margin.left + x) - tooltipWidth - 1
-                    : (margin.left + x) + 16
-                const tooltipY = margin.top + yScale(yVal) - 10
-                hoverLine
-                    .attr('x1', x).attr('x2', x)
-                    .attr('opacity', 1)
-                    .transition().duration(80)
-                    .attr('x1', x).attr('x2', x)
-                tt.value.show(tooltipX, tooltipY)
-            })
-            .on('mouseout', () => {
-                hoverLine.attr('opacity', 0)
-                tt.value?.hide()
-            })
-    })
+    const bisect = d3.bisector(p => p.date).center
+    const TT_W = 170
+
+    // transparent layer on top catches the mouse over the whole chart
+    g.append('rect')
+        .attr('width', W)
+        .attr('height', H)
+        .attr('fill', 'transparent')
+        .style('cursor', 'crosshair')
+        .on('mousemove', event => {
+            const [mx] = d3.pointer(event)
+            const p = data[bisect(data, x.invert(mx))]
+            const px = x(p.date)
+            const py = yRate(p.rate)
+            hoverLine.attr('x1', px).attr('x2', px).attr('opacity', 1)
+            hoverDot.attr('cx', px).attr('cy', py).attr('opacity', 1)
+
+            ttData.date = d3.timeFormat('%d %b %Y')(p.date)
+            ttData.rate = p.rate
+            ttData.result = p.result
+            ttData.dayCount = dayCounts.get(+d3.timeDay.floor(p.date))
+            ttData.full = p.full
+
+            const tx = px + TT_W + 16 > W
+                ? margin.left + px - TT_W - 16
+                : margin.left + px + 16
+            tt.value?.show(tx, margin.top + py - 10)
+        })
+        .on('mouseleave', () => {
+            hoverLine.attr('opacity', 0)
+            hoverDot.attr('opacity', 0)
+            tt.value?.hide()
+        })
 }
 
-onMounted(() => {
-    loadData()
-    resizeObserver = new ResizeObserver(() => {
-        clearTimeout(resizeTimer)
-        resizeTimer = setTimeout(() => drawChart(), 200)
-    })
-    resizeObserver.observe(chartEl.value)
-})
-
-watch(() => props.period, loadData)
-watch(chartData, async () => {
-    await nextTick()
-    drawChart()
-})
-
-onUnmounted(() => {
-    resizeObserver?.disconnect()
-})
-
+watch(points, drawChart)
+useResizeObserver(chartEl, drawChart, 200)
+onMounted(drawChart)
 </script>
+
 
 <template>
     <div class="flex flex-col h-full">
-        <!-- header: title + series legend, same height and line as Recent Matches -->
+        <!-- header: title + legend, same height and line as Recent Matches -->
         <div class="flex items-center justify-between gap-4 h-11 border-b border-white/[0.07] mb-4">
             <div class="input-label">Player Stats</div>
-            <div class="flex flex-wrap gap-4">
-                <button v-for="s in ['wins', 'losses', 'total']"
-                    :key="s"
-                    @click="toggleSeries(s)"
-                    :class="['flex items-center gap-1.5 text-xs text-muted transition-opacity cursor-pointer',
-                    visibleSeries[s] ? 'opacity-100' : 'opacity-30']"
-                >
-                    <span :class="[
-                        'w-2 h-2 rounded-full',
-                        s === 'wins'   ? 'bg-teal'  : '',
-                        s === 'losses' ? 'bg-coral' : '',
-                        s === 'total'  ? 'bg-sage'  : ''
-                    ]" />
-                    {{ s }}
-                </button>
+            <div class="flex gap-4 text-xs text-muted">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-3 h-px bg-teal"></span>
+                    Win rate · last {{ WINDOW }}
+                </span>
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-sm bg-sage/40"></span>
+                    Matches / {{ period === 'All' ? 'week' : 'day' }}
+                </span>
             </div>
         </div>
-         <div class="relative flex-1">
+
+        <div class="relative flex-1">
             <div ref="chartEl" class="absolute inset-0" />
+            <div v-if="isEmpty"
+                class="absolute inset-0 flex items-center justify-center text-sm text-muted pointer-events-none">
+                Play a few more matches to see your trend
+            </div>
             <AppTooltip ref="tt">
-                <div class="text-xs font-medium mb-2 pb-2 border-b border-white/[0.07]"> {{ ttData.date }}</div>
+                <div class="text-xs font-medium mb-2 pb-2 border-b border-white/[0.07]">{{ ttData.date }}</div>
                 <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">Wins</span>
-                    <span class="text-[10px] text-teal">{{ ttData.wins }}</span>
+                    <span class="text-[10px] text-muted">Win rate</span>
+                    <span class="text-[10px] text-teal">{{ ttData.rate }}%</span>
                 </div>
-                <div class="flex justify-between gap-4 mb-1 ">
-                    <span class="text-[10px] text-muted">Losses</span>
-                    <span class="text-[10px] text-coral">{{ ttData.losses }}</span>
+                <div v-if="!ttData.full" class="text-[10px] text-muted mb-1">
+                    fewer than {{ WINDOW }} matches so far
                 </div>
-                <div class="flex justify-between gap-4 mb-1 ">
-                    <span class="text-[10px] text-muted">Total</span>
-                    <span class="text-[10px] text-sage">{{ ttData.total }}</span>
+                <div class="flex justify-between gap-4 mb-1">
+                    <span class="text-[10px] text-muted">This match</span>
+                    <span class="text-[10px] uppercase"
+                        :class="ttData.result === 'win' ? 'text-teal' : ttData.result === 'loss' ? 'text-coral' : 'text-muted'">
+                        {{ ttData.result }}
+                    </span>
                 </div>
-
+                <div class="flex justify-between gap-4">
+                    <span class="text-[10px] text-muted">Matches that day</span>
+                    <span class="text-[10px]">{{ ttData.dayCount }}</span>
+                </div>
             </AppTooltip>
-         </div>
+        </div>
     </div>
-</template>
-
-                
-                
+</template>           
