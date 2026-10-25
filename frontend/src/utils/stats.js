@@ -36,6 +36,21 @@ export function calcRank(players, userId) {
     return { rank: better.length + 1, of: ranked.length }
 }
 
+export function rollingWinRate(matches, size = 10) {
+    const sorted = [...matches].sort((a, b) => new Date(a.ended_at) - new Date(b.ended_at))
+    return sorted.map((m, i) => {
+        const last = sorted.slice(Math.max(0, i - size + 1), i + 1)
+        const rec = summarizeRecord(last)
+        return {
+            id: m.id,
+            date: new Date(m.ended_at),
+            result: m.result,
+            rate: calcWinRate(rec.wins, rec.losses),
+            full: last.length === size,
+        }
+    })
+}
+
 
 
 
