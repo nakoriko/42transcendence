@@ -2,10 +2,10 @@
 import  { ref, onMounted, onUnmounted, watch, computed, reactive } from 'vue'
 import  { useUserStore } from '@/stores/user'
 import AppToolTip from '@/components/AppTooltip.vue'
+import AppTooltipRow from '../AppTooltipRow.vue'
 // import AppFilterTabs from '../AppFilterTabs.vue'
 import { useResizeObserver } from '@/composables/useResizeObserver.js'
 // import { filterByPeriod } from '@/utils/period.js'
-import { formatShortDate } from '@/utils/date.js'
 
 // const props = defineProps({
 //     matches: { type: Array, default: () => []},
@@ -331,7 +331,7 @@ onUnmounted(() => {
                     class="w-full absolute bottom-0 block">
                 </canvas>
 
-                <AppToolTip ref="tt">
+<AppToolTip ref="tt">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-xs font-medium"
                             :style="{color: ttData.won ? '#ABC7C3' : '#F8856D'}">
@@ -349,21 +349,13 @@ onUnmounted(() => {
                         <span class="text-[10px] text-muted">Match date</span>
                         <span class="text-[10px]">{{ ttData.date }}</span>
                     </div> -->
-                    <div class="flex justify-between mb-1">
-                        <span class="text-[10px] text-muted">Exchanges</span>
-                        <span class="text-[10px]">{{ ttData.hits }}</span>
-                    </div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-[10px] text-muted">Result</span>
-                        <span class="text-[10px]"
-                        :style="{ color: ttData.won ? '#4A8C9B' : '#F8856D'} ">
-                            {{ ttData.won ? 'Your point' : "Opponent's Point" }}
+                    <AppTooltipRow label="Exchanges" :value="ttData.hits" />
+                    <AppTooltipRow label="Result">
+                        <span :style="{ color: ttData.won ? '#4A8C9B' : '#F8856D' }">
+                            {{ ttData.won ? 'Your point' : "Opponent's point" }}
                         </span>
-                    </div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-[10px] text-muted">Score</span>
-                        <span class="text-[10px]">{{ ttData.score }}</span>
-                    </div>
+                    </AppTooltipRow>
+                    <AppTooltipRow label="Score" :value="ttData.score" />
                     <!-- <div class="mt-3 pt-2 border-t border-white/[0.07]">
                         <span class="text-[9px] text-muted tracking-widest uppercase">
                             Click to view match ↓

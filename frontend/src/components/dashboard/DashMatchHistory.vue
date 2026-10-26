@@ -4,10 +4,10 @@ import RecentMatchesList from '../RecentMatchesList.vue'
 import DashRallyTimeline from './DashRallyTimeline.vue'
 import { apiFetch } from '@/utils/apiFetch.js'
 import { useMatchesStore } from '@/stores/matches.js'
-import { useUserStore } from '@/stores/user.js'
+// import { useUserStore } from '@/stores/user.js'
 
 const matchesStore = useMatchesStore()
-const userStore = useUserStore()
+// const userStore = useUserStore()
 const activeFilter  = ref('all')
 const selectedMatch = ref(null)
 const events        = ref([])         

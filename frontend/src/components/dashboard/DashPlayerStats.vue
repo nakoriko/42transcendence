@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted, watch, computed, reactive } from 'vue'
 import * as d3 from 'd3'
-// import { apiFetch } from '@/utils/apiFetch.js';
 import AppTooltip from '../AppTooltip.vue';
+import AppTooltipRow from '../AppTooltipRow.vue';
+
 import { useMatchesStore } from '@/stores/matches.js';
 import { filterByPeriod, PERIOD_DAYS } from '@/utils/period.js';
 import { useResizeObserver } from '@/composables/useResizeObserver.js';
@@ -233,24 +234,19 @@ onMounted(drawChart)
             </div>
             <AppTooltip ref="tt">
                 <div class="text-xs font-medium mb-2 pb-2 border-b border-white/[0.07]">{{ ttData.date }}</div>
-                <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">Win rate</span>
-                    <span class="text-[10px] text-teal">{{ ttData.rate }}%</span>
-                </div>
+                <AppTooltipRow label="Win rate">
+                    <span class="text-teal">{{ ttData.rate }}%</span>
+                </AppTooltipRow>
                 <div v-if="!ttData.full" class="text-[10px] text-muted mb-1">
                     fewer than {{ WINDOW }} matches so far
                 </div>
-                <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">This match</span>
-                    <span class="text-[10px] uppercase"
+                <AppTooltipRow label="This match">
+                    <span class="uppercase"
                         :class="ttData.result === 'win' ? 'text-teal' : ttData.result === 'loss' ? 'text-coral' : 'text-muted'">
                         {{ ttData.result }}
                     </span>
-                </div>
-                <div class="flex justify-between gap-4">
-                    <span class="text-[10px] text-muted">Matches that day</span>
-                    <span class="text-[10px]">{{ ttData.dayCount }}</span>
-                </div>
+                </AppTooltipRow>
+                <AppTooltipRow label="Matches that day" :value="ttData.dayCount" />
             </AppTooltip>
         </div>
     </div>

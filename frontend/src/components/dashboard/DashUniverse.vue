@@ -1,9 +1,9 @@
 <script setup>
 import AppMetric from '@/components/AppMetric.vue';
 import AppTooltip from '../AppTooltip.vue';
+import AppTooltipRow from '../AppTooltipRow.vue';
 import { calcWinRate } from '@/utils/stats';
 import { ref, watch, onMounted, onUnmounted, reactive, computed, toRef } from 'vue'
-import { apiFetch } from '@/utils/apiFetch';
 import * as d3 from 'd3'
 import { useUserStore } from '@/stores/user';
 
@@ -201,34 +201,18 @@ onUnmounted(() => {
             <div ref="chartEl" class="w-full h-[400px] lg:h-[clamp(320px,calc(100svh_-_280px),600px)] overflow-hidden"></div>
             <AppTooltip ref="tt">
                 <div class="text-xs font-medium mb-3" :style="{color: ttData.color}">{{ ttData.nickname }}</div>
-                <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">First match</span>
-                    <span class="text-[10px]">{{ ttData.date_joined }}</span>
-                </div>
-                <div class="flex justify-between gap-4 mb-3">
-                    <span class="text-[10px] text-muted">Total matches</span>
-                    <span class="text-[10px]">{{ ttData.total_matches }}</span>
-                </div>
+                <AppTooltipRow label="First match" :value="ttData.date_joined" />
+                <AppTooltipRow label="Total matches" :value="ttData.total_matches" />
                 <div class="border-b border-white/[0.07] my-2"></div>
                 <div class="text-[9px] text-muted uppercase tracking-widest mb-2">Stats</div>
-                <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">Wins</span>
-                    <span class="text-[10px]">{{ ttData.wins }}</span>
-                </div>
-                <div class="flex justify-between gap-4 mb-1">
-                    <span class="text-[10px] text-muted">Losses</span>
-                    <span class="text-[10px]">{{ ttData.losses }}</span>
-                </div>
-                <div class="flex justify-between gap-4 mb-3">
-                    <span class="text-[10px] text-muted">Win Rate</span>
-                    <span class="text-[10px]">{{ calcWinRate(ttData.wins, ttData.losses) }}%</span>
-                </div>
+                <AppTooltipRow label="Wins" :value="ttData.wins" />
+                <AppTooltipRow label="Losses" :value="ttData.losses" />
+                <AppTooltipRow label="Win rate" :value="calcWinRate(ttData.wins, ttData.losses) + '%'" />
                 <div class="border-b border-white/[0.07] my-2"></div>
-                <div class="flex justify-between gap-4">
-                    <span class="text-[10px] text-muted">Accuracy</span>
-                    <span class="text-[10px]">{{ ttData.hit_accuracy ? Math.round(ttData.hit_accuracy * 100) + '%' : '-' }}</span>
-                </div>
+                <AppTooltipRow label="Accuracy"
+                    :value="ttData.hit_accuracy ? Math.round(ttData.hit_accuracy * 100) + '%' : '-'" />
             </AppTooltip>
         </div>
+
     </div>
 </template>

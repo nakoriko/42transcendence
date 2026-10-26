@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
+import AppTooltipRow from '../AppTooltipRow.vue'
 import { apiFetch } from '@/utils/apiFetch'
 import { formatShortDate } from '@/utils/date.js'
 import { useResizeObserver } from '@/composables/useResizeObserver.js'
@@ -353,7 +354,7 @@ onUnmounted(() => visibilityObserver.disconnect())
                 <line x1="7.5" y1="7" x2="11" y2="16" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
                 <line x1="16.5" y1="7" x2="13" y2="16" stroke="currentColor" stroke-width="1" stroke-dasharray="2 2"/>
             </svg>
-<span class="text-sm text-muted">Play some matches to see your network grow</span>        </div>
+        <span class="text-sm text-muted">Play some matches to see your network grow</span>        </div>
         <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div class="w-8 h-8 border-2 border-muted/20 border-t-teal rounded-full animate-spin"></div>
         </div>
@@ -363,30 +364,11 @@ onUnmounted(() => visibilityObserver.disconnect())
                 <span class="text-xs font-medium">{{ ttEdgeData.sourceName }}</span>
                 <span class="text-xs text-muted">vs</span>
                 <span class="text-xs font-medium">{{ ttEdgeData.targetName }}</span>
-
             </div>
-            <!-- matches -->
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[10px] text-muted">Matches</span>
-                <span class="text-[10px] tabular-nums">{{ ttEdgeData.matches }}</span>
-            </div>
-            <!-- verdict -->
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-[10px] text-muted">Score</span>
-                <span class="text-[10px]">{{ ttEdgeData.verdict }}</span>
-
-            </div>
-            <!-- draws (if) -->
-            <div v-if="ttEdgeData.draws" class="flex justify-between items-center mb-1">
-                <span class="text-[10px]  text-muted">Draws</span>
-                <span class="text-[10px] tabular-nums">{{ ttEdgeData.draws }}</span>
-            </div>
-            <!-- last played -->
-            <div class="flex justify-between items-center">
-                <span class="text-[10px]  text-muted">Last played</span>
-                <span class="text-[10px]">{{ ttEdgeData.lastPlayed }}</span>
-            </div>
-
+            <AppTooltipRow label="Matches" :value="ttEdgeData.matches" />
+            <AppTooltipRow label="Score" :value="ttEdgeData.verdict" />
+            <AppTooltipRow v-if="ttEdgeData.draws" label="Draws" :value="ttEdgeData.draws" />
+            <AppTooltipRow label="Last played" :value="ttEdgeData.lastPlayed" />
         </AppTooltip>
     </div>
 </div>
