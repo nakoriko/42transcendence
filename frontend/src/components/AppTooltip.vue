@@ -1,16 +1,24 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
+import { placeTooltip } from '@/utils/tooltip';
 
 const el = ref(null)
 
 defineExpose({
-    show(x, y) {
-        el.value.style.left = x + 'px'
-        el.value.style.top = y + 'px'
-        el.value.style.opacity = 1
+    async show(x, y) {
+        await nextTick()
+        const tip = el.value
+        const box = tip?.offsetParent
+        if(!tip || !box) return
+        const { left, top } = placeTooltip(x, y, 
+            { width: tip.offsetWidth, height: tip.offsetHeight},
+            { width: box.clientWidth, height: box.clientHeight })
+        tip.style.left = left + 'px'
+        tip.style.top = top + 'px'
+        tip.style.opacity = 1
     },
     hide() {
-        el.value.style.opacity = 0
+       if(el.value) el.value.style.opacity = 0
     }
 })
 </script>

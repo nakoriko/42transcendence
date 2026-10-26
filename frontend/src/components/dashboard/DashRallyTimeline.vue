@@ -280,13 +280,7 @@ function onMouseMove(e) {
     ttData.score = r.score
     // ttData.opponent = r.opponent ?? '-'
     // ttData.date = formatShortDate(r.matchDate)
-    const tooltipWidth = 170
-    const rawX = e.clientX - containerRect.left 
-    const xPos = rawX + tooltipWidth + 12 > containerRect.width
-        ? rawX - tooltipWidth - 12
-        : rawX + 12
-    const yPos = e.clientY - containerRect.top + 12
-    tt.value?.show(xPos, yPos)
+    tt.value?.show(e.clientX - containerRect.left, e.clientY - containerRect.top)
 }
 
 // function onCanvasClick(e) {

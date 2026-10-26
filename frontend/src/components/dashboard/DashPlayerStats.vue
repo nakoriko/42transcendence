@@ -165,7 +165,7 @@ function drawChart() {
         .attr('opacity', 0)
 
     const bisect = d3.bisector(p => p.date).center
-    const TT_W = 170
+    // const TT_W = 170
 
     // transparent layer on top catches the mouse over the whole chart
     g.append('rect')
@@ -187,10 +187,10 @@ function drawChart() {
             ttData.dayCount = dayCounts.get(+d3.timeDay.floor(p.date))
             ttData.full = p.full
 
-            const tx = px + TT_W + 16 > W
-                ? margin.left + px - TT_W - 16
-                : margin.left + px + 16
-            tt.value?.show(tx, margin.top + py - 10)
+            // const tx = px + TT_W + 16 > W
+            //     ? margin.left + px - TT_W - 16
+            //     : margin.left + px + 16
+            tt.value?.show(margin.left + px, margin.top + py)
         })
         .on('mouseleave', () => {
             hoverLine.attr('opacity', 0)

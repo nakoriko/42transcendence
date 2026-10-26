@@ -120,9 +120,9 @@ function drawChart() {
 
             const x = scaleX(new Date(p.date_joined))
             const y = scaleY(p.total_matches)
-            const tooltipWidth = 180
-            const xPos = x + tooltipWidth > W ? x - tooltipWidth - 12 : x + 12
-            tt.value.show(xPos, y - 10)
+            // const tooltipWidth = 180
+            // const xPos = x + tooltipWidth > W ? x - tooltipWidth - 12 : x + 12
+            tt.value.show(x, y)
         })
         .on('mouseout', () => tt.value.hide())
 //baseline

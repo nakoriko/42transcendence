@@ -206,7 +206,7 @@ async function renderGraph(data) {
     //helper: tooltip coordinates
     function tooltipXY(event) {
         const rect = container.value.getBoundingClientRect()
-        return [event.clientX - rect.left + 12, event.clientY - rect.top + 12]
+        return [event.clientX - rect.left, event.clientY - rect.top]
     }
 
     const clampX = (x, d) => Math.max(nodeR(d), Math.min(W - nodeR(d), x))
