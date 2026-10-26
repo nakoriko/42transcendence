@@ -359,12 +359,13 @@ onUnmounted(() => visibilityObserver.disconnect())
             <div class="w-8 h-8 border-2 border-muted/20 border-t-teal rounded-full animate-spin"></div>
         </div>
         <AppTooltip ref="ttEdge">
-            <!-- pair -->
-            <div class="flex items-center justify-center gap-1.5 mb-1">
-                <span class="text-xs font-medium">{{ ttEdgeData.sourceName }}</span>
-                <span class="text-xs text-muted">vs</span>
-                <span class="text-xs font-medium">{{ ttEdgeData.targetName }}</span>
+            <!-- pair: plain inline text, so long nicknames wrap instead of overflowing -->
+            <div class="text-xs font-medium text-left break-words mb-2 pb-2 border-b border-white/[0.07]">
+                {{ ttEdgeData.sourceName }}
+                <span class="text-muted font-normal">vs</span>
+                {{ ttEdgeData.targetName }}
             </div>
+            
             <AppTooltipRow label="Matches" :value="ttEdgeData.matches" />
             <AppTooltipRow label="Score" :value="ttEdgeData.verdict" />
             <AppTooltipRow v-if="ttEdgeData.draws" label="Draws" :value="ttEdgeData.draws" />
