@@ -1,73 +1,82 @@
 <script setup>
-    import { ref, onMounted, computed } from 'vue'
-    import { apiFetch } from '@/utils/apiFetch';
+    import { ref, computed } from 'vue'
+    // import { apiFetch } from '@/utils/apiFetch';
     import { useChatStore } from '@/stores/chat';
-    import PlayCard from '../PlayCard.vue';
+    // import PlayCard from '../PlayCard.vue';
     import AppFilterTabs from '../AppFilterTabs.vue';
-    import { usePresenceStore } from '@/stores/presence.js';
+    import { usePresence } from '@/composables/usePresence.js';
+    import AppAvatar from '../AppAvatar.vue';
+    import { formatTime } from '@/utils/date.js';
+    
+
+    const props = defineProps({ friends: { type: Array, default: () => [] } })
 
     const chatStore =  useChatStore()
-    const friends = ref([])
+    const { isOnline } = usePresence()
+    // const friends = ref([])
     const activeFilter = ref('all')
-    const presenceStore = usePresenceStore()
 
-    const liveFriends = computed(() => 
-        friends.value.map(rel => ({
-            ...rel,
-            friend: {
-                ...rel.friend,
-                is_online: presenceStore.online[rel.friend.id] ?? rel.friend.is_online
-            }
-        }))
-    )
+    const visibleFriends = computed(() => 
+        activeFilter.value === 'online'
+        ? props.friends.filter(f => isOnline(f))
+        : props.friends)
 
+    const lastMessage = (id) => 
+        chatStore.messages[id]?.at(-1) ?? null
 
-    const filteredFriends = computed(() => {
-        if(activeFilter.value === 'online')
-            return liveFriends.value.filter(rel => rel.friend.is_online)
-        return liveFriends.value
-    })
+    // const filteredFriends = computed(() => {
+    //     if(activeFilter.value === 'online')
+    //         return liveFriends.value.filter(rel => rel.friend.is_online)
+    //     return liveFriends.value
+    // })
 
-    async function loadFriends() {
-        const res =  await apiFetch('/api/users/friends/')
-        if(res?.ok) {
-            const data = await res.json()
-            friends.value = data.friends
-        }
-    }
+    // async function loadFriends() {
+    //     const res =  await apiFetch('/api/users/friends/')
+    //     if(res?.ok) {
+    //         const data = await res.json()
+    //         friends.value = data.friends
+    //     }
+    // }
 
-    function selectContact(id) {
-        chatStore.setActiveContact(id)
-    }
-    onMounted(loadFriends)
+    // function selectContact(id) {
+    //     chatStore.setActiveContact(id)
+    // }
+    // onMounted(loadFriends)
 </script>
 
 <template>
-    <div class="chat-contact-list">
-        <div class="chat-contact-header">
+    <div class="flex flex-col min-h-0">
+        <!-- same header line as Recent Matches: title + tabs -->
+        <div class="flex items-center justify-between h-11 border-b border-white/[0.07]">
             <span class="input-label">Contacts</span>
-            <AppFilterTabs
-            :options="['all', 'online']"
-            :model-value="activeFilter"
-            @update:model-value="activeFilter = $event">
-            </AppFilterTabs>
+            <AppFilterTabs v-model="activeFilter" :options="['all', 'online']" />
         </div>
-        
-        <div class="chat-contact-scroll scroll-thin">
-            <div v-for="rel in filteredFriends" :key="rel.friend.id" class="relative">
-                <PlayCard 
-                    :user="rel.friend"
-                    :selected="chatStore.activeContactId === rel.friend.id"
-                    :show-stats="false"
-                    @select="selectContact" ></PlayCard>
-                <span
-                    v-if="chatStore.unreadPeers[rel.friend.id]"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-coral rounded-full border-2 border-navy-800"
-                ></span>
+
+        <div class="flex-1 min-h-0 max-h-[40vh] lg:max-h-none overflow-y-auto scroll-thin py-2">
+            <button v-for="f in visibleFriends" :key="f.id"
+                @click="chatStore.setActiveContact(f.id)"
+                :class="chatStore.activeContactId === f.id ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'"
+                class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition">
+                <AppAvatar :nickname="f.nickname" :is-online="isOnline(f)" />
+
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm text-white truncate">{{ f.nickname }}</div>
+                    <div class="text-xs text-muted truncate">
+                        {{ lastMessage(f.id)?.content ?? (isOnline(f) ? 'Online' : 'Offline') }}
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-end gap-1.5 self-start pt-0.5 flex-shrink-0">
+                    <span v-if="lastMessage(f.id)" class="text-[10px] text-muted tabular-nums">
+                        {{ formatTime(lastMessage(f.id).timeStamp) }}
+                    </span>
+                    <span v-if="chatStore.unreadPeers[f.id]" class="w-2 h-2 rounded-full bg-coral"></span>
+                </div>
+            </button>
+
+            <div v-if="!visibleFriends.length" class="text-xs text-muted text-center py-8">
+                {{ friends.length ? 'Nobody online right now' : 'No friends yet. Add them on your profile' }}
             </div>
-            
-            <div v-if="!filteredFriends.length" 
-            class="text-[11px] text-muted text-center py-6"> Nobody's here yet</div>
         </div>
     </div>
 </template>
