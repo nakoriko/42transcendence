@@ -15,6 +15,7 @@ import { fitPdfPage } from '@/utils/pdf';
 import { apiFetch } from '@/utils/apiFetch';
 import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
+import AppPageHeader from '@/components/AppPageHeader.vue';
 
 const statsRef = ref(null)
 const universeRef = ref(null)
@@ -99,19 +100,14 @@ onMounted(async () => {
 
 <template>
     <div class="pb-16 flex flex-col gap-20">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <div> <!--protection while assync fetchUsers finish his a request: v-if="currentUser"-->
-                <p class="input-label mb-1">Transcend · Dashboard</p>
-                <h1 class="page-title">Analytics</h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <AppBadge :label="presenceStore.onlineCount+' online'" variant="teal" />
-                <AppButton variant="tag" @click="exportToPdf" class="no-capture">
-                    <Download :size="11"></Download>
-                    Export PDF
-                </AppButton>
-            </div>
-        </div>
+       
+        <AppPageHeader crumb="Transcend · Dashboard" title="Analytics">
+            <AppBadge :label="presenceStore.onlineCount+' online'" variant="teal" />
+            <AppButton variant="tag" @click="exportToPdf" class="no-capture">
+                <Download :size="11"></Download>
+                Export PDF
+            </AppButton>
+        </AppPageHeader>
 
         <!--Pong Universe-->
         <section ref="universeRef">
