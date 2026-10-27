@@ -6,19 +6,25 @@
     import { formatTime } from '@/utils/date.js';
     // import AppInput from '../AppInput.vue';
     // import AppButton from '../AppButton.vue';
-    import { ArrowUp } from 'lucide-vue-next';
+    import { ArrowUp, Gamepad2 } from 'lucide-vue-next';
     import AppAvatar from '../AppAvatar.vue';
+    import { useRouter } from 'vue-router';
 
 
     const props = defineProps({ contact: { type: Object, default: null } })
     const chatStore = useChatStore()
     const { isOnline } = usePresence()
+    const router = useRouter()
     const draft = ref('')
     const scrollEl = ref(null)
     const online = computed(() => !!props.contact && isOnline(props.contact))
     const timeline = computed(() => props.contact 
         ? chatTimeline(chatStore.messages[props.contact.id] 
         ?? []) : [])
+
+    function inviteToGame() {
+        router.push({ path: '/lobby', query: { opponent: props.contact.id } })
+    }
 
     function handleSend() {
         const text = draft.value.trim()
@@ -51,6 +57,11 @@
                         {{ online ? 'Online now' : 'Offline' }}
                     </div>
                 </div>
+                <button @click="inviteToGame"
+                    class="ml-auto p-2 rounded-md text-muted hover:text-white hover:bg-white/[0.04] transition"
+                    title="Invite to game" aria-label="Invite to game">
+                    <Gamepad2 :size="16" />
+                </button>
             </div>
             <!-- messages -->
             <div ref="scrollEl" class="flex-1 min-h-0 overflow-y-auto scroll-thin flex flex-col gap-2 py-4 pr-2">

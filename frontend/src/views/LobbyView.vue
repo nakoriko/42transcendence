@@ -5,7 +5,7 @@ import { apiFetch } from '@/utils/apiFetch'
 import GameModeCard from '@/components/GameModeCard.vue'
 import PlayCard from '@/components/PlayCard.vue'
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import LobbyVsRow from '@/components/lobby/LobbyVsRow.vue'
 import AppFilterTabs from '@/components/AppFilterTabs.vue'
@@ -15,6 +15,7 @@ import { usePresenceStore } from '@/stores/presence'
     const userStore = useUserStore()
     const presenceStore = usePresenceStore()
     const router = useRouter()
+    const route = useRoute()
     const user = ref([])
     const error = ref('')
     const selectPlayer2 = ref(null)
@@ -55,6 +56,8 @@ import { usePresenceStore } from '@/stores/presence'
         if(response.ok) {
             const data = await response.json()
             user.value = data
+            const invited = Number(route.query.opponent)
+            if (invited && data.some(u => u.id === invited)) selectPlayer2.value = invited
         } else {
             router.push('/login')
         }
