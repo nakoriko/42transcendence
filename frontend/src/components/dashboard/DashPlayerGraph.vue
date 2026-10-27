@@ -42,6 +42,11 @@ import { useResizeObserver } from '@/composables/useResizeObserver.js'
 
 
 
+//highlight: hovered node + its neighbors are active, the res is dimmed
+const NODE_ACTIVE = 1
+const NODE_DIM = 0.45
+const LINK_ACTIVE = 0.6
+const LINK_DIM = 0.12
 
 
 const userStore = useUserStore()
@@ -219,14 +224,13 @@ async function renderGraph(data) {
         nodeEls
             .transition().duration(200)
             .attr('fill-opacity', n =>
-                n.id === id || neighbors.has(n.id) ? 1 : 0.2
+                n.id === id || neighbors.has(n.id) ? NODE_ACTIVE : NODE_DIM
             )
         linkEls
             .transition().duration(200)
             .attr('stroke-opacity', l =>
-                l.source.id === id || l.target.id === id ? 0.6 : 0.05
+                l.source.id === id || l.target.id === id ? LINK_ACTIVE : LINK_DIM
             )
-
     }
 
     nodeEls
