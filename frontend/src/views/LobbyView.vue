@@ -119,7 +119,7 @@ onMounted(fetchUsers)
             <section class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)]">
                 <LobbyPlayerCard :keys="['W', 'S']">
                     <div class="flex flex-col items-center gap-3 max-w-full min-w-0">
-                        <AppAvatar :nickname="userStore.currentUser.nickname" :is-online="true" size="lg" />
+                        <AppAvatar :nickname="userStore.currentUser.nickname" :is-online="true" :avatar="userStore.currentUser.avatar" size="lg" />
                         
                         <div class="max-w-full min-w-0">
                             <div class="text-lg font-light text-muted truncate">{{ userStore.currentUser.nickname }}</div>

@@ -85,7 +85,7 @@ onUnmounted(() => document.removeEventListener('pointerdown', onOutsideClick))
                 class="flex flex-col items-center gap-3 max-w-full min-w-0 -m-2 p-2 rounded-xl
                        hover:bg-white/[0.04] focus:outline-none focus-visible:ring-1
                        focus-visible:ring-teal/50 transition">
-                <AppAvatar v-if="selected" :nickname="selected.nickname" :is-online="isOnline(selected)" size="lg" />
+                <AppAvatar v-if="selected" :nickname="selected.nickname" :is-online="isOnline(selected)" :avatar="selected.avatar" size="lg" />
                 <span v-else class="w-16 h-16 rounded-full border border-dashed border-white/30
                                     flex items-center justify-center text-muted flex-shrink-0">?</span>
 
@@ -134,7 +134,7 @@ onUnmounted(() => document.removeEventListener('pointerdown', onOutsideClick))
                     @mouseenter="activeIndex = i"
                     :class="i === activeIndex ? 'bg-white/[0.06]' : 'bg-white/[0.02]'"
                     class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition">
-                    <AppAvatar :nickname="u.nickname" :is-online="isOnline(u)" size="sm" />
+                    <AppAvatar :nickname="u.nickname" :is-online="isOnline(u)" :avatar="u.avatar" size="sm" />
                     <span class="text-sm text-white flex-1 min-w-0 truncate">{{ u.nickname }}</span>
                     <span class="text-[10px] text-muted tabular-nums flex-shrink-0">
                         {{ calcTotalMatches(u.wins, u.losses) }} matches · {{ calcWinRate(u.wins, u.losses) }}%

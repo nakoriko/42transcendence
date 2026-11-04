@@ -57,7 +57,7 @@
                 @click="chatStore.setActiveContact(f.id)"
                 :class="chatStore.activeContactId === f.id ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'"
                 class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition">
-                <AppAvatar :nickname="f.nickname" :is-online="isOnline(f)" />
+                <AppAvatar :nickname="f.nickname" :is-online="isOnline(f)" :avatar="f.avatar" />
 
                 <div class="flex-1 min-w-0">
                     <div class="text-sm text-white truncate">{{ f.nickname }}</div>

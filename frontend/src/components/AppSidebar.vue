@@ -143,7 +143,9 @@ const navLinks= [
               transition cursor-default px-4">
     <!--Avatar with green point-->
     <div class="relative flex-shrink-0">
-      <div class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-sage text-sm font-light">
+      <img v-if="user.avatar" :src="user.avatar" alt=""
+        class="w-8 h-8 rounded-full object-cover">
+      <div v-else class="w-8 h-8 rounded-full bg-teal/20 flex items-center justify-center text-sage text-sm font-light">
         {{ user.nickname?.[0]?.toUpperCase() ?? 'P' }}
       </div>
       <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-navy-800"></div>

@@ -50,7 +50,7 @@
         <template v-else>
             <!-- header -->
             <div class="flex items-center gap-3 pb-4 border-b border-white/[0.07]">
-                <AppAvatar :nickname="contact.nickname" :is-online="online" />
+                <AppAvatar :nickname="contact.nickname" :is-online="online" :avatar="contact.avatar"/>
                 <div class="min-w-0">
                     <div class="text-base text-white truncate">{{ contact.nickname }}</div>
                     <div class="text-xs" :class="online ? 'text-teal' : 'text-muted'">
