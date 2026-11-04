@@ -1,52 +1,56 @@
 <script setup>
 
-import AppButton from '@/components/AppButton.vue'
-import { apiFetch } from '@/utils/apiFetch'
-import GameModeCard from '@/components/GameModeCard.vue'
-import PlayCard from '@/components/PlayCard.vue'
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { apiFetch } from '@/utils/apiFetch'
 import { useUserStore } from '@/stores/user'
-import LobbyVsRow from '@/components/lobby/LobbyVsRow.vue'
-import AppFilterTabs from '@/components/AppFilterTabs.vue'
 import { usePresenceStore } from '@/stores/presence'
+import AppAvatar from '@/components/AppAvatar.vue'
+import AppBadge from '@/components/AppBadge.vue'
+import AppButton from '@/components/AppButton.vue'
+import AppFilterTabs from '@/components/AppFilterTabs.vue'
+import AppPageHeader from '@/components/AppPageHeader.vue'
+import LobbyPlayerCard from '@/components/lobby/LobbyPlayerCard.vue'
+import OpponentPicker from '@/components/lobby/OpponentPicker.vue'
+import { ArrowRight, Keyboard } from 'lucide-vue-next'
 
+    const REMOTE_SOON = 'remote · soon'
 
     const userStore = useUserStore()
     const presenceStore = usePresenceStore()
     const router = useRouter()
     const route = useRoute()
-    const user = ref([])
+    const users = ref([])
     const error = ref('')
-    const selectPlayer2 = ref(null)
+    const opponentId = ref(null)
     const selectedMode = ref('local')
 
     
-    //for live presence
-    const liveUsers = computed(() =>
-        user.value.map(u => ({
-            ...u,
-            is_online: presenceStore.online[u.id] ?? u.is_online
-        }))
-    )
+    // //for live presence
+    // const liveUsers = computed(() =>
+    //     user.value.map(u => ({
+    //         ...u,
+    //         is_online: presenceStore.online[u.id] ?? u.is_online
+    //     }))
+    // )
 
 
-    const selectedOpponentUser = computed(() =>
-        liveUsers.value.find(u=>u.id === selectPlayer2.value) ?? null
-    )
+    // const selectedOpponentUser = computed(() =>
+    //     liveUsers.value.find(u=>u.id === selectPlayer2.value) ?? null
+    // )
 
 
-    // for game modes
-    const modeSubtitles = { local: 'Same keyboard', remote: 'Play online' }
-    const selectedModeSubtitle = computed(() => modeSubtitles[selectedMode.value] ?? '')
+    // // for game modes
+    // const modeSubtitles = { local: 'Same keyboard', remote: 'Play online' }
+    // const selectedModeSubtitle = computed(() => modeSubtitles[selectedMode.value] ?? '')
 
-    // for filters
-    const activeFilter = ref('All Players')
-    const filteredUsers = computed(() =>
-        activeFilter.value === 'Friends'
-            ? liveUsers.value.filter(u => u.is_friend)
-            : liveUsers.value
-    )
+    // // for filters
+    // const activeFilter = ref('All Players')
+    // const filteredUsers = computed(() =>
+    //     activeFilter.value === 'Friends'
+    //         ? liveUsers.value.filter(u => u.is_friend)
+    //         : liveUsers.value
+    // )
 
 
     async function fetchUsers() {
@@ -55,55 +59,47 @@ import { usePresenceStore } from '@/stores/presence'
         if(!response) return
         if(response.ok) {
             const data = await response.json()
-            user.value = data
+            users.value = data
             const invited = Number(route.query.opponent)
-            if (invited && data.some(u => u.id === invited)) selectPlayer2.value = invited
+            if (invited && data.some(u => u.id === invited)) opponentId.value = invited
         } else {
             router.push('/login')
         }
     } catch (err) {
-        error.value = "Connection error "
+        error.value = 'Could not load players. Check your connection'
     }
 }
 
-function toogglePlayer(id) {
-    if(selectPlayer2.value == id) {
-        selectPlayer2.value = null
-    } else {
-        selectPlayer2.value = id
-        error.value = ''
-    }
-}
+// function toogglePlayer(id) {
+//     if(selectPlayer2.value == id) {
+//         selectPlayer2.value = null
+//     } else {
+//         selectPlayer2.value = id
+//         error.value = ''
+//     }
+// }
 
-function tooggleMode(mode) {
-    selectedMode.value = mode
-}
+// function tooggleMode(mode) {
+//     selectedMode.value = mode
+// }
 
 async function startMatch() {
-    if(!selectedMode.value) {
-        error.value = "Sleect a gamr mode first"
-        return
-    }
-    const opponent = selectPlayer2.value
-    if(opponent == null) {
-        error.value = "Select an opponent first"
-        return
-    }
+    error.value = ''
     if(selectedMode.value === 'local') {
-        router.push({ path: '/game', query: { player2: opponent, mode:selectedMode.value} })
+        router.push({ path: '/game', query: { player2: opponentId.value, mode: selectedMode.value } })
         return
     }
 
     const res = await apiFetch('/api/game/matches/invite/', {
         method: 'POST',
-        body: JSON.stringify({ opponent_id: opponent })
+        body: JSON.stringify({ opponent_id: opponentId.value })
     })
     if(!res || !res.ok) {
         error.value = "Failed to create match"
         return
     }
     const data = await res.json()
-    router.push ({ path: '/game/remote', query: { player2: opponent, match_id: data.id }})
+    router.push({ path: '/game/remote', query: { player2: opponentId.value, match_id: data.id } })
 }
 
 onMounted(fetchUsers)
@@ -111,62 +107,51 @@ onMounted(fetchUsers)
 </script>
 
 <template>
-    <div class="pb-16 flex flex-col items-center gap-7">
+    <div class="pb-16 w-full max-w-4xl mx-auto flex flex-col gap-12">
+        <AppPageHeader crumb="Transcend · Lobby" title="New match">
+            <AppBadge :label="presenceStore.onlineCount + ' online'" variant="teal" />
+            <AppFilterTabs v-model="selectedMode"
+                :options="['local', REMOTE_SOON]"
+                :disabled-options="[REMOTE_SOON]" />
+        </AppPageHeader>
 
-        <div v-if="userStore.currentUser" class="w-full max-w-7xl">
-            <p class="input-label">Welcome back</p>
-            <h1 class="page-title">{{ userStore.currentUser.nickname }}</h1>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] items-center gap-8 lg:gap-16 w-full max-w-7xl mt-10">
-
-            <!-- Левая колонка: режим + оппоненты -->
-            <div class="flex flex-col gap-8">
-
-                <!-- Режим -->
-                <div class="flex flex-col gap-3">
-                    <span class="input-label">Choose game mode</span>
-                    <div class="flex items-center gap-3 flex-wrap">
-                        <GameModeCard title="Local"
-                            :selected="selectedMode === 'local'"
-                            @select="tooggleMode('local')" />
-                        <GameModeCard title="Remote"
-                            :selected="selectedMode === 'remote'"
-                            @select="tooggleMode('remote')" />
-                        <GameModeCard title="vs AI" :disabled="true" />
-                        <span v-if="selectedModeSubtitle"
-                            class="text-base font-light text-muted/50 sm:ml-auto">
-                            {{ selectedModeSubtitle }}
-                        </span>
+        <div v-if="userStore.currentUser" class="flex flex-col gap-8">
+            <section class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)]">
+                <LobbyPlayerCard :keys="['W', 'S']">
+                    <div class="flex flex-col items-center gap-3 max-w-full min-w-0">
+                        <AppAvatar :nickname="userStore.currentUser.nickname" :is-online="true" size="lg" />
+                        
+                        <div class="max-w-full min-w-0">
+                            <div class="text-lg font-light text-muted truncate">{{ userStore.currentUser.nickname }}</div>
+                            <div class="text-xs text-muted">You</div>
+                        </div>
+                    
                     </div>
+                </LobbyPlayerCard>
+
+                <!-- horizontal line on a phone, vertical on desktop -->
+                <div class="flex lg:flex-col items-center gap-3 h-10 lg:h-auto">
+                    <span class="flex-1 h-px lg:h-auto lg:w-px bg-white/[0.07]"></span>
+                    <span class="text-xs text-muted tracking-widest">VS</span>
+                    <span class="flex-1 h-px lg:h-auto lg:w-px bg-white/[0.07]"></span>
                 </div>
 
-                <!-- Оппоненты -->
-                <div class="flex flex-col gap-3">
-                    <div class="border-t border-white/[0.07] pb-3 pt-8 flex items-center justify-between flex-wrap gap-3">
-                        <span class="input-label">Choose an opponent</span>
-                        <AppFilterTabs :options="['All Players', 'Friends']" v-model="activeFilter" />
-                    </div>
-                    <div class="flex flex-col overflow-y-auto max-h-[420px] scroll-thin">
-                        <PlayCard v-for="u in filteredUsers"
-                            :key="u.id"
-                            :user="u"
-                            :selected="selectPlayer2 === u.id"
-                            @select="toogglePlayer($event)" />
-                    </div>
-                </div>
+                <LobbyPlayerCard :keys="['↑', '↓']">
+                    <OpponentPicker v-model="opponentId" :users="users" />
+                </LobbyPlayerCard>
+            </section>
 
+            <div class="flex flex-col items-center gap-3">
+                <AppButton variant="solid" :disabled="opponentId == null" @click="startMatch">
+                    Start game
+                    <ArrowRight v-if="opponentId != null" :size="16" />
+                </AppButton>
+                <p v-if="error" class="text-xs text-coral text-center">{{ error }}</p>
+                <p v-else class="flex items-center gap-2 text-xs text-muted">
+                    <Keyboard :size="14" class="flex-shrink-0" />
+                    Same keyboard. Stats save to both players.
+                </p>
             </div>
-
-            <!-- Правая колонка: матч -->
-            <LobbyVsRow
-                v-if="userStore.currentUser"
-                :currentUser="userStore.currentUser"
-                :opponent="selectedOpponentUser">
-                <p v-if="error" class="text-xs text-coral mt-1">{{ error }}</p>
-                <AppButton variant="compact" @click="startMatch">Start game</AppButton>
-            </LobbyVsRow>
-
         </div>
     </div>
 </template>
