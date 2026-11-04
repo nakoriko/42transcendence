@@ -6,7 +6,7 @@
 /*   By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/07 11:38:29 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/10/17 07:07:47 by nakoriko         ###   ########.fr       */
+/*   Updated: 2026/11/04 17:58:25 by nakoriko         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,11 @@
         color: white;
         font-family: 'Inter', sans-serif;
     }
+    button:not(:disabled) {
+        cursor: pointer;
+    }
 }
+
 
 @layer components {
     .card {
