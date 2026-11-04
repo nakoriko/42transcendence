@@ -6,7 +6,7 @@
 #    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/16 12:38:17 by nakoriko         ###   ########.fr        #
+#    Updated: 2026/11/04 14:22:14 by nakoriko         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -99,6 +99,7 @@ class UserListView(APIView):
                 {"id": u.id, 
                 "nickname": u.nickname,
                 "wins": u.wins,
+                "losses": u.losses,
                 "is_online": u.is_online,
                 "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None,
                 "is_friend": u.id in my_friend_ids,

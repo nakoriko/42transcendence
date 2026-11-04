@@ -257,6 +257,26 @@ class NicknameLengthTests(APITestCase):
         user.set_password('Str0ng-pass-42')
         user.full_clean()
 
+@override_settings(CHANNEL_LAYERS = TEST_CHANNEL_LAYERS)
+class UserListTests(APITestCase):
+    def setUp(self):
+        self.me = User.objects.create_user(email='me@test.com', password='pass12345', nickname='me')
+        self.other = User.objects.create_user(email='other@test.com', password='pass12345', nickname='other')
+        self.other.wins = 3
+        self.other.losses = 2
+        self.other.save()
+        self.client.force_authenticate(self.me)
+
+    def test_list_returns_wins_and_losses(self):
+        res = self.client.get('/api/users/list/')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data[0]['wins'], 3)
+        self.assertEqual(res.data[0]['losses'], 2)
+
+    def test_list_excludes_current_user(self):
+        res = self.client.get('/api/users/list/')
+        self.assertEqual([u['id'] for u in res.data], [self.other.id])
+
 
 
     
