@@ -2,7 +2,8 @@
 defineProps ({
     modelValue: {type: String, required: true},
     options:  {type: Array, required: true},
-    disabledOptions: {type: Array, default: () => []}
+    disabledOptions: {type: Array, default: () => []},
+    counts: {type: Object, default: null} //optional number next to an option
 })
 const emit = defineEmits(['update:modelValue'])
 </script>
@@ -21,7 +22,7 @@ const emit = defineEmits(['update:modelValue'])
             'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-muted'
         ]"
         class="px-2.5 py-1 text-[11px] font-light tracking-widest uppercase rounded transition">
-                {{ option }}
+                {{ option }}<span v-if="counts?.[option] != null" class="ml-1.5 opacity-60 tabular-nums">{{ counts[option] }}</span>
         </button>
     </div>
 </template>
