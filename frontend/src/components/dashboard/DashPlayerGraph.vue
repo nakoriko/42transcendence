@@ -75,6 +75,7 @@ const toNodeInfo = d => ({
     degree: d.degree,
     isCurrent: d.is_current,
 })
+const isTouchDevice = () => window.matchMedia('(hover: none)').matches
 
 
 
@@ -176,6 +177,12 @@ async function renderGraph(data) {
 
     nodeEls.call(drag)
     nodeEls.on('click', (event, d) => {
+        //no hover on touch devices: a tap selects the node
+        if(isTouchDevice()) {
+            emit('node-hover', toNodeInfo(d))
+            highlight(d.id)
+            return
+        }
         if(!d.is_current) emit('node-click', d.nickname)
     })
 
@@ -235,7 +242,7 @@ async function renderGraph(data) {
 
     nodeEls
         .on('mouseover', function(event, d) {
-            if(event.buttons) return //do not trigger if it's on drag
+            if(event.buttons || isTouchDevice()) return //do not trigger if it's on drag or emulated by a tap
             emit('node-hover', toNodeInfo(d))
             highlight(d.id)
         })
@@ -243,7 +250,9 @@ async function renderGraph(data) {
         //     const [x, y] = tooltipXY(event)
         //     tt.value?.show(x, y)
         // })
-        .on('mouseout', () => highlight(meId))
+        .on('mouseout', () => {
+            if(!isTouchDevice()) highlight(meId)
+        })
 
     //tooltiop matches on edges  
     linkHitEls
