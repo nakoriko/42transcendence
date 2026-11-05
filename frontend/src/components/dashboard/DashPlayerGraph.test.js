@@ -38,10 +38,19 @@ class VisibleObserver {
     disconnect() {}
 }
 
+let triggerResize = () => {}
 class SilentResizeObserver {
+    constructor(callback) { triggerResize = callback }
     observe() {}
     disconnect() {}
 }
+
+function setContainerWidth(width) {
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => width })
+}
+
+beforeEach(() => setContainerWidth(500))
+afterEach(() => { delete HTMLElement.prototype.clientWidth })
 
 function setHoverSupport(hasHover) {
     vi.stubGlobal('matchMedia', query => ({ matches: query === '(hover: none)' && !hasHover }))
@@ -81,6 +90,39 @@ describe('DashPlayerGraph simulation', () => {
         wrapper.unmount()
 
         expect(stop).toHaveBeenCalled()
+    })
+})
+
+describe('DashPlayerGraph zero width', () => {
+    beforeEach(() => {
+        simulations.length = 0
+        vi.stubGlobal('IntersectionObserver', VisibleObserver)
+        vi.stubGlobal('ResizeObserver', SilentResizeObserver)
+        apiFetch.mockResolvedValue({ ok: true, json: async () => GRAPH })
+    })
+    afterEach(() => {
+        simulations.forEach(s => s.stop())
+        vi.unstubAllGlobals()
+    })
+
+    it('does not draw while the container has no width', async () => {
+        setContainerWidth(0)
+        const wrapper = await mountGraph()
+
+        expect(wrapper.element.querySelector('svg')).toBeNull()
+        expect(simulations).toHaveLength(0)
+    })
+
+    it('draws once the container gets its width', async () => {
+        setContainerWidth(0)
+        const wrapper = await mountGraph()
+
+        setContainerWidth(500)
+        triggerResize()
+        await new Promise(resolve => setTimeout(resolve, 250))
+
+        expect(wrapper.element.querySelector('svg')).not.toBeNull()
+        wrapper.unmount()
     })
 })
 

@@ -33,6 +33,7 @@ function drawChart() {
     const margin = { top: 12, right: 12, bottom: 24, left: 36 }
     const W = width - margin.left - margin.right
     const H = height - margin.top - margin.bottom
+    if (W <= 0 || H <= 0) return //no size yet: useResizeObserver redraws when it appears
     const GAP = 12
     const rateH = Math.round(H * 0.72)   // top zone: win rate
     const volTop = rateH + GAP           // bottom zone: volume

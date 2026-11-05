@@ -94,6 +94,7 @@ async function renderGraph(data) {
 
     const W = container.value.clientWidth - 50
     const H = (container.value.clientHeight || 400) - 50
+    if (W <= 0) return //no size yet: useResizeObserver redraws when it appears
 
     const svg = d3.select(container.value)
         .append('svg')
