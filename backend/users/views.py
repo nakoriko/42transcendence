@@ -101,7 +101,7 @@ class UserListView(APIView):
                 "wins": u.wins,
                 "losses": u.losses,
                 "is_online": u.is_online,
-                "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None,
+                "avatar": u.avatar.url if u.avatar else None,
                 "is_friend": u.id in my_friend_ids,
                 }
                 for u in users

@@ -277,6 +277,12 @@ class UserListTests(APITestCase):
         res = self.client.get('/api/users/list/')
         self.assertEqual([u['id'] for u in res.data], [self.other.id])
 
+    def test_list_returns_relative_avatar_url(self):
+        self.other.avatar = 'avatars/pic.jpg'
+        self.other.save()
+        res = self.client.get('/api/users/list/')
+        self.assertEqual(res.data[0]['avatar'], '/media/avatars/pic.jpg')
+
 
 
     
