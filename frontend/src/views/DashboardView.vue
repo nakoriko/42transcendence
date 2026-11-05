@@ -17,6 +17,8 @@ import DashNodeInfo from '@/components/dashboard/DashNodeInfo.vue'
 import DashKpiRow from '@/components/dashboard/DashKpiRow.vue';
 import AppPageHeader from '@/components/AppPageHeader.vue';
 
+const rootRef = ref(null)
+const exportFailed = ref(false)
 const statsRef = ref(null)
 const universeRef = ref(null)
 const historyRef = ref(null)
@@ -28,7 +30,6 @@ const hoveredNode = ref(null)
 const players = ref([]) // all players: shared by Universe chart and KPI rank
 
 async function captureSection(el) {
-    // throw new Error('debug B26: simulated capture failure')
     const canvas = await html2canvas(el, {
         backgroundColor: '#0f1629',
         scale: 2,
@@ -38,7 +39,17 @@ async function captureSection(el) {
 }
 
 async function exportToPdf() {
-    const scrollables = document.querySelectorAll('.scroll-thin')
+    exportFailed.value = false
+    try {
+        await buildPdf()
+    } catch (err) {
+        console.error('PDF export failed', err)
+        exportFailed.value = true
+    }
+}
+
+async function buildPdf() {
+    const scrollables = rootRef.value.querySelectorAll('.scroll-thin') //only dashboard lists, not the App.vue container
     scrollables.forEach(el => {
         el.dataset.prevMaxHeight = el.style.maxHeight
         el.style.maxHeight = 'none'
@@ -99,10 +110,11 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="pb-16 flex flex-col gap-20">
-       
+    <div ref="rootRef" class="pb-16 flex flex-col gap-20">
+
         <AppPageHeader crumb="Transcend · Dashboard" title="Analytics">
             <AppBadge :label="presenceStore.onlineCount+' online'" variant="teal" />
+            <span v-if="exportFailed" class="text-xs text-coral">Export failed</span>
             <AppButton variant="tag" @click="exportToPdf" class="no-capture">
                 <Download :size="11"></Download>
                 Export PDF
