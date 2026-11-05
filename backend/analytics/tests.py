@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.test.utils import CaptureQueriesContext
@@ -58,6 +59,24 @@ class PlayerGraphTests(APITestCase):
     def test_graph_contains_two_circles_with_top5_cap(self):
         names = {n['nickname'] for n in self.get_graph()['nodes']}
         self.assertEqual(names, {'me', 'A', 'B', 'C', 'F', 'G', 'H', 'I', 'J'})
+
+    def node(self, data, name):
+        return next(n for n in data['nodes'] if n['nickname'] == name)
+
+    def test_node_record_counts_matches_outside_graph(self):
+        # B beat K, who is cut from the graph by the top-5 cap
+        node = self.node(self.get_graph(), 'B')
+        self.assertEqual((node['wins'], node['losses']), (21, 1))
+
+    def test_node_record_respects_period(self):
+        Match.objects.create(
+            player1=self.users['B'], player2=self.users['K'], mode='local',
+            status=Match.Status.FINISHED, winner=self.users['B'],
+            ended_at=timezone.now() - timedelta(days=30)
+        )
+        res = self.client.get('/api/analytics/player-graph/?period=7d')
+        node = self.node(res.data, 'B')
+        self.assertEqual((node['wins'], node['losses']), (21, 1))
 
     def test_query_count_does_not_grow_with_opponents(self):
         def count():

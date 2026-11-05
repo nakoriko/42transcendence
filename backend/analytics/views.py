@@ -215,9 +215,9 @@ class PlayerGraphView(APIView):
                     "id": int, 	#User PK, used as D3 node identifier
                     "nickname": str,
                     "avatar": str | null 	#media URL or null
-                    "wins": int, 	#wins within selected period
-                    "losses": int, 	#losses within selected period
-                    "draws": int, 	#matches with winner=NULL
+                    "wins": int, 	#wins within selected period, against all opponents
+                    "losses": int, 	#losses within selected period, against all opponents
+                    "draws": int, 	#matches with winner=NULL, against all opponents
                     "degree": int, 	#unique opponents in this graph
                     "is_current": bool 	#true only for request.user
                 }, 
@@ -352,9 +352,6 @@ class PlayerGraphView(APIView):
 
         edges = []
         degree_counter = Counter()
-        total_counter = Counter()
-        wins_counter = Counter()
-        draws_counter = Counter()
 
         for e in edges_qs:
             if e['source'] == e['target']:
@@ -373,12 +370,27 @@ class PlayerGraphView(APIView):
             degree_counter[s] += 1
             degree_counter[t] +=1
 
-            total_counter[s] += e['matches']
-            total_counter[t] += e['matches']
-            wins_counter[s] += e['wins_source']
-            wins_counter[t] += e['wins_target']
-            draws_counter[s] += e['draws']
-            draws_counter[t] += e['draws']
+        #node record counts all matches, also against players outside the graph
+        total_counter = Counter()
+        wins_counter = Counter()
+        draws_counter = Counter()
+
+        for side in ('player1_id', 'player2_id'):
+            rows = (
+                base_matches_qs
+                .exclude(player1_id=F('player2_id'))
+                .filter(**{f'{side}__in': all_node_ids})
+                .values(side)
+                .annotate(
+                    total=Count('id'),
+                    wins=Count('id', filter=Q(winner_id=F(side))),
+                    draws=Count('id', filter=Q(winner__isnull=True)),
+                )
+            )
+            for row in rows:
+                total_counter[row[side]] += row['total']
+                wins_counter[row[side]] += row['wins']
+                draws_counter[row[side]] += row['draws']
 
 
         users = User.objects.filter(id__in=all_node_ids).only(
