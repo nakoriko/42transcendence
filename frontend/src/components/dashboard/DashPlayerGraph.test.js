@@ -61,6 +61,29 @@ function fireOnNode(wrapper, nickname, type) {
 
 const lastHovered = wrapper => wrapper.emitted('node-hover').at(-1)[0]?.nickname
 
+describe('DashPlayerGraph simulation', () => {
+    beforeEach(() => {
+        simulations.length = 0
+        vi.stubGlobal('IntersectionObserver', VisibleObserver)
+        vi.stubGlobal('ResizeObserver', SilentResizeObserver)
+        apiFetch.mockResolvedValue({ ok: true, json: async () => GRAPH })
+    })
+    afterEach(() => {
+        simulations.forEach(s => s.stop())
+        vi.unstubAllGlobals()
+    })
+
+    it('stops the force simulation when unmounted', async () => {
+        const wrapper = await mountGraph()
+        expect(simulations).toHaveLength(1)
+
+        const stop = vi.spyOn(simulations[0], 'stop')
+        wrapper.unmount()
+
+        expect(stop).toHaveBeenCalled()
+    })
+})
+
 describe('DashPlayerGraph node selection', () => {
     beforeEach(() => {
         simulations.length = 0

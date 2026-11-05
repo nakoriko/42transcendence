@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, onMounted, onBeforeUnmount, onUnmounted, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as d3 from 'd3'
 import AppTooltip from '../AppTooltip.vue'
@@ -344,6 +344,8 @@ onMounted(() => {
     loadGraph()
 })
 
+//stops ticks before the svg is removed from DOM
+onBeforeUnmount(() => { if (simulation) simulation.stop() })
 onUnmounted(() => visibilityObserver.disconnect())
 </script>
 
