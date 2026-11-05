@@ -49,6 +49,7 @@ class ProfileView(APIView):
         return Response({
             "id": request.user.id,
             "email": request.user.email,
+            "date_joined": request.user.date_joined,
             "nickname": request.user.nickname,
             "wins": request.user.wins,
             "losses": request.user.losses,

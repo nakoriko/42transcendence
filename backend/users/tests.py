@@ -283,6 +283,11 @@ class UserListTests(APITestCase):
         res = self.client.get('/api/users/list/')
         self.assertEqual(res.data[0]['avatar'], '/media/avatars/pic.jpg')
 
+    def test_profile_returns_date_joined(self):
+        res = self.client.get('/api/users/profile/')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data['date_joined'], self.me.date_joined)
+
 
 
     
