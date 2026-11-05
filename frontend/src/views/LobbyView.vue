@@ -25,34 +25,6 @@ import { ArrowRight, Keyboard } from 'lucide-vue-next'
     const opponentId = ref(null)
     const selectedMode = ref('local')
 
-    
-    // //for live presence
-    // const liveUsers = computed(() =>
-    //     user.value.map(u => ({
-    //         ...u,
-    //         is_online: presenceStore.online[u.id] ?? u.is_online
-    //     }))
-    // )
-
-
-    // const selectedOpponentUser = computed(() =>
-    //     liveUsers.value.find(u=>u.id === selectPlayer2.value) ?? null
-    // )
-
-
-    // // for game modes
-    // const modeSubtitles = { local: 'Same keyboard', remote: 'Play online' }
-    // const selectedModeSubtitle = computed(() => modeSubtitles[selectedMode.value] ?? '')
-
-    // // for filters
-    // const activeFilter = ref('All Players')
-    // const filteredUsers = computed(() =>
-    //     activeFilter.value === 'Friends'
-    //         ? liveUsers.value.filter(u => u.is_friend)
-    //         : liveUsers.value
-    // )
-
-
     async function fetchUsers() {
     try {
         const response = await apiFetch('/api/users/list/')
@@ -69,19 +41,6 @@ import { ArrowRight, Keyboard } from 'lucide-vue-next'
         error.value = 'Could not load players. Check your connection'
     }
 }
-
-// function toogglePlayer(id) {
-//     if(selectPlayer2.value == id) {
-//         selectPlayer2.value = null
-//     } else {
-//         selectPlayer2.value = id
-//         error.value = ''
-//     }
-// }
-
-// function tooggleMode(mode) {
-//     selectedMode.value = mode
-// }
 
 async function startMatch() {
     error.value = ''
