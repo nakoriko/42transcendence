@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { shallowMount, flushPromises } from '@vue/test-utils'
 import { createPinia } from 'pinia'
+import { h } from 'vue'
 
 vi.mock('@/utils/apiFetch', () => ({ apiFetch: vi.fn() }))
 
@@ -36,8 +37,13 @@ describe('DashMatchHistory', () => {
     })
 
 
+    // shallowMount does not render stub slots, and the timeline lives in #details
+    const ListWithDetails = { setup: (_, { slots }) => () => h('div', slots.details?.()) }
+
     function mountHistory() {
-        return shallowMount(DashMatchHistory, { global: { plugins: [createPinia()] } })
+        return shallowMount(DashMatchHistory, {
+            global: { plugins: [createPinia()], stubs: { RecentMatchesList: ListWithDetails } },
+        })
     }
     const select = (wrapper, match) => 
         wrapper.findComponent(RecentMatchesList).vm.$emit('match-click', match)
