@@ -4,7 +4,6 @@ import AppInput from '../AppInput.vue';
 import AppButton from '../AppButton.vue';
 import { ref } from 'vue'
 import { apiFetch } from '@/utils/apiFetch.js';
-import { Pencil } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/user.js';
 
 
@@ -72,31 +71,22 @@ async function uploadAvatar(file) {
 </script>
 
 <template>
-    <div class="self-start w-full pb-4 ">
-        <div class="flex items-center gap-4 sm:gap-8 w-full flex-wrap">
-            <ProfileAvatar
+    <div class="w-full">
+        <ProfileAvatar
             :user="user"
             :canUpload="true"
-            class="min-w-0"
             @upload="uploadAvatar" />
-            
-            <button v-if="!isEditing"
-                @click="startEditing"
-                class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] 
-                    font-light tracking-widest uppercase rounded transition
-                    bg-white/[0.04] text-muted hover:text-white flex-shrink-0">
-                <Pencil :size="11" />
-                Edit
-            </button>
-        </div>
+        <AppButton v-if="!isEditing" variant="tag" class="w-full justify-center py-2 mt-4" @click="startEditing">
+            Edit profile
+        </AppButton>
 
         <div v-if="isEditing" class="mt-4 flex flex-col gap-3">
             <AppInput v-model="editForm.nickname" label="Nickname" type="text" maxlength="15" />
             <AppInput v-model="editForm.email" label="Email" type="email" />
             <p v-if="errorMsg" class="text-[11px] text-coral"> {{  errorMsg }}</p>
             <div class="flex gap-2 mt-1">
-                <AppButton variant="primary" @click="saveProfile">Save</AppButton>
-                <AppButton variant="ghost" @click="isEditing = false; errorMsg=''">Cancel</AppButton>
+                <AppButton variant="tag" class="flex-1 justify-center py-2" @click="saveProfile">Save</AppButton>
+                <AppButton variant="tag" class="flex-1 justify-center py-2" @click="isEditing = false; errorMsg=''">Cancel</AppButton>
             </div>
         </div>
     </div>
