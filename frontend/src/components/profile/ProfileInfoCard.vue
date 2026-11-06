@@ -11,6 +11,7 @@ const userStore =  useUserStore()
 const props = defineProps ({ user: Object})
 const emit = defineEmits (['updated'])
 const errorMsg = ref('')
+const avatarError = ref('')
 
 const isEditing = ref(false)
 const editForm = ref ({ nickname: '', email: ''})
@@ -53,19 +54,27 @@ async function saveProfile() {
 async function uploadAvatar(file) {
     if(!file) return
 
+    avatarError.value = ''
     const formData = new FormData()
     formData.append('avatar', file)
 
-    const token = localStorage.getItem('access')
-    const response = await apiFetch('/api/users/avatar/', {
-        method: 'PATCH', //updates user tha already exist
-        body: formData
-    })
-
-    if(response?.ok) {
-        await userStore.refreshUser()
-        emit('updated')
-    } 
+    try {
+        const response = await apiFetch('/api/users/avatar/', {
+            method: 'PATCH', //updates user tha already exist
+            body: formData
+        })
+        if(!response) return
+        if(response.ok) {
+            await userStore.refreshUser()
+            emit('updated')
+            return
+        }
+        // nginx answers with html when the file is too large, so json can fail here
+        const data = await response.json()
+        avatarError.value = Object.values(data).flat().join(' ')
+    } catch {
+        avatarError.value = 'Failed to upload avatar. Try again'
+    }
 }
 
 </script>
@@ -76,6 +85,7 @@ async function uploadAvatar(file) {
             :user="user"
             :canUpload="true"
             @upload="uploadAvatar" />
+        <p v-if="avatarError" role="alert" class="mt-3 text-[11px] text-coral text-center">{{ avatarError }}</p>
         <AppButton v-if="!isEditing" variant="tag" class="w-full justify-center py-2 mt-4" @click="startEditing">
             Edit profile
         </AppButton>
