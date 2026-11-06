@@ -27,7 +27,6 @@ const router = createRouter({
     { path: '/game', component:GameView, meta: { requiresAuth: true, requiresGame: true } },
     { path: '/game/remote', component: RemoteGameView, meta: { requiresAuth: true, requiresGame: true}},
     { path: '/lobby', component:LobbyView, meta: {requiresAuth: true} },
-    // { path: '/friends', component: FriendsView, meta:{requiresAuth: true}}, 
     { path: '/dashboard', component: DashboardView, meta:{requiresAuth: true}}, 
     { path: '/chat', component: ChatView, meta: {requiresAuth: true}}
 
