@@ -39,11 +39,10 @@ class PresenceConsumer(AsyncWebsocketConsumer):
 
             if conn_count <= 0:
                 self.user.is_online = False
-                await self.user.asave(update_fields=['is_online']) #NAT: added to fix error with profile update after F5 
-                await self.broadcast_presence_update(False) # ← era notify_friends_status(False)
+                await self.user.asave(update_fields=['is_online']) # only is_online: a full save would overwrite profile changes made meanwhile
+                await self.broadcast_presence_update(False)
                 await self.broadcast_online_count()
 
-    #nuova versione di receive
     async def receive(self, text_data=None, bytes_data=None):
         if text_data is None:
             return
@@ -61,11 +60,10 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 await self.close()
             return
 
-        # Dispatcher per messaggi autenticati
+        # dispatcher for authenticated messages
         message_type = data.get('type')
         handlers = {
             'chat_message': self.handle_chat_message,
-            # altri handler qui quando ne aggiungiamo
         }
         
         handler = handlers.get(message_type)
@@ -74,7 +72,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         else:
             logger.warning("Unknown WS message type: %s", message_type)
 
-    # --- handler chiamati da Channels quando arriva un messaggio dal Group ---
+    # --- handle_* process client messages, *_event forward group events to the client ---
     async def handle_auth(self, data):
         token_string = data.get('token')
 
@@ -84,7 +82,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             self.authenticated = True
             self.auth_timeout.cancel()
 
-             # iscrizione a gruppo personale
+            # personal group + broadcast groups
             await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
             await self.channel_layer.group_add("global_presence", self.channel_name)
             await self.channel_layer.group_add("dashboard_updates", self.channel_name)
@@ -93,8 +91,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
 
             if conn_count == 1:
                 self.user.is_online = True
-                await self.user.asave(update_fields=['is_online']) #NAT: added to fix error: ws rewrited all fields. Cioe: se utente cambia il suo profilo, ws li rescrive tutti dentro DB (bug), acnhe se non sono piu attuali
-                await self.broadcast_presence_update(True)  # ← era notify_friends_status(True)
+                await self.user.asave(update_fields=['is_online']) # only is_online: a full save would overwrite profile changes made meanwhile
+                await self.broadcast_presence_update(True)
                 await self.broadcast_online_count()
 
            
@@ -126,7 +124,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             }))
             return
 
-        # nuovo controllo: sono amici?
+        # chat is allowed only between friends
         are_friends = await FriendRelation.objects.filter(
             Q(from_user=self.user, to_user=to_user) |
             Q(from_user=to_user, to_user=self.user),

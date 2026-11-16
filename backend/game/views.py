@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Match, MatchEvent
 from django.utils import timezone
-from ws.notify import notify_group #sab: per dashboard in tempo reale
+from ws.notify import notify_group
 
 from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer, \
     MatchHistorySerializer, MatchEventInputSerializer 
@@ -56,7 +56,7 @@ class FinishMatchView(APIView):
             User.objects.filter(pk=match.winner_id).update(wins=F('wins') + 1)
             User.objects.filter(pk=loser_id).update(losses=F('losses') + 1)
 
-            #sab: per dashboard in tempo reale
+            # real-time dashboard update
             notify_group("dashboard_updates", {
                 "type": "match_finished_event",
                 "match_id": match.id,

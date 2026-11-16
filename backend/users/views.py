@@ -26,7 +26,6 @@ from django.db.models import Q
 from .serializers import RegisterSerializer, AvatarSerializer,  \
 FriendRelationSerializer, FriendUserSerializer, ProfileUpdateSerializer
 
-#SABINO modifica per vedere richieste amicizia in tempo reale
 from ws.notify import notify_group
 
 # Complex end-point, a lot of logiic -> class + APIView
@@ -162,7 +161,6 @@ class FriendRequestView(APIView):
             return Response({'error': 'Relation  already exists'}, status=400)
         existing.filter(status='rejected').delete()
 
-        #SABINO modifica per vedere richieste amicizia in tempo reale
         relation = FriendRelation.objects.create (
             from_user=request.user,
             to_user_id=to_user_id,
@@ -254,7 +252,6 @@ class FriendDetailView(APIView):
         
         #notify sender only after new status is saved
         if action == 'accept':
-            #SABINO modifica per vedere richieste amicizia in tempo reale
             notify_group(f"user_{relation.from_user_id}", {
                 "type": "friend_request_accepted_event",
                 "user_id": request.user.id,

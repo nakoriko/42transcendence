@@ -55,7 +55,7 @@ async function buildPdf() {
         el.style.maxHeight = 'none'
         el.style.overflow = 'visible'
     }) //temporary opens full list, to make all render after
-    await nextTick() // aspettiamo finche browser redraw actual layout
+    await nextTick() // wait until the browser redraws the actual layout
 
     const sections = [playerGraphRef.value, statsRef.value, universeRef.value]
     const canvases = []

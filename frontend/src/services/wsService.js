@@ -26,7 +26,6 @@ const messageHandlers = {
     chat_error: (data) =>  {
         const chatStore = useChatStore()
         chatStore.receiveError(data)
-        // console.warn('WS: chat error', data),
     },
 
     online_count: (data) => {
@@ -38,11 +37,7 @@ const messageHandlers = {
         presenceStore.setStatus(data.user_id, data.is_online)
     },
     
-    //!!!!!!! NAT: 
-    //add for recive friends request in real time. 
-    //UNcomment when Sabino will finish on backend
-    //in App.vue add aevetnListener as well (onMounted + onUnmounted)
-    
+    // friend requests in real time: App, profile and chat reload their lists on 'friends-updated'
     friend_request_received:  () => {
         window.dispatchEvent(new CustomEvent('friends-updated'))
     },
@@ -77,7 +72,7 @@ function connect(token) {
 
     socket.onerror = (err) => {
         console.error('WS error', err)
-    } //for debugging
+    }
 }
 
 

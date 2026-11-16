@@ -8,12 +8,12 @@
             const expiresAt = payload.exp * 1000 // to ms
             return Date.now() >= expiresAt - bufferSeconds * 1000
         } catch {
-            return true //se non siamo riusciti a fare parse, lo consideriamo come exp
+            return true // token can't be parsed: treat it as expired
         }
     }
 
     async function tryRefresh() {
-        //se refresh gia in corso, aspettiamo prima di lanciare un nuovo
+        // refresh already in progress: wait for it instead of starting a new one
         if(refreshPromise) return refreshPromise
 
         refreshPromise = (async() => {
@@ -64,7 +64,7 @@
             router.push('/login')
             return null
         }
-        //proactive refresh prima di response 401
+        // proactive refresh before the server answers 401
         if(isTokenExpiring(token)) {
             const refreshed = await tryRefresh()
             if(!refreshed) {

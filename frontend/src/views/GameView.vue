@@ -233,7 +233,7 @@ import { useMatchesStore } from '@/stores/matches'
 
         
 
-            // центральная вертикальная линия (пунктир)
+            // dashed vertical center line
             ctx.setLineDash([5, 5])
             ctx.strokeStyle = '#ABC7C3'
             ctx.lineWidth = 0.5
@@ -242,9 +242,9 @@ import { useMatchesStore } from '@/stores/matches'
             ctx.moveTo(canvas.width / 2, 0)
             ctx.lineTo(canvas.width / 2, canvas.height)
             ctx.stroke()
-            ctx.setLineDash([]) // сбрасываем пунктир
+            ctx.setLineDash([]) // reset dash
 
-            // горизонтальная линия по центру
+            // horizontal center line
             ctx.strokeStyle = 'rgba(255,255,255,0.2)'
             ctx.lineWidth = 0.5
             ctx.beginPath()
