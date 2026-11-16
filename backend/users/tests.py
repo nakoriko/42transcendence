@@ -293,3 +293,34 @@ class UserListTests(APITestCase):
     
 
     
+
+
+class LogoutTests(APITestCase):
+    def setUp(self):
+        User.objects.create_user(email='u@test.com', password='pass12345', nickname='user')
+        res = self.client.post('/api/users/login/', {'email': 'u@test.com', 'password': 'pass12345'}, format='json')
+        self.refresh = res.data['refresh']
+
+    def logout(self, data):
+        return self.client.post('/api/users/logout/', data, format='json')
+
+    def use_refresh(self):
+        return self.client.post('/api/users/token/refresh/', {'refresh': self.refresh}, format='json')
+
+    def test_refresh_works_before_logout(self):
+        self.assertEqual(self.use_refresh().status_code, 200)
+
+    def test_refresh_is_rejected_after_logout(self):
+        res = self.logout({'refresh': self.refresh})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(self.use_refresh().status_code, 401)
+
+    def test_logout_twice_is_ok(self):
+        self.logout({'refresh': self.refresh})
+        self.assertEqual(self.logout({'refresh': self.refresh}).status_code, 200)
+
+    def test_logout_with_invalid_token_is_ok(self):
+        self.assertEqual(self.logout({'refresh': 'garbage'}).status_code, 200)
+
+    def test_logout_without_token_is_rejected(self):
+        self.assertEqual(self.logout({}).status_code, 400)

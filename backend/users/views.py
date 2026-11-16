@@ -16,7 +16,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics
 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, FriendRelation
 
 from django.db.models import Q
@@ -39,8 +41,18 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    # the refresh token is the credential here: logout must work with an expired access token
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
     def post(self, request):
+        refresh = request.data.get('refresh')
+        if not refresh:
+            return Response({"error": "refresh is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            RefreshToken(refresh).blacklist()
+        except TokenError:
+            pass # expired, invalid or already blacklisted: it can't be used anyway
         return Response({"message": "Logged out"}, status=status.HTTP_200_OK)
 
 class ProfileView(APIView):

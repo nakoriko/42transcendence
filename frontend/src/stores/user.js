@@ -45,7 +45,20 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    // doesn't block logout: if the server is unreachable the user still leaves locally
+    function revokeRefreshToken() {
+        const refresh = localStorage.getItem('refresh')
+        if(!refresh) return
+        fetch('/api/users/logout/', {
+            method: 'POST',
+            headers: {'Content-type': 'application/json'},
+            body: JSON.stringify({ refresh }),
+            keepalive: true // survives closing the tab right after logout
+        }).catch(() => {})
+    }
+
     function logout() {
+        revokeRefreshToken()
         localStorage.removeItem('access')
         localStorage.removeItem('refresh')
         wsService.disconnect()

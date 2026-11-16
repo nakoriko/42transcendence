@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 vi.mock('@/utils/apiFetch', () => ({ apiFetch: vi.fn()}))
@@ -86,5 +86,44 @@ describe('userStore.refreshUser', () => {
 
         expect(store.currentUser.nickname).toBe('new')
         expect(apiFetch).toHaveBeenCalledTimes(2)
+    })
+})
+
+
+describe('userStore.logout and the refresh token', () => {
+    beforeEach(() => {
+        setActivePinia(createPinia())
+        localStorage.clear()
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
+    })
+    afterEach(() => vi.unstubAllGlobals())
+
+    it('sends the refresh token to the server and clears local tokens', () => {
+        localStorage.setItem('access', 'a')
+        localStorage.setItem('refresh', 'r')
+
+        useUserStore().logout()
+
+        const [url, options] = fetch.mock.calls[0]
+        expect(url).toBe('/api/users/logout/')
+        expect(options.method).toBe('POST')
+        expect(JSON.parse(options.body)).toEqual({ refresh: 'r' })
+        expect(localStorage.getItem('access')).toBeNull()
+        expect(localStorage.getItem('refresh')).toBeNull()
+    })
+
+    it('does not call the server without a refresh token', () => {
+        useUserStore().logout()
+        expect(fetch).not.toHaveBeenCalled()
+    })
+
+    it('still logs out locally when the request fails', async () => {
+        fetch.mockRejectedValue(new TypeError('network'))
+        localStorage.setItem('refresh', 'r')
+
+        useUserStore().logout()
+        await Promise.resolve()
+
+        expect(localStorage.getItem('refresh')).toBeNull()
     })
 })
