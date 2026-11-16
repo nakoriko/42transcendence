@@ -11,12 +11,10 @@
 # **************************************************************************** #
 
 from django.contrib.auth import get_user_model
-# from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Count, Avg, Max, F #object to calculate aberege reaction_time for all users
+from django.db.models import Q, Count, Max, F
 from django.db.models.functions import Least, Greatest
 from rest_framework.views import APIView
 from rest_framework.response import Response
-# from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from game.models import Match, MatchEvent
 from datetime import timedelta 
@@ -114,41 +112,6 @@ class PongUniverseView(APIView):
             })
 
         return Response(result)
-
-
-        
-
-
-        # for user in users:
-        #     match_qs = Match.objects.filter(
-        #         Q(player1=user) | Q(player2=user),
-        #         status=Match.Status.FINISHED
-        #     )
-        #     if since:
-        #         match_qs = match_qs.filter(ended_at__gte=since)
-        #     total = match_qs.count()
-        #     wins = match_qs.filter(winner=user).count()
-        #     event_qs = MatchEvent.objects.filter(match__in=match_qs, player=user)
-        #     hits = event_qs.filter(event_type=MatchEvent.EventType.HIT).count()
-        #     misses = event_qs.filter(event_type=MatchEvent.EventType.MISS).count()
-
-        #     avg_reaction = event_qs.filter(
-        #         event_type=MatchEvent.EventType.HIT,
-        #         reaction_time_ms__isnull=False
-        #     ).aggregate(avg=Avg('reaction_time_ms'))['avg']
-
-        #     result.append({
-        #         'id': user.id,
-        #         'nickname': user.nickname or user.email,
-        #         'date_joined': user.date_joined.isoformat(),
-        #         'total_matches': total,
-        #         'wins': wins,
-        #         'losses': total - wins,
-        #         'win_rate': round(wins / total, 2) if total > 0 else 0,
-        #         'avg_reaction_ms': round(avg_reaction) if avg_reaction else None,
-        #         'hit_accuracy': round(hits / (hits + misses), 2) if (hits + misses) > 0 else None,
-        #     })
-        # return Response(result)
 
 class PlayerGraphView(APIView):
     """
@@ -282,9 +245,9 @@ class PlayerGraphView(APIView):
                 partner_counts[p2][p1] += 1
 
         for uid, counter in partner_counts.items():
-           counter.pop(me_id, None)
-           counter.pop(uid, None)
-           second_circle_ids.update(pid for pid, _ in counter.most_common(TOP_N))
+            counter.pop(me_id, None)
+            counter.pop(uid, None)
+            second_circle_ids.update(pid for pid, _ in counter.most_common(TOP_N))
             
         all_node_ids = {me_id} | first_circle_ids | second_circle_ids
 

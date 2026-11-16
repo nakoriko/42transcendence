@@ -3,26 +3,13 @@ import  { ref, onMounted, onUnmounted, watch, computed, reactive } from 'vue'
 import  { useUserStore } from '@/stores/user'
 import AppToolTip from '@/components/AppTooltip.vue'
 import AppTooltipRow from '../AppTooltipRow.vue'
-// import AppFilterTabs from '../AppFilterTabs.vue'
 import { useResizeObserver } from '@/composables/useResizeObserver.js'
-// import { filterByPeriod } from '@/utils/period.js'
-
-// const props = defineProps({
-//     matches: { type: Array, default: () => []},
-//     events: { type: Array, default: () => []}
-// })
 
 const props = defineProps({
     match: { type: Object, default: null},
     events: { type: Array, default: () => []}
 })
 
-// const period = ref('All')
-// const filteredMatches = computed (() => 
-//     filterByPeriod(props.matches, 'ended_at', period.value)
-// ) 
-
-// const emit = defineEmits(['matchSelected'])
 const canvas = ref(null)
 const container = ref(null)
 const tt = ref(null)
@@ -32,8 +19,6 @@ const ttData = reactive ({
     hits: 0,
     won: false,
     score: '',
-    // opponent: '',
-    // date: '',
 })
 
 const COLORS = {
@@ -47,46 +32,10 @@ let rafId = null
 const userStore = useUserStore()
 
 //computed ralli (recalcolute every call)
-// const rallies = computed(() => {
-//     if (!filteredMatches.value.length|| !userStore.currentUser) return []
-
-//     const uid = userStore.currentUser.id
-//     const result = []
-//     const ordered = [...filteredMatches.value].reverse() //reverse order for inter array
-
-//     for(const m of ordered) {
-//             const matchEvents = props.events.filter(e => e.match === m.id)
-//             let hits = 0;
-//             let score = [0, 0]
-
-//             for(const e of matchEvents) {
-//                 if(e.event_type === 'hit') {
-//                     hits++
-//                 } else if (e.event_type === 'goal') {
-//                         const won = e.player === uid
-//                         won ? score[0]++ : score[1]++
-//                         result.push({
-//                             hits: hits || 1,
-//                             won,
-//                             score: `${score[0]} - ${score[1]}`,
-//                             matchId: m.id,
-//                             matchDate: m.ended_at,
-//                             opponent:  m.opponent_nickname,
-//                         })
-//                         hits = 0
-//                     }
-//                 }
-//             }
-//         const filtered = result.filter(r => r.hits > 1)
-//         return filtered.map((r, i) => ({...r, num: i + 1}))
-//     })
-
-
 const rallies = computed(() => {
     if (!props.match || !props.events.length|| !userStore.currentUser) return []
     const uid = userStore.currentUser.id
     const result = []
-    // const ordered = [...filteredMatches.value].reverse() //reverse order for inter array
     let hits = 0;
     let score = [0, 0]
     for(const e of props.events) {
@@ -103,23 +52,8 @@ const rallies = computed(() => {
                     hits = 0
                 }
             }
-        // const filtered = result.filter(r => r.hits > 1)
         return result.map((r, i) => ({...r, num: i + 1}))
     })
-
-//limits for bottom timeline
-// const matchGroups = computed(() => {
-//     const groups = []
-//     rallies.value.forEach((r, i) => {
-//         const last = groups[groups.length - 1]
-//         if(last && last.matchId === r.matchId) {
-//             last.endIndex = i
-//         } else {
-//             groups.push({ matchId: r.matchId, matchDate: r.matchDate, startIndex: i, endIndex: i})
-//         }
-//     })
-//     return groups
-// })
 
 //draw graph on canvas
 function draw() {
@@ -145,22 +79,8 @@ function draw() {
     ctx.lineTo(W - PR, H - PB)
     ctx.stroke()
 
-    // //draw spikes
+    //draw spikes
     rallies.value.forEach((r, i) => {
-        //30/06: added dividers beteen groups of matches
-        // if(i > 0 && r.matchId !== rallies.value[i - 1].matchId) {
-        //     const sepX = PL + i * GAP 
-        //     ctx.save()
-        //     ctx.globalAlpha = 1
-        //     ctx.beginPath()
-        //     ctx.strokeStyle = 'rgba(255,255,255,0.2)'
-        //     ctx.lineWidth = 0.5
-        //     ctx.setLineDash([2, 2])
-        //     ctx.moveTo(sepX, PT)
-        //     ctx.lineTo(sepX, H - PB)
-        //     ctx.stroke()
-        //     ctx.restore()
-        // }
 
         const prog = animProgress[i] ?? 0
         const x = PL + ( i + 0.5) * GAP
@@ -207,19 +127,6 @@ function draw() {
         ctx.globalAlpha = 1
     })
 
-    // const MAX_LABELS = 10 //add fast solution to avoid a mess with dates on timeline
-    // if(matchGroups.value.length <= MAX_LABELS) { //just for 10 matches
-    //     matchGroups.value.forEach(g => {
-    //         const centerX = PL + ((g.startIndex + g.endIndex) / 2 + 0.5) * GAP
-    //         ctx.save()
-    //         ctx.globalAlpha = 1
-    //         ctx.fillStyle = 'rgba(255,255,255,0.35)'
-    //         ctx.font = '9px sans-serif'
-    //         ctx.textAlign = 'center'
-    //         ctx.fillText (formatShortDate(g.matchDate), centerX, H - 4)
-    //         ctx.restore() 
-    //     }
-    // )}
 }
 
 function animate() {
@@ -278,21 +185,9 @@ function onMouseMove(e) {
     ttData.hits = r.hits
     ttData.won = r.won
     ttData.score = r.score
-    // ttData.opponent = r.opponent ?? '-'
-    // ttData.date = formatShortDate(r.matchDate)
     tt.value?.show(e.clientX - containerRect.left, e.clientY - containerRect.top)
 }
 
-// function onCanvasClick(e) {
-//     const rect = canvas.value.getBoundingClientRect()
-//     const mx = e.clientX - rect.left
-//     const GAP = (canvas.value.width - 2) / rallies.value.length
-//     const idx = Math.floor((mx - 12) / GAP)
-
-//     if(idx >= 0 && idx < rallies.value.length) {
-//         emit('matchSelected', rallies.value[idx].matchId)
-//     }
-// }
 function onMouseLeave() {
     tt.value?.hide()
 }

@@ -141,7 +141,7 @@ class BulkMatchEventTests(APITestCase):
         self.assertEqual(res.status_code, 400)
         self.assertEqual(MatchEvent.objects.count(), 0)
 
-    def test_uknown_match_returns_400(self):
+    def test_unknown_match_returns_400(self):
         res = self.post([self.event(999999, self.p1.id)])
         self.assertEqual(res.status_code, 400)
 

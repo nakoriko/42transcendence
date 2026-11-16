@@ -39,8 +39,6 @@
         } finally {
             refreshPromise = null // reset for next exp token and new refresh
         }
-        // const result = await refreshPromise
-        // return result
 
     }
 

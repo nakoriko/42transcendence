@@ -93,7 +93,7 @@ describe('apiFetch', () => {
         expect(res.status).toBe(200)
     })
 
-    it('does not set JSON content type for FromDataa body', async () => {
+    it('does not set JSON content type for FormData body', async () => {
         localStorage.setItem('access', makeToken(3600))
         const fetchMock = vi.fn().mockResolvedValue(response(200))
         vi.stubGlobal('fetch', fetchMock)

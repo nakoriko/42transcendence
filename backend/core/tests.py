@@ -14,8 +14,8 @@ class RedisSettingsTests(SimpleTestCase):
         host, port = settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0]
         self.assertEqual(host, settings.REDIS_HOST)
 
-class MigrationTests(TestCase):
-    def test_no_missiing_migrations(self):
+class MigrationsTests(TestCase):
+    def test_no_missing_migrations(self):
         call_command('makemigrations', '--check', '--dry-run',
         stdout=StringIO())
 

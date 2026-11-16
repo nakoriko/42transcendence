@@ -22,6 +22,4 @@ urlpatterns = [
 
     path('matches/<int:match_id>/finish/', FinishMatchView.as_view(), name='finish_match'),
     path('matches/', MatchHistoryView.as_view(), name='match_history'), 
-
-    # path('analytics/universe/', PongUniverseView.as_view(), name='pong_universe'),
 ]

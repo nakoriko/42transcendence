@@ -1,12 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Q, Avg, F #object to calculate aberege reaction_time for all users
+from django.shortcuts import get_object_or_404
+from django.db.models import Q, F
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Match, MatchEvent
-from datetime import timedelta 
 from django.utils import timezone
 from ws.notify import notify_group #sab: per dashboard in tempo reale
 
@@ -56,12 +55,6 @@ class FinishMatchView(APIView):
             loser_id = match.player1_id if match.winner_id == match.player2_id else match.player2_id
             User.objects.filter(pk=match.winner_id).update(wins=F('wins') + 1)
             User.objects.filter(pk=loser_id).update(losses=F('losses') + 1)
-            # winner = match.winner
-            # loser = match.player1 if match.winner == match.player2 else match.player2
-            # winner.wins += 1
-            # loser.losses += 1
-            # winner.save()
-            # loser.save()
 
             #sab: per dashboard in tempo reale
             notify_group("dashboard_updates", {
@@ -110,51 +103,6 @@ class MatchHistoryView(APIView):
         serializer = MatchHistorySerializer(matches, many=True, context={'request': request})
         return Response(serializer.data)
 
-# class PongUniverseView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         period = request.query_params.get('period', 'all') #7 days /30 d/ all, readds from ?period=7d from url
-#         since = None
-#         if(period == '7d'):
-#             since = timezone.now() - timedelta(days=7)
-#         elif (period == '30d'):
-#             since = timezone.now() - timedelta(days=30)
-
-#         users = User.objects.all().order_by('date_joined')
-#         result = []
-
-#         for user in users:
-#             match_qs = Match.objects.filter(
-#                 Q(player1=user) | Q(player2=user),
-#                 status=Match.Status.FINISHED
-#             )
-#             if since:
-#                 match_qs = match_qs.filter(ended_at__gte=since)
-#             total = match_qs.count()
-#             wins = match_qs.filter(winner=user).count()
-#             event_qs = MatchEvent.objects.filter(match__in=match_qs, player=user)
-#             hits = event_qs.filter(event_type=MatchEvent.EventType.HIT).count()
-#             misses = event_qs.filter(event_type=MatchEvent.EventType.MISS).count()
-
-#             avg_reaction = event_qs.filter(
-#                 event_type=MatchEvent.EventType.HIT,
-#                 reaction_time_ms__isnull=False
-#             ).aggregate(avg=Avg('reaction_time_ms'))['avg']
-
-#             result.append({
-#                 'id': user.id,
-#                 'nickname': user.nickname or user.email,
-#                 'date_joined': user.date_joined.isoformat(),
-#                 'total_matches': total,
-#                 'wins': wins,
-#                 'losses': total - wins,
-#                 'win_rate': round(wins / total, 2) if total > 0 else 0,
-#                 'avg_reaction_ms': round(avg_reaction) if avg_reaction else None,
-#                 'hit_accuracy': round(hits / (hits + misses), 2) if (hits + misses) > 0 else None,
-#             })
-#         return Response(result)
-
 class BulkMatchEventView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
@@ -166,7 +114,7 @@ class BulkMatchEventView(APIView):
         match_ids = { e['match'] for e in events}
         matches = Match.objects.in_bulk(match_ids)
         if len(matches) != len(match_ids):
-            return Response({ 'error': 'Uknown match'},
+            return Response({ 'error': 'Unknown match'},
             status=status.HTTP_400_BAD_REQUEST)
 
         for e in events:
@@ -191,10 +139,3 @@ class BulkMatchEventView(APIView):
             for e in events
         ])
         return Response(MatchEventSerializer(created, many=True).data, status=status.HTTP_201_CREATED)
-
-# class MatchHistoryChartView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-        
-
-

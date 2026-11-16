@@ -33,7 +33,7 @@ async function captureSection(el) {
     const canvas = await html2canvas(el, {
         backgroundColor: '#0f1629',
         scale: 2,
-        ignoreElements: (node) => node.classList.contains('no-capture') //
+        ignoreElements: (node) => node.classList.contains('no-capture')
     })
     return canvas
 }
