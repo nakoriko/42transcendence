@@ -30,17 +30,6 @@ services:
     #   - "8000:8000"
     #add_later tha db has to eait portgerSQL (healthcheck) 
     restart: unless-stopped
-  
-  # websocket:
-  #   container_name: websocket
-  #   build: ./websocket
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - backend
-  #     - redis
-  #   #Django channels need (wait for migrations and creation of db from backeand)
-  #   restart: unless-stopped
 
   frontend:
     container_name: frontend
