@@ -80,7 +80,7 @@ Every new module goes through the same four-step cycle: **study** the concept �
 | Reverse proxy | Nginx | A single HTTPS entry point (self-signed certificate) routing `/`, `/api/`, `/media/`, `/admin/`, and `/ws/` to the right container. |
 | Deployment | Docker Compose | The entire stack (nginx, frontend, backend, db, redis) is brought up with a single `docker-compose up` command. |
 
-Detailed breakdown of technical decisions and trade-offs: see [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Detailed breakdown of technical decisions and trade-offs: see [`docs/architecture.md`](./docs/architecture.md).
 
 ---
 
@@ -95,7 +95,7 @@ PostgreSQL, accessed through the Django ORM. Four core tables:
 
 The relation design follows one general rule: relations that are meaningless without both sides (e.g. a friendship) cascade on delete; relations representing a historical fact that should outlive the deletion of a participant (a match, a match event) use `SET_NULL` — so match history and statistics are preserved even after an account is deleted.
 
-Full field list, types, constraints, and the ER diagram: see [`DB_SCHEMA.md`](./DB_SCHEMA.md).
+Full field list, types, constraints, and the ER diagram: see [`docs/db-schema.md`](./docs/db-schema.md).
 
 ---
 
@@ -103,7 +103,7 @@ Full field list, types, constraints, and the ER diagram: see [`DB_SCHEMA.md`](./
 
 The application runs as five containers behind an Nginx reverse proxy: `frontend` (Vue/Vite), `backend` (Django + Channels, served by Daphne, includes the WebSocket layer), `db` (PostgreSQL), `redis` (channel layer broker for WebSocket), and `nginx` (HTTPS termination and routing). Django Channels is embedded directly in the `backend` container rather than run as a separate service — to keep onboarding simpler for the team.
 
-Full container diagram, repository structure, per-module breakdown (frontend components/stores/views, backend apps, list of API endpoints, Nginx routing table): see [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Full container diagram, repository structure, per-module breakdown (frontend components/stores/views, backend apps, list of API endpoints, Nginx routing table): see [`docs/architecture.md`](./docs/architecture.md).
 
 ---
 
@@ -188,7 +188,7 @@ docker-compose down -v
 ### nakoriko — Product Owner / Tech Lead / Developer
 
 - Set up the initial Docker Compose environment, repository structure, and Nginx reverse proxy with HTTPS.
-- Designed and implemented the database schema (see [`DB_SCHEMA.md`](./DB_SCHEMA.md)) and the authentication system (JWT, hashed passwords).
+- Designed and implemented the database schema (see [`docs/db-schema.md`](./docs/db-schema.md)) and the authentication system (JWT, hashed passwords).
 - Implemented standard user management: profile editing, avatar upload, friends system, user activity dashboard.
 - Implemented the local Pong game (canvas rendering, score tracking, match/event recording).
 - Built the custom design system (10+ Vue components) and used it to redesign the lobby and profile page.
@@ -231,12 +231,11 @@ docker-compose down -v
 
 ### How AI was used
 
-AI (Claude) was used as a study aid and pair-programming tool throughout the project, following a fixed, documented workflow (kept in `CLAUDE_CONTEXT.md`, updated daily and pasted at the start of every AI conversation) with four types of sessions:
+AI (Claude) was used as a study aid and pair-programming tool throughout the project, following a fixed, documented workflow (a shared project context file, updated daily and pasted at the start of every AI conversation) with four types of sessions:
 
 - **Study sessions** — used to learn a new concept (e.g. WebSockets, JWT, Django ORM) before touching any code: first the team member explains what they already understand, then the concept is explained through an analogy, then through a minimal example, and finally a couple of comprehension questions.
 - **Architecture design sessions** — used to design a module's structure, API contract, or data flow
 - **Implementation sessions** — used while writing a specific feature, given the large number of new concepts and syntax involved; understood before it is added to the codebase, rather than being pasted in "as is."
 - **Defense sessions** — used after a feature is implemented, to check one's own understanding.
 
-We did not use code-writing agents built into VS Code.
 ---
