@@ -124,9 +124,9 @@
           <RouterView />
         </div>
       <footer class="py-4 text-center text-xs text-muted/40 mt-auto">
-        <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>
+        <RouterLink to="/privacy" class="hover:text-muted transition">Privacy Policy</RouterLink>
         <span class="mx-2 text-muted/20"> | </span>
-        <a href="/terms" class="hover:text-muted transition">Terms of Service</a>
+        <RouterLink to="/terms" class="hover:text-muted transition">Terms of Service</RouterLink>
       </footer>
     </div>
 
