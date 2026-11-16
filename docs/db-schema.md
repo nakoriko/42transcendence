@@ -71,10 +71,10 @@ Extends `AbstractUser`.
 
 | Field | Type | Parameters |
 |---|---|---|
-| id | AutoField | PK |
+| id | BigAutoField | PK |
 | email | EmailField | unique=True, `USERNAME_FIELD` |
 | username | CharField | = email, set in `UserManager.create_user()` |
-| nickname | CharField | max_length=50, unique=True |
+| nickname | CharField | max_length=15, unique=True |
 | avatar | ImageField | upload_to='avatars/', blank=True |
 | wins | IntegerField | default=0 |
 | losses | IntegerField | default=0 |
@@ -88,7 +88,7 @@ Extends `AbstractUser`.
 
 | Field | Type | Parameters |
 |---|---|---|
-| id | AutoField | PK |
+| id | BigAutoField | PK |
 | 🔗 from_user | ForeignKey → **User** | on_delete=CASCADE, related_name='sent_invites' |
 | 🔗 to_user | ForeignKey → **User** | on_delete=CASCADE, related_name='received_invites' |
 | status | CharField | max_length=10, default='pending' |
@@ -100,7 +100,7 @@ Extends `AbstractUser`.
 
 | Field | Type | Parameters |
 |---|---|---|
-| id | AutoField | PK |
+| id | BigAutoField | PK |
 | status | CharField (TextChoices) | pending / active / finished |
 | mode | CharField (TextChoices) | local / remote / ai |
 | 🔗 player1 | ForeignKey → **User** | on_delete=SET_NULL, null=True, related_name='matches_as_player1' |
@@ -119,7 +119,7 @@ Extends `AbstractUser`.
 
 | Field | Type | Parameters |
 |---|---|---|
-| id | AutoField | PK |
+| id | BigAutoField | PK |
 | 🔗 match | ForeignKey → **Match** | on_delete=CASCADE |
 | event_type | CharField (TextChoices) | hit / miss / goal |
 | 🔗 player | ForeignKey → **User** | on_delete=SET_NULL, null=True, related_name='match_events' |

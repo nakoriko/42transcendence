@@ -67,7 +67,7 @@ Every new module goes through the same four-step cycle: **study** the concept â†
 | Frontend | Vue 3 (Composition API) + Vite | A smoother learning curve than React for a team working with frontend frameworks for the first time, while keeping the same core concepts (components, reactivity, SPA routing). |
 | Styling | Tailwind CSS | A utility-first approach, on top of which a small custom design system (10+ reusable components) is built, without pulling in a heavy component library. |
 | State | Pinia | The official state-management solution for Vue, a simple API for a small SPA. |
-| Real-time client | Native WebSocket via a singleton service (`wsService.js`) | One persistent connection, shared for chat, presence, friend requests, and dashboard updates. |
+| Real-time client | Native WebSocket via a singleton service (`wsService.js`) | One persistent connection, shared for chat, presence, and friend requests. |
 | Data visualization | D3.js | Custom, interactive visualizations for the analytics dashboard (player connection graph, player map, win rate chart) that aren't covered by off-the-shelf chart libraries. |
 | Backend | Django + Django REST Framework | An out-of-the-box framework with a built-in ORM and admin panel, reducing boilerplate for a team learning backend development from scratch. |
 | Real-time server | Django Channels on gunicorn with uvicorn workers (ASGI) | Adds WebSocket support to Django. An ASGI server is required because WSGI cannot serve WebSocket connections; gunicorn runs several uvicorn worker processes so requests are handled in parallel. |

@@ -1,4 +1,6 @@
-## WebSockets (Sabino)
+# WebSockets
+
+*Author: Sabino Carlucci (`scarlucc`)*
 
 ### What it is and why
 
@@ -23,8 +25,8 @@ This module covers the Major feature from the subject:
 Django's default server (`runserver`) speaks WSGI, which is request/response
 only — it cannot keep a connection open. **Django Channels** extends Django to
 support the ASGI protocol, which does support long-lived connections like
-WebSockets. Because of this, the backend runs on **Daphne** (an ASGI server)
-instead of `runserver`.
+WebSockets. Because of this, the backend runs on an ASGI server (gunicorn with
+uvicorn workers) instead of `runserver`.
 
 A single Django process can hold many open WebSocket connections, but by default
 they can't talk to each other (e.g. one user's connection can't directly message
@@ -80,9 +82,10 @@ the frontend doesn't need to poll the REST API for updates:
 - **Friend requests** — `friend_request_event` / `friend_request_accepted_event`
   notify a user instantly when they receive or when someone accepts a friend
   request.
-- **Match results** — `match_finished_event` pushes the final score and winner
-  of a match to the relevant users as soon as it's saved, so match history /
-  dashboards can update live instead of requiring a page refresh.
+- **Match results** — `match_finished_event` broadcasts the final score and
+  winner of a match to the `dashboard_updates` group as soon as it's saved. The
+  frontend does not consume this event yet: the dashboard reloads its data after
+  the player's own match instead.
 
 ### Message dispatcher
 
@@ -102,7 +105,8 @@ gameplay (ball/paddle physics) between two separate browsers in real time.
 full remote gameplay.** The server-authoritative game loop needed for synced
 physics was never built, so this part was not carried through to a finished
 feature. It's mentioned here only for transparency about work that was
-attempted; it is **not** part of the delivered feature set.
+attempted; it is **not** part of the delivered feature set. This code was later
+removed from the main branch and is kept in the `feature/ws/remote_game` branch.
 
 ### Current status
 
@@ -111,7 +115,7 @@ attempted; it is **not** part of the delivered feature set.
 - ✅ Personal groups per user
 - ✅ Real-time chat between friends
 - ✅ Real-time friend-request notifications
-- ✅ Real-time match-result notifications
+- ✅ Real-time match-result notifications (sent by the server, not used by the frontend yet)
 - ❌ Remote gameplay sync (started, not completed — see note above)
 
 ### Resources used
