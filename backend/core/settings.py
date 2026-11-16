@@ -26,7 +26,16 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() =='true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+def env_list(name, default):
+    """Comma-separated env variable as a list, or default when it is not set."""
+    value = os.environ.get(name)
+    if not value:
+        return default
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
 
 # Application definition
@@ -90,7 +99,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'db',
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
         'PORT': '5432',
     }
 }
@@ -144,8 +153,8 @@ AUTH_USER_MODEL = 'users.User'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-#add localhost as  secure addres for MIDDLEWARE
-CSRF_TRUSTED_ORIGINS = ['https://localhost', 'https://localhost:5001']
+# origins allowed to send unsafe requests (POST/PATCH/DELETE) with CSRF protection
+CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS', ['https://localhost', 'https://localhost:5001'])
 
 REST_FRAMEWORK = {
     #define  authentication method (JWTAuthentication). So, it will search jwt in heeader inside every http request
