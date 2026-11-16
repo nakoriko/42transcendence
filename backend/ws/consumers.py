@@ -43,8 +43,15 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 await self.broadcast_online_count()
 
     #nuova versione di receive
-    async def receive(self, text_data):
-        data = json.loads(text_data)
+    async def receive(self, text_data=None, bytes_data=None):
+        if text_data is None:
+            return
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
+        if not isinstance(data, dict):
+            return
 
         if not self.authenticated:
             if data.get('type') == 'auth':
