@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
@@ -10,6 +11,7 @@ from django.conf import settings
 
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 redis_client = redis.Redis(host=settings.REDIS_HOST, port=6379)
 
@@ -70,7 +72,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         if handler:
             await handler(data)
         else:
-            print(f"Unknown message type: {message_type}")
+            logger.warning("Unknown WS message type: %s", message_type)
 
     # --- handler chiamati da Channels quando arriva un messaggio dal Group ---
     async def handle_auth(self, data):
@@ -98,9 +100,8 @@ class PresenceConsumer(AsyncWebsocketConsumer):
            
 
             await self.send(json.dumps({'type': 'auth_success'}))
-        #except per debug
         except Exception as e:
-            print("AUTH ERROR:", e)
+            logger.warning("WS auth failed: %s", e)
             await self.close()
 
     async def handle_chat_message(self, data):
