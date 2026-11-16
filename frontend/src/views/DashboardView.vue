@@ -128,9 +128,10 @@ onMounted(async () => {
         </section>
 
         <!--PLayer graph -->
-        <section ref="playerGraphRef">
+        <section ref="playerGraphRef" class="lg:h-[60vh] lg:min-h-[480px]">
             <!---PLayer graph-->
-            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] gap-6 h-full">
+
                 <DashPlayerGraph 
                 @node-hover="hoveredNode = $event"
                 @node-click="onNodeClick"></DashPlayerGraph>
@@ -145,10 +146,10 @@ onMounted(async () => {
             <DashKpiRow :players="players"></DashKpiRow>
             <!--Match history + player stats -->
             <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12">
-                <section ref="historyRef" class="lg:h-[360px]">
+                <section ref="historyRef" class="lg:h-[50vh] lg:min-h-[360px]">
                     <DashMatchHistory :activeMatchId></DashMatchHistory>
                 </section>
-                <section class="lg:h-[360px]">
+                <section class="lg:h-[50vh] lg:min-h-[360px]">
                     <div class="h-[320px] lg:h-full">
                         <DashPlayerStats></DashPlayerStats>
                     </div>

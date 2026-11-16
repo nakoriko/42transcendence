@@ -58,7 +58,7 @@ watch(() => props.selectedMatchId, async(id) => {
             No matches yet
         </div>
 
-        <div v-else class="flex-1 min-h-0 flex flex-col max-h-[400px] overflow-y-auto scroll-thin [scrollbar-gutter:stable]">
+        <div v-else class="flex-1 min-h-0 flex flex-col max-h-[400px] lg:max-h-none overflow-y-auto scroll-thin [scrollbar-gutter:stable]">
             <!-- match card: row + expanded block live between the same two lines -->
             <div v-for="(match, index) in matches" :key="match.id"
                 :ref="el => itemRefs[index] = el"

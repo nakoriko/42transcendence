@@ -69,7 +69,7 @@ function toggleMatch(match) {
 </script>
 
 <template>
-<div class="flex flex-col lg:h-[360px]">
+<div class="flex flex-col lg:h-full">
     <RecentMatchesList
         class="flex-1 min-h-0"
         :matches="filteredMatches"
