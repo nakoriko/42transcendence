@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    serializers.py                                     :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/11 20:25:52 by nakoriko         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import FriendRelation

@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    views.py                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/28 19:13:36 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/16 18:42:33 by nakoriko         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Count, Max, F
 from django.db.models.functions import Least, Greatest

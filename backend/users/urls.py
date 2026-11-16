@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    urls.py                                            :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/01 22:10:00 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/17 17:16:16 by nakoriko         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 from django.urls import path
 from .views import RegisterView, LogoutView, ProfileView, UserListView, AvatarUploadView, \
 FriendRequestView, FriendsListView, FriendDetailView, PublicProfileView

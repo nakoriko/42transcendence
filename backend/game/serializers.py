@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    serializers.py                                     :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/05 11:41:07 by nakoriko          #+#    #+#              #
-#    Updated: 2026/10/16 17:38:09 by nakoriko         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 from rest_framework import serializers
 from .models import Match, MatchEvent
 

@@ -1,15 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    urls.py                                            :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/05 11:46:05 by nakoriko          #+#    #+#              #
-#    Updated: 2026/06/28 19:16:39 by nakoriko         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 from django.urls import path
 from .views import StartMatchView, FinishMatchView, \
         MatchHistoryView, MatchEventsView, BulkMatchEventView
