@@ -90,15 +90,24 @@ import { useMatchesStore } from '@/stores/matches'
         document.addEventListener('keydown', handleKeyDown)
         document.addEventListener('keyup', handleKeyUp)
 
+        // without a saved match the result would be lost, so don't start playing
+        function failToStart() {
+            stopGame()
+            winnerText.value = 'Could not start the match'
+            gameOver.value = true
+        }
+
         async function initMatch() {
             // const token = localStorage.getItem('access')
 
             //get currnet user ID and nickname
+            if(!userStore.currentUser) return failToStart()
             player1.id = userStore.currentUser.id
             player1.nickname = userStore.currentUser.nickname
 
             //get opponent ID and nickname
             const profile2 = await apiFetch(`/api/users/${player2.id}/`)
+            if(!profile2?.ok) return failToStart()
             const profile2Data = await profile2.json()
             player2.nickname = profile2Data.nickname
 
@@ -106,6 +115,7 @@ import { useMatchesStore } from '@/stores/matches'
                 method: 'POST',
                 body: JSON.stringify({ player1: player1.id, player2: player2.id })
             })
+            if(!match?.ok) return failToStart()
             const matchData = await match.json()
             matchId = matchData.id
             render()
