@@ -11,36 +11,10 @@ import { useResizeObserver } from '@/composables/useResizeObserver.js'
 
 
 
-// Player Connection Graph (ego-network, 2-hop).
-
-// Design decisions:
-// - Hosted inside DashboardView as a top section, not a separate /dashboard/graph page.
-//   Reason: keeps all analytics in one place; graph is first for screenshot/demo visibility.
-// - MatchEchoViz copied as skeleton (drag/hover/tooltip paradigm reused).
-//   Force-simulation params retuned for network graph (distance 100, charge -300).
-// - "Breathing" effect via alphaTarget(0.02) + alphaMin(0.001) — mimics Obsidian.
-// - Drag releases fx/fy on end (Obsidian-style): nodes stay in flow, not pinned.
-// - Glow via SVG filter in <defs>; applied to nodes as filter="url(#glow)".
-// - Node radius: scaleSqrt(degree), range [3,10], +2px bonus for current user.
-// - Node color: diverging scale coral→sage→teal by winRate (0 → 0.5 → 1).
-// - Edge thickness fixed at 1px (scaled width postponed — see "Future" below).
-
-// Known limitations:
-//   Graph does not re-render on container resize. TODO 
-// - Tooltip (AppTooltip) kept from skeleton but not yet wired to graph data.
-//   Content template still shows event-type fields — to be remapped in Step 5
-//   to show nick / W-L / winRate / degree.
-
-// Future (deferred by plan):
-// - Edge thickness scaled by edges[].matches — Step 5.
-// - Empty state message ("Play some matches to see your network grow") — Step 5.
-// - Loader during fetch — Step 5.
-// - Click node → navigate to player profile — out of 2-day scope.
-// - Zoom/pan — out of 2-day scope.
-// - WS realtime update on match_finished — out of 2-day scope.
-
-
-
+// Player connection graph: the current player, their opponents and the opponents' opponents (2 hops).
+// - d3 force simulation keeps a slight "breathing" motion (alphaTarget 0.02); dragged nodes are released on drag end.
+// - Node radius grows with the number of unique opponents (scaleSqrt), color shows win rate (coral -> sage -> teal).
+// - Desktop: hover highlights a node with its links. Touch: a tap does the same and updates the info card.
 
 //highlight: hovered node + its neighbors are active, the res is dimmed
 const NODE_ACTIVE = 1
