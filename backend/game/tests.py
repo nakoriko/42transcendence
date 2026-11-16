@@ -254,3 +254,28 @@ class MatchHistoryTests(APITestCase):
 
 
 
+
+
+async def broken_group_send(*args, **kwargs):
+    raise ConnectionError('channel layer is down')
+
+
+@override_settings(CHANNEL_LAYERS=TEST_CHANNEL_LAYERS)
+@patch('channels.layers.InMemoryChannelLayer.group_send', broken_group_send)
+class FinishMatchNotificationFailureTests(APITestCase):
+    def test_match_is_finished_when_notification_fails(self):
+        p1 = User.objects.create_user(email='p1@test.com', password='pass12345', nickname='p1')
+        p2 = User.objects.create_user(email='p2@test.com', password='pass12345', nickname='p2')
+        match = Match.objects.create(player1=p1, player2=p2, status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL)
+        self.client.force_authenticate(p1)
+        with self.assertLogs('ws', level='ERROR'):
+            res = self.client.patch(
+                f'/api/game/matches/{match.id}/finish/',
+                {'winner': p1.id, 'score_player1': 5, 'score_player2': 3},
+                format='json',
+            )
+        self.assertEqual(res.status_code, 200)
+        match.refresh_from_db()
+        p1.refresh_from_db()
+        self.assertEqual(match.status, Match.Status.FINISHED)
+        self.assertEqual(p1.wins, 1)

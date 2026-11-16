@@ -79,13 +79,6 @@ class FriendDetailTests(APITestCase):
         self.relation.refresh_from_db()
         self.assertEqual(self.relation.status, 'rejected')
 
-    def test_accept_is_saved_even_if_ws_notify_fails(self):
-        with patch('users.views.get_channel_layer', side_effect=RuntimeError('redis dow')):
-            with self.assertRaises(RuntimeError):
-                self.act(self.recipient, 'accept')
-        self.relation.refresh_from_db()
-        self.assertEqual(self.relation.status, 'accepted')
-
 
     
 
@@ -324,3 +317,31 @@ class LogoutTests(APITestCase):
 
     def test_logout_without_token_is_rejected(self):
         self.assertEqual(self.logout({}).status_code, 400)
+
+
+async def broken_group_send(*args, **kwargs):
+    raise ConnectionError('channel layer is down')
+
+
+@override_settings(CHANNEL_LAYERS=TEST_CHANNEL_LAYERS)
+@patch('channels.layers.InMemoryChannelLayer.group_send', broken_group_send)
+class FriendNotificationFailureTests(APITestCase):
+    def setUp(self):
+        self.sender = User.objects.create_user(email='s@test.com', password='pass12345', nickname='sender')
+        self.recipient = User.objects.create_user(email='r@test.com', password='pass12345', nickname='recipient')
+
+    def test_friend_request_is_saved_when_notification_fails(self):
+        self.client.force_authenticate(self.sender)
+        with self.assertLogs('ws', level='ERROR'):
+            res = self.client.post('/api/users/friends/request/', {'to_user_id': self.recipient.id}, format='json')
+        self.assertEqual(res.status_code, 201)
+        self.assertTrue(FriendRelation.objects.filter(from_user=self.sender, to_user=self.recipient).exists())
+
+    def test_accept_is_saved_when_notification_fails(self):
+        relation = FriendRelation.objects.create(from_user=self.sender, to_user=self.recipient, status='pending')
+        self.client.force_authenticate(self.recipient)
+        with self.assertLogs('ws', level='ERROR'):
+            res = self.client.patch(f'/api/users/friends/{relation.id}/', {'action': 'accept'}, format='json')
+        self.assertEqual(res.status_code, 200)
+        relation.refresh_from_db()
+        self.assertEqual(relation.status, 'accepted')

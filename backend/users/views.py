@@ -27,8 +27,7 @@ from .serializers import RegisterSerializer, AvatarSerializer,  \
 FriendRelationSerializer, FriendUserSerializer, ProfileUpdateSerializer
 
 #SABINO modifica per vedere richieste amicizia in tempo reale
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from ws.notify import notify_group
 
 # Complex end-point, a lot of logiic -> class + APIView
 
@@ -170,8 +169,7 @@ class FriendRequestView(APIView):
             status='pending'
         )
 
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(f"user_{to_user_id}", {
+        notify_group(f"user_{to_user_id}", {
             "type": "friend_request_event",
             "from_user_id": request.user.id,
             "from_user_nickname": request.user.nickname,
@@ -257,8 +255,7 @@ class FriendDetailView(APIView):
         #notify sender only after new status is saved
         if action == 'accept':
             #SABINO modifica per vedere richieste amicizia in tempo reale
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(f"user_{relation.from_user_id}", {
+            notify_group(f"user_{relation.from_user_id}", {
                 "type": "friend_request_accepted_event",
                 "user_id": request.user.id,
                 "nickname": request.user.nickname,
