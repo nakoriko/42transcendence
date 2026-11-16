@@ -53,11 +53,12 @@ const navLinks= [
   <Transition name="slide">
     <aside 
       v-if="!isOverlay || mobileOpen"
-      class="flex-shrink-0 bg-navy-800/30 border-r border-white/[0.07]
+      class="flex-shrink-0 border-r border-white/[0.07]
                     flex flex-col h-screen transition-[width] duration-200 w-60 2xl:w-80"
       :class="[
-        isOverlay ? 'fixed inset-y-0 left-0 z-50' : 'sticky top-0'
+        isOverlay ? 'fixed inset-y-0 left-0 z-50 bg-navy-800' : 'sticky top-0 bg-navy-800/30'
       ]">
+
       
     <!-- Logo gouse to home(/) -->
     <RouterLink to="/" class="p-6 pb-4 flex items-center">
