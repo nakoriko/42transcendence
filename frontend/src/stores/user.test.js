@@ -127,3 +127,28 @@ describe('userStore.logout and the refresh token', () => {
         expect(localStorage.getItem('refresh')).toBeNull()
     })
 })
+
+describe('userStore.fetchUser', () => {
+    beforeEach(() => {
+        setActivePinia(createPinia())
+        apiFetch.mockReset()
+    })
+
+    it('keeps user empty when profile request fails', async () => {
+        apiFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({ detail: 'Server error' }) })
+        const user = useUserStore()
+
+        await user.fetchUser()
+
+        expect(user.currentUser).toBeNull()
+    })
+
+    it('keeps user empty when session is gone', async () => {
+        apiFetch.mockResolvedValue(null)
+        const user = useUserStore()
+
+        await user.fetchUser()
+
+        expect(user.currentUser).toBeNull()
+    })
+})
