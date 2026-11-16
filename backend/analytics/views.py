@@ -13,7 +13,7 @@
 from django.contrib.auth import get_user_model
 # from django.shortcuts import render, get_object_or_404
 from django.db.models import Q, Count, Avg, Max, F #object to calculate aberege reaction_time for all users
-from django.db.models.functions import TruncDate, Least, Greatest
+from django.db.models.functions import Least, Greatest
 from rest_framework.views import APIView
 from rest_framework.response import Response
 # from rest_framework import status
@@ -150,51 +150,6 @@ class PongUniverseView(APIView):
         #     })
         # return Response(result)
 
-class PlayerStatsView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        period = request.query_params.get('period', 'all')
-        since = None
-        if period == '7d':
-            since = timezone.now() - timedelta(days=7)
-        elif period =='30d':
-            since = timezone.now() - timedelta(days=30)
-        
-        matches = Match.objects.filter(
-            Q(player1=request.user) | Q(player2=request.user),
-            status=Match.Status.FINISHED
-        )
-        if since:
-                matches = matches.filter(ended_at__gte=since)
-        
-        #group by days via annotate
-        #by_day  - query set of days with date, total matches and wins fro every sorted day
-        by_day = matches.annotate(
-            day=TruncDate('ended_at')
-        ).values('day').annotate(
-            total=Count('id'),
-            wins=Count('id', filter=Q(winner=request.user))
-        ).order_by('day')
-
-        labels =[]
-        total = []
-        wins = []
-        losses = []
-
-        for row in by_day:
-            labels.append(row['day'].strftime('%b %d'))
-            total.append(row['total'])
-            wins.append(row['wins'])
-            losses.append(row['total'] - row['wins'])
-        return Response({
-            'labels': labels,
-            'total': total,
-            'wins': wins,
-            'losses': losses, 
-        })
-
-        
 class PlayerGraphView(APIView):
     """
     GET /api/analytics/player-graph/

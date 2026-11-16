@@ -27,23 +27,6 @@ class StartMatchView(APIView):
         serializer.save(player1=request.user, status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class LogMatchEventView(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
-        # opponent_id = request.data
-        match_id = request.data.get('match')
-        try:
-            match = Match.objects.get(id=match_id) #takes id from database and creates object match
-        except Match.DoesNotExist:
-            return Response({'error': 'Match not found'}, status=status.HTTP_404_NOT_FOUND)
-        if(request.user != match.player1 and request.user != match.player2):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-        serializer = MatchEventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response (serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 class FinishMatchView(APIView):
     permission_classes = [IsAuthenticated]
     def patch(self, request, match_id):
@@ -125,20 +108,6 @@ class MatchHistoryView(APIView):
             .order_by('-ended_at')[:limit]
         )
         serializer = MatchHistorySerializer(matches, many=True, context={'request': request})
-        return Response(serializer.data)
-
-class AllUserEventsView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        matches = Match.objects.filter(
-            Q(player1=request.user) | Q(player2=request.user),
-            ended_at__isnull=False
-        )
-        events = MatchEvent.objects.filter(
-            match__in=matches
-        ).order_by('match_id', 'timestamp')
-
-        serializer = MatchEventSerializer(events, many=True)
         return Response(serializer.data)
 
 # class PongUniverseView(APIView):
