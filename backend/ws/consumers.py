@@ -63,11 +63,6 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         # Dispatcher per messaggi autenticati
         message_type = data.get('type')
         handlers = {
-            'game_invite': self.handle_game_invite,
-            'game_accept': self.handle_game_accept,
-            'join_match': self.handle_join_match,
-            'ping_match': self.handle_ping_match,
-            "player_input": self.handle_player_input,
             'chat_message': self.handle_chat_message,
             # altri handler qui quando ne aggiungiamo
         }
@@ -112,106 +107,6 @@ class PresenceConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print("AUTH ERROR:", e)
             await self.close()
-
-    async def handle_game_invite(self, data):
-        match_id = data.get('match_id')
-        to_user_id = data.get('to_user_id')
-
-        await self.channel_layer.group_send(f"user_{to_user_id}", {
-            "type": "game_invite_event",
-            "match_id": match_id,
-            "from_user_id": self.user.id,
-            "from_user_nickname": self.user.nickname,
-        })
-    
-    async def game_invite_event(self, event):
-        await self.send(json.dumps({
-            "type": "game_invite",
-            "match_id": event["match_id"],
-            "from_user": {
-                "id": event["from_user_id"],
-                "nickname": event["from_user_nickname"],
-            }
-        }))
-
-    async def handle_game_accept(self, data):
-        match_id = data.get('match_id')
-            
-        try:
-            from game.models import Match
-            match = await Match.objects.aget(id=match_id)
-            
-            match.status = 'active'
-            await match.asave()
-
-            for player_id, role in [(match.player1_id, 'player1'), (match.player2_id, 'player2')]:
-                await self.channel_layer.group_send(f"user_{player_id}", {
-                    "type": "game_start_event",
-                    "match_id": match_id,
-                    "your_role": role,
-                })
-        except Exception as e:
-            print(f"GAME_ACCEPT ERROR: {e}")
-            await self.send(json.dumps({
-                "type": "error",
-                "message": "Match not found or error processing accept"
-            }))
-            return
-
-    async def game_start_event(self, event):
-        await self.send(json.dumps({
-            "type": "game_start",
-            "match_id": event["match_id"],
-            "your_role": event["your_role"],
-        }))
-
-    async def handle_join_match(self, data):
-        match_id = data.get("match_id")
-
-        self.match_id = match_id
-
-        await self.channel_layer.group_add(
-            f"match_{match_id}",
-            self.channel_name
-        )
-
-        await self.send(json.dumps({
-            "type": "joined_match",
-            "match_id": match_id
-        }))
-
-    async def handle_ping_match(self, data):
-        match_id = data.get("match_id")
-
-        print(f"PING inviato al gruppo match_{match_id}")
-
-        await self.channel_layer.group_send(
-            f"match_{match_id}",
-            {
-                "type": "ping_event",
-                "from_user": self.user.nickname,
-            }
-        )
-
-    async def ping_event(self, event):
-        print(f"PING ricevuto da {self.user.nickname}")
-        
-        await self.send(json.dumps({
-            "type": "ping",
-            "from": event["from_user"],
-        }))
-
-    async def handle_player_input(self, data):
-        direction = data["direction"]
-
-        await self.channel_layer.group_send(
-            f"match_{self.match_id}",
-            {
-                "type": "player_input_event",
-                "player": self.user.nickname,
-                "direction": direction,
-            }
-        )
 
     async def handle_chat_message(self, data):
         to_user_id = data.get('to_user_id')

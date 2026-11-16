@@ -20,15 +20,6 @@ class MatchCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'status', 'mode', 'player1', 'started_at']
         extra_kwargs = {'player2': {'required': True, 'allow_null': False}}
 
-class MatchInviteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Match
-        fields = ['id', 'status', 'mode', 'player1', 'player2', 'started_at']
-        read_only_fields = ['id', 'status', 'mode', 'player1', 'player2', 'started_at']
-
-
-
-
 class MatchEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchEvent

@@ -42,23 +42,10 @@ import { ArrowRight, Keyboard } from 'lucide-vue-next'
     }
 }
 
+// only local mode exists, remote stays as a disabled "soon" option
 async function startMatch() {
     error.value = ''
-    if(selectedMode.value === 'local') {
-        router.push({ path: '/game', query: { player2: opponentId.value, mode: selectedMode.value } })
-        return
-    }
-
-    const res = await apiFetch('/api/game/matches/invite/', {
-        method: 'POST',
-        body: JSON.stringify({ opponent_id: opponentId.value })
-    })
-    if(!res || !res.ok) {
-        error.value = "Failed to create match"
-        return
-    }
-    const data = await res.json()
-    router.push({ path: '/game/remote', query: { player2: opponentId.value, match_id: data.id } })
+    router.push({ path: '/game', query: { player2: opponentId.value, mode: selectedMode.value } })
 }
 
 onMounted(fetchUsers)

@@ -12,13 +12,11 @@
 
 from django.urls import path
 from .views import StartMatchView, LogMatchEventView, FinishMatchView, \
-        MatchHistoryView, InviteMatchView, UpdateMatchStatusView, MatchEventsView, \
+        MatchHistoryView, MatchEventsView, \
         AllUserEventsView, BulkMatchEventView
 
 urlpatterns = [
     path ('matches/start/', StartMatchView.as_view(), name='start_match'),
-    path('matches/invite/', InviteMatchView.as_view(), name='invite_match'),
-    path('matches/<int:match_id>/status/', UpdateMatchStatusView.as_view(), name='update_match_status'),
 
     path('matches/events/', LogMatchEventView.as_view(), name='log_match_event'),
     path('matches/events/bulk/', BulkMatchEventView.as_view(), name='bulk_events'),

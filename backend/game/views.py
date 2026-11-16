@@ -11,7 +11,7 @@ from django.utils import timezone
 from ws.notify import notify_group #sab: per dashboard in tempo reale
 
 from .serializers import MatchCreateSerializer, MatchEventSerializer, MatchFinishSerializer, \
-    MatchHistorySerializer, MatchInviteSerializer, MatchEventInputSerializer 
+    MatchHistorySerializer, MatchEventInputSerializer 
 
 User = get_user_model()
 
@@ -26,40 +26,6 @@ class StartMatchView(APIView):
             return Response({'error': 'Cannot play againts yourself'}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save(player1=request.user, status=Match.Status.ACTIVE, mode=Match.Mode.LOCAL)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#Use for websocket (invites people top game)
-class InviteMatchView(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
-        opponent_id = request.data.get ('opponent_id')
-        if str(opponent_id) == str(request.user.id):
-            return Response({'error': 'Cannot invite yourself'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            opponent = User.objects.get(id=opponent_id)
-        except User.DoesNotExist:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = MatchInviteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(
-                player1=request.user,
-                player2=opponent,
-                status=Match.Status.PENDING,
-                mode=Match.Mode.REMOTE)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class UpdateMatchStatusView(APIView):
-    permission_classes =[IsAuthenticated]
-    def patch(self, request, match_id):
-        try:
-            match = Match.objects.get(id=match_id) #takes id from database and creates object match
-        except Match.DoesNotExist:
-            return Response({'error': 'Match not found'}, status=status.HTTP_404_NOT_FOUND)
-        if(request.user != match.player1 and request.user != match.player2):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-        match.status=request.data.get('status') #saves actual status for match
-        match.save()
-        return Response({'id': match.id, 'status':match.status})
 
 class LogMatchEventView(APIView):
     permission_classes = [IsAuthenticated]
