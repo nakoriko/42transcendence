@@ -2,6 +2,8 @@
 
 # Transcend — ft_transcendence
 
+[![CI](https://github.com/nakoriko/42transcendence/actions/workflows/ci.yml/badge.svg)](https://github.com/nakoriko/42transcendence/actions/workflows/ci.yml)
+
 ## Table of Contents
 
 - [Description](#description)
@@ -11,6 +13,7 @@
 - [Database Schema](#database-schema)
 - [Architecture](#architecture)
 - [Instructions](#instructions)
+- [Tests](#tests)
 - [Features List](#features-list)
 - [Modules](#modules)
 - [Individual Contributions](#individual-contributions)
@@ -151,6 +154,25 @@ To also clear the database volume:
 ```bash
 docker-compose down -v
 ```
+
+---
+
+## Tests
+
+| Part | Tools | What is covered |
+|---|---|---|
+| Backend — 78 tests | Django test runner, DRF `APITestCase`, Channels `WebsocketCommunicator` | Auth and logout (token blacklist), friends and permissions, match start/finish and win/loss counters, bulk events, analytics endpoints, WebSocket resilience to malformed frames, settings and migrations |
+| Frontend — 63 tests | Vitest, Vue Test Utils | Token refresh in `apiFetch`, stores (user, matches), dashboard components, profile and friends blocks, utilities (win rate and rolling win rate, chat timeline and day labels, PDF page layout, opponent ranking) |
+
+Run them in the running containers:
+```bash
+docker-compose exec backend python manage.py test
+docker-compose exec frontend npm test
+```
+
+Backend tests use an in-memory channel layer and mock Redis, so only PostgreSQL is required.
+
+**CI:** GitHub Actions ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)) runs on every push: `ruff` lint and the backend tests against PostgreSQL, then the frontend tests and the production build.
 
 ---
 
