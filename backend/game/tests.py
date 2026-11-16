@@ -80,7 +80,8 @@ class FinishMatchTests(APITestCase):
         with patch.object(MatchFinishSerializer, 'save', save_then_change_users):
             res = self.finish(self.p1.id)
             self.assertEqual(res.status_code, 200)
-            self.p1.refresh_from_db(); self.p2.refresh_from_db()
+            self.p1.refresh_from_db()
+            self.p2.refresh_from_db()
             self.assertTrue(self.p1.is_online)
             self.assertEqual(self.p1.wins, 11)
             self.assertEqual(self.p2.losses, 11)

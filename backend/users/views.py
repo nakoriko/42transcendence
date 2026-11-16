@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
@@ -12,7 +12,7 @@ from .models import User, FriendRelation
 from django.db.models import Q
 
 from .serializers import RegisterSerializer, AvatarSerializer,  \
-FriendRelationSerializer, FriendUserSerializer, ProfileUpdateSerializer
+FriendRelationSerializer, ProfileUpdateSerializer
 
 from ws.notify import notify_group
 
