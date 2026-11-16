@@ -40,8 +40,6 @@ function handleFileSelect(event) {
                 <Upload :size="14" aria-hidden="true" />
                 <input type="file" accept="image/*" aria-label="Upload avatar" class="sr-only" @change="handleFileSelect">
             </label>
-            
-            <div class="online-dot bg-green-400 !bottom-1 !right-1"></div>
         </div>
 
         <div class="w-full min-w-0">
