@@ -3,5 +3,3 @@ from .models import Match, MatchEvent
 
 admin.site.register(Match)
 admin.site.register(MatchEvent)
-
-# Register your models here.

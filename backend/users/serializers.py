@@ -70,7 +70,6 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             model = User
             fields = ['nickname', 'email']
             extra_kwargs = {
-                # 'nickname': {'required': False},
                 'email': {'required': False},
             }
     def validate_nickname(self, value):
