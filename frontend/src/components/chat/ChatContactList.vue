@@ -1,6 +1,5 @@
 <script setup>
     import { ref, computed } from 'vue'
-    // import { apiFetch } from '@/utils/apiFetch';
     import { useChatStore } from '@/stores/chat';
     import AppFilterTabs from '../AppFilterTabs.vue';
     import { usePresence } from '@/composables/usePresence.js';
@@ -12,7 +11,6 @@
 
     const chatStore =  useChatStore()
     const { isOnline } = usePresence()
-    // const friends = ref([])
     const activeFilter = ref('all')
 
     const visibleFriends = computed(() => 
@@ -23,24 +21,6 @@
     const lastMessage = (id) => 
         chatStore.messages[id]?.at(-1) ?? null
 
-    // const filteredFriends = computed(() => {
-    //     if(activeFilter.value === 'online')
-    //         return liveFriends.value.filter(rel => rel.friend.is_online)
-    //     return liveFriends.value
-    // })
-
-    // async function loadFriends() {
-    //     const res =  await apiFetch('/api/users/friends/')
-    //     if(res?.ok) {
-    //         const data = await res.json()
-    //         friends.value = data.friends
-    //     }
-    // }
-
-    // function selectContact(id) {
-    //     chatStore.setActiveContact(id)
-    // }
-    // onMounted(loadFriends)
 </script>
 
 <template>
@@ -80,26 +60,3 @@
     </div>
 </template>
 
-<style scoped>
-    .chat-contact-list {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-    .chat-contact-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px  12px 12px;
-        flex-shrink: 0;
-    }
-
-    .chat-contact-scroll {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px;
-        position: relative;
-    }
-
-
-</style>

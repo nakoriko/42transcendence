@@ -25,8 +25,6 @@ const ttData = reactive({
     total_matches: 0,
     wins: 0,
     losses: 0,
-    win_rate: 0,
-    // avg_reaction_ms: null,
     hit_accuracy: null,
 })
 
@@ -38,8 +36,6 @@ function drawChart() {
     const W = chartEl.value.getBoundingClientRect().width
     const H = chartEl.value.getBoundingClientRect().height || 400
     const PL = 20, PR = 20, PT = 40, PB = 20
-    const CW = W - PL - PR
-    const CH = H - PT - PB
 
     const svg = d3.select(chartEl.value)
         .append('svg')
@@ -115,13 +111,10 @@ function drawChart() {
             ttData.total_matches = p.total_matches
             ttData.wins = p.wins
             ttData.losses = p.losses
-            // ttData.avg_reaction_ms = p.avg_reaction_ms
             ttData.hit_accuracy = p.hit_accuracy
 
             const x = scaleX(new Date(p.date_joined))
             const y = scaleY(p.total_matches)
-            // const tooltipWidth = 180
-            // const xPos = x + tooltipWidth > W ? x - tooltipWidth - 12 : x + 12
             tt.value.show(x, y)
         })
         .on('mouseout', () => tt.value.hide())
@@ -178,7 +171,6 @@ onUnmounted(() => {
                 <div class="input-label">Platform Stats</div>
                 <AppMetric :value="String(stats.players)" label="Total players" color="sage" ></AppMetric>
                 <AppMetric :value="String(stats.matches)" label="Matches played" color="sage" ></AppMetric>
-                <!-- <AppMetric :value="stats.reaction ? String(stats.reaction + ' ms') : '-'" label="Global avg reaction" color="teal" ></AppMetric> -->
             </div>
 
             <div class="border-t border-white/[0.07]"></div>  

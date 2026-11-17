@@ -83,8 +83,6 @@ import { useMatchesStore } from '@/stores/matches'
             speed: 5
         }
 
-        // let score_p1 = 0
-        // let score_p2 = 0;
 
         //moves:
         document.addEventListener('keydown', handleKeyDown)
@@ -98,7 +96,6 @@ import { useMatchesStore } from '@/stores/matches'
         }
 
         async function initMatch() {
-            // const token = localStorage.getItem('access')
 
             //get currnet user ID and nickname
             if(!userStore.currentUser) return failToStart()
@@ -174,7 +171,6 @@ import { useMatchesStore } from '@/stores/matches'
             //wall collisions (bottom wall)
             if (ball.y + ball.radius >= canvas.height)
                 ball.vy = -Math.abs(ball.vy)
-                // ball.vy = ball.vy * -1
                 
             //paddle_collisions (left paddle)
             if((ball.x - ball.radius <= l_paddle.x + l_paddle.width) 
@@ -309,9 +305,6 @@ import { useMatchesStore } from '@/stores/matches'
         if(matchId) {
             try {
                 const winnerId = player2.id
-                // const winnerId = score_p1.value >= score_p2.value
-                // ? player2.id
-                // : player1.id
                 await saveMatch()
                 await finishMatch(winnerId)
             } catch(e) {

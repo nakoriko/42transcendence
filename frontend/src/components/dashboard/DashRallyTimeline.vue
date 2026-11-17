@@ -210,12 +210,6 @@ onUnmounted(() => {
 
 <template>
     <div class="flex flex-col h-full">  <!--DashRally timeline-->
-        <!-- <div class="flex items-center justify-between mb-4">
-            <div class="input-label">Rally timeline</div>
-            <div v-if="props.match" class="text-[10px] text-muted">
-                vs {{  props.match.opponent_nickname }} | {{ formatShortDate(props.match.ended_at) }}
-            </div>
-        </div> -->
         <div class="flex-1 relative" ref="container">
             <div v-if="!props.match"
                 class="absolute inset-0 flex items-center justify-center text-muted text-xs">
@@ -236,14 +230,6 @@ onUnmounted(() => {
                             {{ ttData.num }} from {{ ttData.total }}
                         </span>
                     </div>
-                    <!-- <div class="flex justify-between mb-1">
-                        <span class="text-[10px] text-muted">vs</span>
-                        <span class="text-[10px]">{{ ttData.opponent }}</span>
-                    </div> -->
-                    <!-- <div class="flex justify-between mb-1">
-                        <span class="text-[10px] text-muted">Match date</span>
-                        <span class="text-[10px]">{{ ttData.date }}</span>
-                    </div> -->
                     <AppTooltipRow label="Exchanges" :value="ttData.hits" />
                     <AppTooltipRow label="Result">
                         <span :style="{ color: ttData.won ? '#4A8C9B' : '#F8856D' }">
@@ -251,11 +237,6 @@ onUnmounted(() => {
                         </span>
                     </AppTooltipRow>
                     <AppTooltipRow label="Score" :value="ttData.score" />
-                    <!-- <div class="mt-3 pt-2 border-t border-white/[0.07]">
-                        <span class="text-[9px] text-muted tracking-widest uppercase">
-                            Click to view match ↓
-                        </span>
-                    </div> -->
                 </AppToolTip>
         </div>
     </div>

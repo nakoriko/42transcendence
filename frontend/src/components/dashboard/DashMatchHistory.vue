@@ -4,14 +4,11 @@ import RecentMatchesList from '../RecentMatchesList.vue'
 import DashRallyTimeline from './DashRallyTimeline.vue'
 import { apiFetch } from '@/utils/apiFetch.js'
 import { useMatchesStore } from '@/stores/matches.js'
-// import { useUserStore } from '@/stores/user.js'
 
 const matchesStore = useMatchesStore()
-// const userStore = useUserStore()
 const activeFilter  = ref('all')
 const selectedMatch = ref(null)
 const events        = ref([])         
-// const currentUserId = computed(() => userStore.currentUser?.id ?? null)      
 
 const props = defineProps({
     activeMatchId: { type: Number, default: null }
@@ -56,16 +53,6 @@ function toggleMatch(match) {
 
 
 
-// const stats = computed(() => {
-//     if (!events.value.length) return null
-//     const uid = currentUserId.value
-//     return {
-//         myGoals:  events.value.filter(e => e.event_type === 'goal' && e.player === uid).length,
-//         oppGoals: events.value.filter(e => e.event_type === 'goal' && e.player !== uid).length,
-//         hits:     events.value.filter(e => e.event_type === 'hit').length,
-//         misses:   events.value.filter(e => e.event_type === 'miss').length,
-//     }
-// })
 </script>
 
 <template>

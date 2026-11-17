@@ -69,15 +69,8 @@ export const useUserStore = defineStore('user', () => {
     }
 
     async function refreshUser() {
-        // currentUser.value = null
         await fetchUser(true)
     }
 
     return { currentUser, fetchUser, clear, login, logout, refreshUser }
 })
-
-
-
-
-//const userStore = useUserStore()
-//userStore.currentUser.nickname

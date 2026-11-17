@@ -29,8 +29,6 @@ const ttEdgeData = reactive (({
     sourceName: '',
     targetName: '',
     matches: 0,
-    winsSource: 0,
-    winsTarget: 0,
     draws: 0,
     lastPlayed: '',
     verdict: '',
@@ -74,22 +72,6 @@ async function renderGraph(data) {
         .append('svg')
         .attr('width', W)
         .attr('height', H)
-        // .style('overflow', 'visible')
-
-    const defs = svg.append('defs')
-    const filter = defs.append('filter')
-        .attr('id', 'glow')
-        .attr('x', '-50%')
-        .attr('y', '-50%')
-        .attr('width', '200%')
-        .attr('height', '200%')
-    filter.append('feGaussianBlur')
-        .attr('stdDeviation', 3)
-        .attr('result', 'coloredBlur')
-
-    const feMerge = filter.append('feMerge')
-    feMerge.append('feMergeNode').attr('in', 'coloredBlur')
-    feMerge.append('feMergeNode').attr('in', 'SourceGraphic')
 
     //define radius for nodes by scaleSqrt, based on quantity of unique opponents
     const r = d3.scaleSqrt()
@@ -127,7 +109,6 @@ async function renderGraph(data) {
         .data(data.nodes).join('circle')
         .attr('r', nodeR)
         .attr('fill', d => color (d.wins / (d.wins + d.losses) || 0))
-        // .attr('filter', 'url(#glow)')
         .style('cursor', 'grab')
 
     //drag
@@ -144,7 +125,6 @@ async function renderGraph(data) {
         })
         .on('end', function(event, d) {
             if(!event.active) simulation.alphaTarget(0.02)
-            // simulation.alpha(0.3).restart()
             d.fx = null
             d.fy = null
             d3.select(this).style('cursor', 'grab')
@@ -221,10 +201,6 @@ async function renderGraph(data) {
             emit('node-hover', toNodeInfo(d))
             highlight(d.id)
         })
-        // .on('mousemove', function(event) {
-        //     const [x, y] = tooltipXY(event)
-        //     tt.value?.show(x, y)
-        // })
         .on('mouseout', () => {
             if(!isTouchDevice()) highlight(meId)
         })
@@ -238,8 +214,6 @@ async function renderGraph(data) {
             ttEdgeData.sourceName = d.source.nickname
             ttEdgeData.targetName = d.target.nickname
             ttEdgeData.matches = d.matches
-            ttEdgeData.winsSource = d.wins_source
-            ttEdgeData.winsTarget = d.wins_target
             ttEdgeData.draws = d.draws
             ttEdgeData.lastPlayed = formatShortDate(d.last_played_at)
             ttEdgeData.verdict = buildVerdict(d, me)

@@ -45,7 +45,7 @@ import { ArrowRight, Keyboard } from 'lucide-vue-next'
 // only local mode exists, remote stays as a disabled "soon" option
 async function startMatch() {
     error.value = ''
-    router.push({ path: '/game', query: { player2: opponentId.value, mode: selectedMode.value } })
+    router.push({ path: '/game', query: { player2: opponentId.value } })
 }
 
 onMounted(fetchUsers)
