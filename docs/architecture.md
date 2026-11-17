@@ -30,7 +30,7 @@ How the project is put together: containers, request routing, backend apps and A
 | Container | Build / image | Purpose |
 |---|---|---|
 | `nginx` | `./nginx` (nginx:alpine, generates the certificate at build time) | HTTPS entry point on port 5001, HTTP on 5000 redirects to HTTPS |
-| `frontend` | `./frontend` (node:20-alpine) | Vite dev server with hot reload |
+| `frontend` | `./frontend` (node:20-alpine) | Vite dev server (file watching by polling; HMR is disabled, so changes need a page reload) |
 | `backend` | `./backend` (python:3.11-slim) | REST API and WebSocket. On start: `migrate`, `collectstatic`, `reset_presence`, then gunicorn with uvicorn workers |
 | `db` | `postgres:15` | Database, data in the `postgres_data` volume |
 | `redis` | `redis:7` | Channel layer for Django Channels and per-user connection counters |
@@ -64,7 +64,7 @@ Several uvicorn workers handle requests in parallel. Because a WebSocket connect
 
 ## 3. Backend API
 
-All endpoints except registration, login and token refresh require a JWT access token (`Authorization: Bearer <token>`).
+All endpoints except registration, login, token refresh and logout require a JWT access token (`Authorization: Bearer <token>`). Logout takes only the refresh token, so it works even when the access token has already expired.
 
 ### Users — `/api/users/`
 
@@ -96,10 +96,10 @@ All endpoints except registration, login and token refresh require a JWT access 
 
 | Method | URL | Description |
 |---|---|---|
-| GET | `universe/` | All players with match counts and win rate (`?period=7d|30d|all`) |
-| GET | `player-graph/` | The current player, their opponents and the opponents' opponents, with records and edges |
+| GET | `universe/` | All players with match counts, win rate and hit accuracy (`?period=7d|30d|all`) |
+| GET | `player-graph/` | The current player, their opponents and the opponents' opponents, with records and edges (`?period=7d|30d|all`) |
 
-Real-time notifications (friend requests, match results) are sent from the views through `ws.notify.notify_group()`. A failure of the channel layer is logged and does not fail the request.
+Real-time notifications (friend requests, match results) are sent from the views through `ws.notify.notify_group()`. A failure of the channel layer is logged and does not fail the request. The match result event (`match_finished`) is broadcast but not consumed by the frontend yet (see [`websockets.md`](./websockets.md)).
 
 ## 4. Frontend
 

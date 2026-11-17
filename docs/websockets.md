@@ -76,14 +76,16 @@ the message silently disappearing.
 
 ### Live notifications
 
-The same personal-group mechanism is reused for other real-time notifications so
-the frontend doesn't need to poll the REST API for updates:
+The same group mechanism is reused for other real-time notifications so
+the frontend doesn't need to poll the REST API for updates (personal groups for
+friend requests, a broadcast group for match results):
 
 - **Friend requests** — `friend_request_event` / `friend_request_accepted_event`
   notify a user instantly when they receive or when someone accepts a friend
   request.
 - **Match results** — `match_finished_event` broadcasts the final score and
-  winner of a match to the `dashboard_updates` group as soon as it's saved. The
+  winner of a match to the `dashboard_updates` group (every connected user) as
+  soon as it's saved. The
   frontend does not consume this event yet: the dashboard reloads its data after
   the player's own match instead.
 
@@ -138,6 +140,6 @@ learning them, and to help draft/organize this section of the README.
 - Implemented real-time chat between friends, with validation (friendship
   check, online check) before delivery.
 - Wired up real-time notifications for friend requests and match results via
-  personal user groups.
+  personal user groups and a broadcast group.
 - Set up Redis as the Channels layer and multi-connection-safe presence
   tracking.

@@ -17,12 +17,13 @@ erDiagram
     USER {
         int id PK
         string email UK
-        string username
+        string username UK
         string nickname UK
         string avatar
         int wins
         int losses
         bool is_online
+        datetime date_joined
     }
 
     FRIENDRELATION {
@@ -67,18 +68,19 @@ Legend: 🔗 = foreign key field referencing another table.
 
 ## User (`users_user`)
 
-Extends `AbstractUser`.
+Extends `AbstractUser`. Only the fields used by the project are listed; the other inherited fields (`password`, `last_login`, `is_staff`, `is_superuser`, `is_active`, `first_name`, `last_name`) keep Django's defaults.
 
 | Field | Type | Parameters |
 |---|---|---|
 | id | BigAutoField | PK |
 | email | EmailField | unique=True, `USERNAME_FIELD` |
-| username | CharField | = email, set in `UserManager.create_user()` |
+| username | CharField | inherited, unique=True; = email, set in `UserManager.create_user()` |
 | nickname | CharField | max_length=15, unique=True |
 | avatar | ImageField | upload_to='avatars/', blank=True |
 | wins | IntegerField | default=0 |
 | losses | IntegerField | default=0 |
 | is_online | BooleanField | default=False |
+| date_joined | DateTimeField | inherited, default=timezone.now; returned by the profile and `universe/` endpoints |
 
 *Referenced by: `FriendRelation.from_user/to_user`, `Match.player1/player2/winner`, `MatchEvent.player`.*
 
@@ -91,8 +93,10 @@ Extends `AbstractUser`.
 | id | BigAutoField | PK |
 | 🔗 from_user | ForeignKey → **User** | on_delete=CASCADE, related_name='sent_invites' |
 | 🔗 to_user | ForeignKey → **User** | on_delete=CASCADE, related_name='received_invites' |
-| status | CharField | max_length=10, default='pending' |
+| status | CharField | max_length=10, default='pending'; values used: `pending` / `accepted` / `rejected` (no `choices` on the model) |
 | created_at | DateTimeField | auto_now_add=True |
+
+A rejected relation is kept until either user sends a new request — then it is deleted and replaced by a new `pending` one.
 
 ---
 

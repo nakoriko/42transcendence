@@ -25,9 +25,9 @@
 
 ## Description
 
-**Transcend** is a real-time multiplayer Pong platform, built as part of the 42 `ft_transcendence` project. Two players can play classic Pong locally, chat with each other, add each other as friends, and after a match — review match analytics.
+**Transcend** is a Pong web platform with real-time social features, built as part of the 42 `ft_transcendence` project. Two players play classic Pong on one keyboard (local mode); users can chat with each other, add each other as friends, see who is online, and after a match — review match analytics.
 
-The goal of the project is to demonstrate a full-featured, containerized, real-time web application built by a team: a Vue SPA frontend, a Django backend (REST + WebSocket), a PostgreSQL database, and Nginx as a reverse proxy, all brought up with a single command `docker-compose up --build -d`.
+The goal of the project is to demonstrate a full-featured, containerized, real-time web application built by a team: a Vue SPA frontend, a Django backend (REST + WebSocket), a PostgreSQL database, and Nginx as a reverse proxy, all brought up with a single command `docker-compose up --build`.
 
 ### Key features
 
@@ -77,8 +77,8 @@ Every new module goes through the same four-step cycle: **study** the concept �
 | Authentication | SimpleJWT (JWT) | Stateless authentication; no server-side session storage needed for the API, which simplifies scaling and matches a REST-oriented design. |
 | Database | PostgreSQL | Chosen over SQLite for reliability under concurrent access and better support for the relational, analytics-heavy queries the dashboard needs (match history, aggregated stats). |
 | Message broker | Redis | Channel layer for Django Channels, so WebSocket messages can be routed between consumers/processes. |
-| Reverse proxy | Nginx | A single HTTPS entry point (self-signed certificate) routing `/`, `/api/`, `/media/`, `/admin/`, and `/ws/` to the right container. |
-| Deployment | Docker Compose | The entire stack (nginx, frontend, backend, db, redis) is brought up with a single `docker-compose up` command. |
+| Reverse proxy | Nginx | A single HTTPS entry point (self-signed certificate) routing `/`, `/api/`, `/admin/`, and `/ws/` to the right container and serving `/media/` (avatars) and `/static/` (Django admin assets) directly. |
+| Deployment | Docker Compose | The entire stack (nginx, frontend, backend, db, redis) is brought up with a single `docker-compose up --build` command. |
 
 Detailed breakdown of technical decisions and trade-offs: see [`docs/architecture.md`](./docs/architecture.md).
 
@@ -89,8 +89,8 @@ Detailed breakdown of technical decisions and trade-offs: see [`docs/architectur
 PostgreSQL, accessed through the Django ORM. Four core tables:
 
 - **User** — extends Django's `AbstractUser`; email-based login, unique nickname, avatar, win/loss counters, online status.
-- **FriendRelation** — friend requests/relations between two users, with a status (`pending`, etc.).
-- **Match** — a single game between two players: mode (local), current score, winner.
+- **FriendRelation** — friend requests/relations between two users, with a status (`pending`, `accepted`, `rejected`).
+- **Match** — a single game between two players: status (`pending` / `active` / `finished`), mode (only `local` is used), score, winner, start and end time.
 - **MatchEvent** — individual events within a match (hit/miss/goal), used for the analytics dashboard.
 
 The relation design follows one general rule: relations that are meaningless without both sides (e.g. a friendship) cascade on delete; relations representing a historical fact that should outlive the deletion of a participant (a match, a match event) use `SET_NULL` — so match history and statistics are preserved even after an account is deleted.
@@ -238,7 +238,7 @@ Backend tests use an in-memory channel layer and mock Redis, so only PostgreSQL 
 
 - **The match result is reported by the client.** The browser sends the final score and winner; the server checks that the winner is a participant but cannot verify the score. Acceptable for local play on one keyboard, but it would need a server-authoritative game loop for online play.
 - **No remote multiplayer.** Only local play (two players, one keyboard) is available; the remote option in the lobby is shown as "soon". Early work on it lives in the `feature/ws/remote_game` branch.
-- **Chat has no history.** Messages are delivered in real time only and are not stored, so they disappear after a page reload. A message that could not be delivered is not marked as failed.
+- **Chat has no history.** Messages are delivered in real time only and are not stored, so they disappear after a page reload. If a message cannot be delivered (e.g. the friend is offline), a general error line is shown under the chat, but the message itself stays in the thread and is not marked as failed.
 - **Logout does not end the access token immediately.** The refresh token is revoked on logout, but an already issued access token stays valid until it expires (up to 15 minutes).
 - **Closing the tab during a match** leaves the match unfinished: leaving through the app counts as a loss, closing the browser does not.
 - **Local deployment only.** Self-signed certificate and `DEBUG=True` in the example environment; the frontend is served by the Vite dev server and the JavaScript bundle is not code-split.
