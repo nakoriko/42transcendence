@@ -32,7 +32,7 @@ onMounted(loadProfile)
 </script>
 
 <template>
-    <div class="pb-16 w-full max-w-5xl mx-auto flex flex-col gap-10">
+    <div class="pb-16 flex flex-col gap-10">
         <AppPageHeader crumb="Transcend · Profile" title="Profile" />
 
         <div v-if="error" class="text-coral text-sm"> {{ error }}</div>

@@ -53,7 +53,7 @@ onMounted(fetchUsers)
 </script>
 
 <template>
-    <div class="pb-16 w-full max-w-4xl mx-auto flex flex-col gap-12">
+    <div class="pb-16 flex flex-col gap-12">
         <AppPageHeader crumb="Transcend · Lobby" title="New match">
             <AppBadge :label="presenceStore.onlineCount + ' online'" variant="teal" />
             <AppFilterTabs v-model="selectedMode"
@@ -61,7 +61,8 @@ onMounted(fetchUsers)
                 :disabled-options="[REMOTE_SOON]" />
         </AppPageHeader>
 
-        <div v-if="userStore.currentUser" class="flex flex-col gap-8">
+        <!-- header stays full width like other pages; the symmetric match panel stays centered -->
+        <div v-if="userStore.currentUser" class="w-full max-w-4xl mx-auto flex flex-col gap-8">
             <section class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_72px_minmax(0,1fr)]">
                 <LobbyPlayerCard :keys="['W', 'S']">
                     <div class="flex flex-col items-center gap-3 max-w-full min-w-0">
