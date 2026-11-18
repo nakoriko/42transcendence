@@ -21,7 +21,10 @@ function handleFileSelect(event) {
 </script>
 
 <template>
-    <div class="flex flex-col items-center gap-4 text-center">
+    <!-- sm..lg: avatar on the left, details on the right; otherwise centered column -->
+    <div class="flex flex-col items-center gap-4 text-center
+                sm:flex-row sm:items-center sm:gap-6 sm:text-left
+                lg:flex-col lg:items-center lg:gap-4 lg:text-center">
 
         <div class="relative flex-shrink-0">
             <img v-if="user.avatar"
@@ -42,13 +45,19 @@ function handleFileSelect(event) {
             </label>
         </div>
 
-        <div class="w-full min-w-0">
-            <div class="text-xl font-light text-white truncate">{{ user.nickname }}</div>
-            <div class="text-xs text-muted mt-1 break-all">{{ user.email }}</div>
-            <div v-if="user.date_joined" class="text-xs text-muted mt-1">
-                Joined {{ formatLongDate(user.date_joined) }}
+        <!-- sm..lg: details and slot content in one row (wraps for full-width items) -->
+        <div class="w-full min-w-0 sm:flex-1 sm:flex sm:flex-wrap sm:items-center sm:gap-x-8
+                    lg:block lg:flex-none">
+            <div class="min-w-0">
+                <div class="text-xl font-light text-white truncate">{{ user.nickname }}</div>
+                <div class="text-xs text-muted mt-1 break-all">{{ user.email }}</div>
+                <div v-if="user.date_joined" class="text-xs text-muted mt-1">
+                    Joined {{ formatLongDate(user.date_joined) }}
+                </div>
+                <div class="text-xs text-green-400 mt-1">Online</div>
             </div>
-            <div class="text-xs text-green-400 mt-1">Online</div>
+            <!-- extra content next to / under the details, e.g. the edit button -->
+            <slot />
         </div>
 
     </div>
