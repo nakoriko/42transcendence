@@ -13,13 +13,17 @@
     const { isOnline } = usePresence()
     const activeFilter = ref('all')
 
-    const visibleFriends = computed(() => 
-        activeFilter.value === 'online'
-        ? props.friends.filter(f => isOnline(f))
-        : props.friends)
-
-    const lastMessage = (id) => 
+    const lastMessage = (id) =>
         chatStore.messages[id]?.at(-1) ?? null
+
+    // latest conversation first; contacts without messages keep their order at the bottom
+    const visibleFriends = computed(() => {
+        const list = activeFilter.value === 'online'
+            ? props.friends.filter(f => isOnline(f))
+            : props.friends
+        return [...list].sort((a, b) =>
+            (lastMessage(b.id)?.timeStamp ?? 0) - (lastMessage(a.id)?.timeStamp ?? 0))
+    })
 
 </script>
 
@@ -31,7 +35,7 @@
             <AppFilterTabs v-model="activeFilter" :options="['all', 'online']" />
         </div>
 
-        <div class="flex-1 min-h-0 max-h-[40vh] lg:max-h-none overflow-y-auto scroll-thin py-2">
+        <div class="flex-1 min-h-0 overflow-y-auto scroll-thin py-2">
             <button v-for="f in visibleFriends" :key="f.id"
                 @click="chatStore.setActiveContact(f.id)"
                 :class="chatStore.activeContactId === f.id ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'"

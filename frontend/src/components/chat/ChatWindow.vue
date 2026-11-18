@@ -4,12 +4,13 @@
     import { usePresence } from '@/composables/usePresence.js';
     import { chatTimeline } from '@/utils/chatTimeline.js';
     import { formatTime } from '@/utils/date.js';
-    import { ArrowUp, Gamepad2 } from 'lucide-vue-next';
+    import { ArrowLeft, ArrowUp, Gamepad2 } from 'lucide-vue-next';
     import AppAvatar from '../AppAvatar.vue';
     import { useRouter } from 'vue-router';
 
 
     const props = defineProps({ contact: { type: Object, default: null } })
+    const emit = defineEmits(['back'])
     const chatStore = useChatStore()
     const { isOnline } = usePresence()
     const router = useRouter()
@@ -48,6 +49,11 @@
         <template v-else>
             <!-- header -->
             <div class="flex items-center gap-3 pb-4 border-b border-white/[0.07]">
+                <button @click="emit('back')"
+                    class="lg:hidden -ml-2 p-2 rounded-md text-muted hover:text-white hover:bg-white/[0.04] transition"
+                    aria-label="Back to contacts">
+                    <ArrowLeft :size="16" />
+                </button>
                 <AppAvatar :nickname="contact.nickname" :is-online="online" :avatar="contact.avatar"/>
                 <div class="min-w-0">
                     <div class="text-base text-white truncate">{{ contact.nickname }}</div>

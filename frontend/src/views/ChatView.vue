@@ -40,13 +40,17 @@ onUnmounted(() => {
             <AppBadge :label="presenceStore.onlineCount + ' online'" variant="teal" />
         </AppPageHeader>
 
-        <!-- lg: fixed height, so only the message list scrolls, not the whole page -->
+        <!-- fixed height, so only the message list scrolls, not the whole page.
+             below lg: one panel at a time - contacts, or the open chat -->
         <div class="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-8
-                    lg:h-[clamp(480px,calc(100svh_-_300px),820px)]">
-            <ChatContactList :friends="friends" class="min-h-0" />
+                    h-[clamp(420px,calc(100svh_-_300px),820px)]">
+            <ChatContactList :friends="friends"
+                :class="{ 'max-lg:hidden': activeContact }"
+                class="min-h-0" />
             <ChatWindow :contact="activeContact"
-                class="min-h-[420px] lg:min-h-0
-                       border-t lg:border-t-0 lg:border-l border-white/[0.07] pt-6 lg:pt-0 lg:pl-8" />
+                @back="chatStore.activeContactId = null"
+                :class="{ 'max-lg:hidden': !activeContact }"
+                class="min-h-0 lg:border-l border-white/[0.07] lg:pl-8" />
         </div>
     </div>
 </template>
