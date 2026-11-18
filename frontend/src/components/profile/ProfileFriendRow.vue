@@ -16,13 +16,7 @@ const winRate = computed(() => calcWinRate(props.user.wins, props.user.losses))
     <div class="flex items-center gap-4 py-4 border-t border-white/[0.07]">
         <AppAvatar :nickname="user.nickname" :is-online="online" :avatar="user.avatar" />
         <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 min-w-0">
-                <span class="min-w-0 truncate text-sm text-white">{{ user.nickname }}</span>
-                <span :class="online ? 'text-green-400' : 'text-muted'"
-                    class="text-[10px] uppercase tracking-widest flex-shrink-0">
-                    {{ online ? 'Online' : 'Offline' }}
-                </span>
-            </div>
+            <div class="truncate text-sm text-white">{{ user.nickname }}</div>
             <div class="flex items-center gap-2 mt-1.5 text-xs text-muted tabular-nums">
                 <span>{{ total }} {{ total === 1 ? 'match' : 'matches' }}</span>
                 <template v-if="total">
