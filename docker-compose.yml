@@ -6,7 +6,6 @@ services:
     image: postgres:15
     env_file:
       - .env
-    #changed bindmount (./db/postgres-data:/var/lib/postgresql/data) to named volume 
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped 
@@ -26,21 +25,8 @@ services:
       - ./backend:/app
     depends_on: 
       - db
-    ports:
-      - "8000:8000"
     #add_later tha db has to eait portgerSQL (healthcheck) 
     restart: unless-stopped
-  
-  # websocket:
-  #   container_name: websocket
-  #   build: ./websocket
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - backend
-  #     - redis
-  #   #Django channels need (wait for migrations and creation of db from backeand)
-  #   restart: unless-stopped
 
   frontend:
     container_name: frontend
@@ -55,16 +41,16 @@ services:
 
   nginx:
     container_name: nginx
-    image: nginx:alpine
+    build: ./nginx
     depends_on: 
       - frontend
       - backend
     volumes: 
-      - ./nginx:/etc/nginx/conf.d
-      - ./nginx/certs:/etc/nginx/certs
+      - ./backend/media:/media
+      - ./backend/staticfiles:/static:ro
     ports: 
-      - "443:443"
-      - "80:80"
+      - "5001:443"
+      - "5000:80"
     restart: unless-stopped
 
 volumes:

@@ -1,20 +1,13 @@
 """
-Отдельная команда для ОЧИСТКИ демо-данных без повторной генерации.
-Удаляет только то, что создаёт seed_demo_data.py (юзеры на домене
-@example.com и их матчи/события) — реальные аккаунты и их данные
-не трогает вообще, идентификация идёт строго по email-домену.
+Remove demo data without generating it again.
 
-Запуск:
+Deletes only what seed_demo_data creates: users with an @example.com email
+and their matches/events. Real accounts and their data are never touched,
+demo users are identified strictly by the email domain.
+
+Usage:
     docker-compose exec backend python manage.py clear_demo_data
-
-По умолчанию спрашивает подтверждение (сколько юзеров/матчей будет
-удалено). Для автоматического запуска без вопроса — флаг --yes:
-
-    docker-compose exec backend python manage.py clear_demo_data --yes
-
-Куда положить:
-    backend/game/management/commands/clear_demo_data.py
-(в той же папке management/commands/, что и seed_demo_data.py)
+    docker-compose exec backend python manage.py clear_demo_data --yes   # no confirmation prompt
 """
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -29,13 +22,13 @@ DEMO_EMAIL_SUFFIX = '@example.com'
 
 
 class Command(BaseCommand):
-    help = 'Удаляет демо-данные (юзеров на @example.com и их матчи/события), не трогая реальные аккаунты.'
+    help = 'Delete demo data (@example.com users and their matches/events), real accounts are kept.'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--yes',
             action='store_true',
-            help='Не спрашивать подтверждение, удалить сразу.',
+            help='Delete without asking for confirmation.',
         )
 
     @transaction.atomic
@@ -49,28 +42,27 @@ class Command(BaseCommand):
         matches_count = demo_matches.count()
 
         if users_count == 0 and matches_count == 0:
-            self.stdout.write(self.style.WARNING('Демо-данных не найдено — нечего чистить.'))
+            self.stdout.write(self.style.WARNING('No demo data found, nothing to delete.'))
             return
 
         self.stdout.write(
-            f'Будет удалено: {users_count} демо-юзеров '
-            f'(email оканчивается на "{DEMO_EMAIL_SUFFIX}") и {matches_count} их матчей '
-            f'(события удалятся каскадом вместе с матчами).'
+            f'Will delete {users_count} demo users '
+            f'(email ends with "{DEMO_EMAIL_SUFFIX}") and {matches_count} of their matches '
+            f'(events are deleted together with the matches).'
         )
 
         if not options['yes']:
-            answer = input('Продолжить? [y/N]: ').strip().lower()
+            answer = input('Continue? [y/N]: ').strip().lower()
             if answer != 'y':
-                self.stdout.write(self.style.WARNING('Отменено, ничего не удалено.'))
+                self.stdout.write(self.style.WARNING('Cancelled, nothing was deleted.'))
                 return
 
-        # Match: player1/player2/winner — on_delete=SET_NULL, значит матчи
-        # НЕ удалятся каскадом при удалении юзеров, их нужно снести явно
-        # ДО удаления юзеров. MatchEvent удалится каскадом от Match сам
-        # (там on_delete=CASCADE).
+        # Match.player1/player2/winner use on_delete=SET_NULL, so matches are NOT
+        # deleted together with users and must be removed first.
+        # MatchEvent is deleted by CASCADE from Match.
         demo_matches.delete()
         demo_users.delete()
 
         self.stdout.write(self.style.SUCCESS(
-            f'Готово: удалено {users_count} демо-юзеров и {matches_count} матчей.'
+            f'Done: deleted {users_count} demo users and {matches_count} matches.'
         ))

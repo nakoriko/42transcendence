@@ -49,13 +49,13 @@
     }
     updateSidebarMode()
     window.addEventListener('resize', updateSidebarMode)
-    window.addEventListener('friends-updated', loadIncoming) //NAT: uncomment when Sabino will finish on backend
+    window.addEventListener('friends-updated', loadIncoming)
 
   })
 
   onUnmounted(() => {
     window.removeEventListener('resize', updateSidebarMode)
-    window.removeEventListener('friends-updated', loadIncoming) //NAT: uncomment when Sabino will finish on backend
+    window.removeEventListener('friends-updated', loadIncoming)
 
   })
 
@@ -124,14 +124,11 @@
           <RouterView />
         </div>
       <footer class="py-4 text-center text-xs text-muted/40 mt-auto">
-        <a href="/privacy" class="hover:text-muted transition">Privacy Policy</a>
+        <RouterLink to="/privacy" class="hover:text-muted transition">Privacy Policy</RouterLink>
         <span class="mx-2 text-muted/20"> | </span>
-        <a href="/terms" class="hover:text-muted transition">Terms of Service</a>
+        <RouterLink to="/terms" class="hover:text-muted transition">Terms of Service</RouterLink>
       </footer>
     </div>
 
   </div>
 </template>
-
-<style scoped>
-</style>

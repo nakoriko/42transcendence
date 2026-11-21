@@ -1,32 +1,20 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    views.py                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: scarlucc <scarlucc@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/01 22:15:42 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/09 17:24:31 by scarlucc         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
 from rest_framework import status, generics
 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, FriendRelation
 
 from django.db.models import Q
 
 from .serializers import RegisterSerializer, AvatarSerializer,  \
-FriendRelationSerializer, FriendUserSerializer, ProfileUpdateSerializer
+FriendRelationSerializer, ProfileUpdateSerializer
 
-#SABINO modifica per vedere richieste amicizia in tempo reale
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from ws.notify import notify_group
 
 # Complex end-point, a lot of logiic -> class + APIView
 
@@ -39,8 +27,18 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    # the refresh token is the credential here: logout must work with an expired access token
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
     def post(self, request):
+        refresh = request.data.get('refresh')
+        if not refresh:
+            return Response({"error": "refresh is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            RefreshToken(refresh).blacklist()
+        except TokenError:
+            pass # expired, invalid or already blacklisted: it can't be used anyway
         return Response({"message": "Logged out"}, status=status.HTTP_200_OK)
 
 class ProfileView(APIView):
@@ -49,6 +47,7 @@ class ProfileView(APIView):
         return Response({
             "id": request.user.id,
             "email": request.user.email,
+            "date_joined": request.user.date_joined,
             "nickname": request.user.nickname,
             "wins": request.user.wins,
             "losses": request.user.losses,
@@ -73,7 +72,6 @@ class PublicProfileView(APIView):
         user = get_object_or_404(User, pk=pk)
         return Response({
             "id": user.id,
-            "email": user.email,
             "nickname": user.nickname,
             "wins": user.wins,
             "losses": user.losses,
@@ -85,17 +83,25 @@ class UserListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
             users = User.objects.exclude(id=request.user.id)
+            friend_pairs = FriendRelation.objects.filter (
+                    Q(from_user=request.user) | Q(to_user=request.user),
+                    status='accepted'
+            ).values_list('from_user_id', 'to_user_id')
+
+            my_friend_ids = set() 
+            for pair in friend_pairs:
+                for uid in pair:
+                    my_friend_ids.add(uid)
+            
+            my_friend_ids.discard(request.user.id)
             data = [
                 {"id": u.id, 
                 "nickname": u.nickname,
                 "wins": u.wins,
+                "losses": u.losses,
                 "is_online": u.is_online,
-                "avatar": request.build_absolute_uri(u.avatar.url) if u.avatar else None,
-                "is_friend": FriendRelation.objects.filter (
-                    Q(from_user=request.user, to_user=u) | #Q permits to check both directions: from to and to from
-                    Q(from_user=u, to_user=request.user),
-                    status='accepted'
-                ).exists() #bolean exists - returns TRUE o FAlse
+                "avatar": u.avatar.url if u.avatar else None,
+                "is_friend": u.id in my_friend_ids,
                 }
                 for u in users
             ]
@@ -134,23 +140,22 @@ class FriendRequestView(APIView):
             return Response({'error': 'User not found'}, status=404)
         
         #check if there's active invitations
-        already_exits = FriendRelation.objects.filter(
+        existing = FriendRelation.objects.filter(
             Q(from_user=request.user, to_user_id=to_user_id) |
             Q(from_user_id=to_user_id, to_user=request.user)
-        ).exists()
+        )
 
-        if already_exits:
-            return Response({'error': 'Realtion  already exists'}, status=400)
+        if existing.exclude(status='rejected').exists():
+            return Response({'error': 'Relation  already exists'}, status=400)
+        existing.filter(status='rejected').delete()
 
-        #SABINO modifica per vedere richieste amicizia in tempo reale
         relation = FriendRelation.objects.create (
             from_user=request.user,
             to_user_id=to_user_id,
             status='pending'
         )
 
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(f"user_{to_user_id}", {
+        notify_group(f"user_{to_user_id}", {
             "type": "friend_request_event",
             "from_user_id": request.user.id,
             "from_user_nickname": request.user.nickname,
@@ -163,19 +168,31 @@ class FriendsListView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         #filter all relations where "self" is presented
-        friends = FriendRelation.objects.filter(
-            Q(from_user = request.user) | Q(to_user=request.user), 
-            status='accepted'
+        friends = (
+            FriendRelation.objects
+            .select_related('from_user', 'to_user')
+            .filter(
+                Q(from_user = request.user) | Q(to_user=request.user), 
+                status='accepted'
+            )
         )
 
-        incoming = FriendRelation.objects.filter(
-            to_user=request.user,
-            status='pending'
+        incoming = (
+            FriendRelation.objects
+            .select_related('from_user', 'to_user')
+            .filter(
+                to_user=request.user,
+                status='pending'
+            )
         )
 
-        outgoing = FriendRelation.objects.filter(
-            from_user=request.user,
-            status='pending'
+        outgoing = (
+            FriendRelation.objects
+            .select_related('from_user', 'to_user')
+            .filter(
+                from_user=request.user,
+                status='pending'
+            ) 
         )
         return Response({
             'friends': FriendRelationSerializer (
@@ -206,22 +223,28 @@ class FriendDetailView(APIView):
         relation = self.get_object(pk, request.user)
         if not relation:
                 return Response({'error': 'Not Found'}, status=404)
+        if relation.to_user_id != request.user.id:
+                return Response({'error': 'Only recipient can accept or reject'}, status=403)
+        if relation.status != 'pending':
+                return Response({'error': 'Request already processed'}, status=400)
+ 
 
         action = request.data.get('action')
         if action == 'accept':
             relation.status = 'accepted'
-            #SABINO modifica per vedere richieste amicizia in tempo reale
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(f"user_{relation.from_user_id}", {
-                "type": "friend_request_accepted_event",
-                "user_id": request.user.id,
-                "nickname": request.user.nickname,
-            })
         elif action == 'reject':
             relation.status = 'rejected'
         else:
             return Response({'error': 'Invalid action'}, status=400)
         relation.save()
+        
+        #notify sender only after new status is saved
+        if action == 'accept':
+            notify_group(f"user_{relation.from_user_id}", {
+                "type": "friend_request_accepted_event",
+                "user_id": request.user.id,
+                "nickname": request.user.nickname,
+            })
         return Response({'message': 'Done'}, status=200)
 
     #delete

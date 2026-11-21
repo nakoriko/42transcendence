@@ -5,7 +5,7 @@ class Match(models.Model):
     class Status(models.TextChoices):
         PENDING = 'pending', 'Waiting for opponent'
         ACTIVE = 'active', 'Match in progress'
-        FINISHED = 'finished', 'Mathc finished'
+        FINISHED = 'finished', 'Match finished'
     class Mode(models.TextChoices):
         LOCAL = 'local', 'Local match (same keyboard)'
         REMOTE = 'remote', 'Remote (two browsers)'

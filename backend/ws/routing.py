@@ -1,7 +1,7 @@
 from django.urls import path
 from . import consumers
 
-#nome convenzionale per channels quando imposta in asgi.py
+# imported by core/asgi.py
 websocket_urlpatterns = [
     path('ws/game/', consumers.PresenceConsumer.as_asgi()),
 ]

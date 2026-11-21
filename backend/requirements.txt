@@ -4,6 +4,16 @@ psycopg2-binary
 Pillow
 djangorestframework-simplejwt
 
+
+# ASGI server stack: gunicorn manages multiple uvicorn worker processes.
+# Replaces daphne (single-process) to unblock parallel request handling
+uvicorn
+websockets
+httptools
+uvloop
+
+gunicorn
+
 # for websocket:
 channels
 channels-redis

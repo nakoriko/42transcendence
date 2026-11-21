@@ -1,18 +1,7 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    serializers.py                                     :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: nakoriko <nakoriko@student.42firenze.it    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/06/01 19:41:01 by nakoriko          #+#    #+#              #
-#    Updated: 2026/07/10 20:04:51 by nakoriko         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import FriendRelation
+from django.contrib.auth import password_validation
 
 
 #say whetre to take user model to do not write path everytime when it changes
@@ -29,6 +18,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_nickname(self, value):
             if User.objects.filter(nickname=value).exists():
                 raise serializers.ValidationError("This nickname is already taken") #catch of exception 09/07/20226 bug fix
+            return value
+
+    def validate_password(self, value):
+            password_validation.validate_password(value)
             return value
 
     
@@ -77,10 +70,11 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             model = User
             fields = ['nickname', 'email']
             extra_kwargs = {
-                # 'nickname': {'required': False},
                 'email': {'required': False},
             }
     def validate_nickname(self, value):
         if User.objects.filter(nickname=value).exclude(pk=self.instance.pk).exists():
             raise serializers.ValidationError("This nickname is already taken")
         return value
+
+    

@@ -1,16 +1,19 @@
 import asyncio
 import json
+import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from users.models import FriendRelation
 import redis.asyncio as redis
+from django.conf import settings
 
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
-redis_client = redis.Redis(host='redis', port=6379)
+redis_client = redis.Redis(host=settings.REDIS_HOST, port=6379)
 
 class PresenceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -36,14 +39,19 @@ class PresenceConsumer(AsyncWebsocketConsumer):
 
             if conn_count <= 0:
                 self.user.is_online = False
-                await self.user.asave(update_fields=['is_online']) #NAT: added to fix error with profile update after F5 
-                # await self.user.asave()
-                await self.broadcast_presence_update(False) # ← era notify_friends_status(False)
+                await self.user.asave(update_fields=['is_online']) # only is_online: a full save would overwrite profile changes made meanwhile
+                await self.broadcast_presence_update(False)
                 await self.broadcast_online_count()
 
-    #nuova versione di receive
-    async def receive(self, text_data):
-        data = json.loads(text_data)
+    async def receive(self, text_data=None, bytes_data=None):
+        if text_data is None:
+            return
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
+        if not isinstance(data, dict):
+            return
 
         if not self.authenticated:
             if data.get('type') == 'auth':
@@ -52,25 +60,19 @@ class PresenceConsumer(AsyncWebsocketConsumer):
                 await self.close()
             return
 
-        # Dispatcher per messaggi autenticati
+        # dispatcher for authenticated messages
         message_type = data.get('type')
         handlers = {
-            'game_invite': self.handle_game_invite,
-            'game_accept': self.handle_game_accept,
-            'join_match': self.handle_join_match,
-            'ping_match': self.handle_ping_match,
-            "player_input": self.handle_player_input,
             'chat_message': self.handle_chat_message,
-            # altri handler qui quando ne aggiungiamo
         }
         
         handler = handlers.get(message_type)
         if handler:
             await handler(data)
         else:
-            print(f"Unknown message type: {message_type}")
+            logger.warning("Unknown WS message type: %s", message_type)
 
-    # --- handler chiamati da Channels quando arriva un messaggio dal Group ---
+    # --- handle_* process client messages, *_event forward group events to the client ---
     async def handle_auth(self, data):
         token_string = data.get('token')
 
@@ -80,7 +82,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             self.authenticated = True
             self.auth_timeout.cancel()
 
-             # iscrizione a gruppo personale
+            # personal group + broadcast groups
             await self.channel_layer.group_add(f"user_{self.user.id}", self.channel_name)
             await self.channel_layer.group_add("global_presence", self.channel_name)
             await self.channel_layer.group_add("dashboard_updates", self.channel_name)
@@ -89,121 +91,16 @@ class PresenceConsumer(AsyncWebsocketConsumer):
 
             if conn_count == 1:
                 self.user.is_online = True
-                await self.user.asave(update_fields=['is_online']) #NAT: added to fix error: ws rewrited all fields. Cioe: se utente cambia il suo profilo, ws li rescrive tutti dentro DB (bug), acnhe se non sono piu attuali         # await self.user.asave()
-                await self.broadcast_presence_update(True)  # ← era notify_friends_status(True)
+                await self.user.asave(update_fields=['is_online']) # only is_online: a full save would overwrite profile changes made meanwhile
+                await self.broadcast_presence_update(True)
                 await self.broadcast_online_count()
 
            
 
             await self.send(json.dumps({'type': 'auth_success'}))
-        # except da mettere in versione finale
-        # except Exception:
-        #     await self.close()
-
-        #except per debug
         except Exception as e:
-            print("AUTH ERROR:", e)
+            logger.warning("WS auth failed: %s", e)
             await self.close()
-
-    async def handle_game_invite(self, data):
-        match_id = data.get('match_id')
-        to_user_id = data.get('to_user_id')
-
-        await self.channel_layer.group_send(f"user_{to_user_id}", {
-            "type": "game_invite_event",
-            "match_id": match_id,
-            "from_user_id": self.user.id,
-            "from_user_nickname": self.user.nickname,
-        })
-    
-    async def game_invite_event(self, event):
-        await self.send(json.dumps({
-            "type": "game_invite",
-            "match_id": event["match_id"],
-            "from_user": {
-                "id": event["from_user_id"],
-                "nickname": event["from_user_nickname"],
-            }
-        }))
-
-    async def handle_game_accept(self, data):
-        match_id = data.get('match_id')
-            
-        try:
-            from game.models import Match
-            match = await Match.objects.aget(id=match_id)
-            
-            match.status = 'active'
-            await match.asave()
-
-            for player_id, role in [(match.player1_id, 'player1'), (match.player2_id, 'player2')]:
-                await self.channel_layer.group_send(f"user_{player_id}", {
-                    "type": "game_start_event",
-                    "match_id": match_id,
-                    "your_role": role,
-                })
-        except Exception as e:
-            print(f"GAME_ACCEPT ERROR: {e}")
-            await self.send(json.dumps({
-                "type": "error",
-                "message": "Match not found or error processing accept"
-            }))
-            return
-
-    async def game_start_event(self, event):
-        await self.send(json.dumps({
-            "type": "game_start",
-            "match_id": event["match_id"],
-            "your_role": event["your_role"],
-        }))
-
-    async def handle_join_match(self, data):
-        match_id = data.get("match_id")
-
-        self.match_id = match_id
-
-        await self.channel_layer.group_add(
-            f"match_{match_id}",
-            self.channel_name
-        )
-
-        await self.send(json.dumps({
-            "type": "joined_match",
-            "match_id": match_id
-        }))
-
-    async def handle_ping_match(self, data):
-        match_id = data.get("match_id")
-
-        print(f"PING inviato al gruppo match_{match_id}")
-
-        await self.channel_layer.group_send(
-            f"match_{match_id}",
-            {
-                "type": "ping_event",
-                "from_user": self.user.nickname,
-            }
-        )
-
-    async def ping_event(self, event):
-        print(f"PING ricevuto da {self.user.nickname}")
-        
-        await self.send(json.dumps({
-            "type": "ping",
-            "from": event["from_user"],
-        }))
-
-    async def handle_player_input(self, data):
-        direction = data["direction"]
-
-        await self.channel_layer.group_send(
-            f"match_{self.match_id}",
-            {
-                "type": "player_input_event",
-                "player": self.user.nickname,
-                "direction": direction,
-            }
-        )
 
     async def handle_chat_message(self, data):
         to_user_id = data.get('to_user_id')
@@ -227,7 +124,7 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             }))
             return
 
-        # nuovo controllo: sono amici?
+        # chat is allowed only between friends
         are_friends = await FriendRelation.objects.filter(
             Q(from_user=self.user, to_user=to_user) |
             Q(from_user=to_user, to_user=self.user),
@@ -266,20 +163,6 @@ class PresenceConsumer(AsyncWebsocketConsumer):
             },
             "content": event["content"],
         }))
-
-    #SAB: sostituito da broadcast_presence_update per aggiornare stato di tutti, non solo amici
-    # async def notify_friends_status(self, is_online):
-    #     friends = FriendRelation.objects.filter(
-    #         Q(from_user=self.user) | Q(to_user=self.user),
-    #         status='accepted'
-    #     )
-    #     async for relation in friends:
-    #         friend_id = relation.to_user_id if relation.from_user_id == self.user.id else relation.from_user_id
-    #         await self.channel_layer.group_send(f"user_{friend_id}", {
-    #             "type": "friend_status_event",
-    #             "user_id": self.user.id,
-    #             "is_online": is_online,
-    #         })
 
     async def broadcast_presence_update(self, is_online):
         await self.channel_layer.group_send("global_presence", {

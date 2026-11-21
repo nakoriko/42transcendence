@@ -6,8 +6,10 @@ import { ref, reactive, onMounted, onUnmounted} from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { apiFetch } from '@/utils/apiFetch'
+import { useMatchesStore } from '@/stores/matches'
 
     const userStore = useUserStore()
+    const matchStore = useMatchesStore()
     const gameCanvas = ref(null)
     const route = useRoute()
     const player1 = reactive({id:null, nickname: 'Player 1'})
@@ -33,14 +35,11 @@ import { apiFetch } from '@/utils/apiFetch'
     }
 
     async function finishMatch(winnerId) {
-        await apiFetch(`/api/game/matches/${matchId}/finish/`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-                winner: winnerId,
-                score_player1: score_p1.value,
-                score_player2: score_p2.value,
-                ended_at: new Date().toISOString() //convert to ISO 8601: 2026-06-05T14:23:11...., because jangpo is waiting for this format
-            })
+        await matchStore.finishMatch(matchId, {
+            winner: winnerId,
+            score_player1: score_p1.value,
+            score_player2: score_p2.value,
+
         })
     }
 
@@ -84,22 +83,28 @@ import { apiFetch } from '@/utils/apiFetch'
             speed: 5
         }
 
-        // let score_p1 = 0
-        // let score_p2 = 0;
 
         //moves:
         document.addEventListener('keydown', handleKeyDown)
         document.addEventListener('keyup', handleKeyUp)
 
+        // without a saved match the result would be lost, so don't start playing
+        function failToStart() {
+            stopGame()
+            winnerText.value = 'Could not start the match'
+            gameOver.value = true
+        }
+
         async function initMatch() {
-            // const token = localStorage.getItem('access')
 
             //get currnet user ID and nickname
+            if(!userStore.currentUser) return failToStart()
             player1.id = userStore.currentUser.id
             player1.nickname = userStore.currentUser.nickname
 
             //get opponent ID and nickname
             const profile2 = await apiFetch(`/api/users/${player2.id}/`)
+            if(!profile2?.ok) return failToStart()
             const profile2Data = await profile2.json()
             player2.nickname = profile2Data.nickname
 
@@ -107,6 +112,7 @@ import { apiFetch } from '@/utils/apiFetch'
                 method: 'POST',
                 body: JSON.stringify({ player1: player1.id, player2: player2.id })
             })
+            if(!match?.ok) return failToStart()
             const matchData = await match.json()
             matchId = matchData.id
             render()
@@ -165,7 +171,6 @@ import { apiFetch } from '@/utils/apiFetch'
             //wall collisions (bottom wall)
             if (ball.y + ball.radius >= canvas.height)
                 ball.vy = -Math.abs(ball.vy)
-                // ball.vy = ball.vy * -1
                 
             //paddle_collisions (left paddle)
             if((ball.x - ball.radius <= l_paddle.x + l_paddle.width) 
@@ -224,7 +229,7 @@ import { apiFetch } from '@/utils/apiFetch'
 
         
 
-            // центральная вертикальная линия (пунктир)
+            // dashed vertical center line
             ctx.setLineDash([5, 5])
             ctx.strokeStyle = '#ABC7C3'
             ctx.lineWidth = 0.5
@@ -233,9 +238,9 @@ import { apiFetch } from '@/utils/apiFetch'
             ctx.moveTo(canvas.width / 2, 0)
             ctx.lineTo(canvas.width / 2, canvas.height)
             ctx.stroke()
-            ctx.setLineDash([]) // сбрасываем пунктир
+            ctx.setLineDash([]) // reset dash
 
-            // горизонтальная линия по центру
+            // horizontal center line
             ctx.strokeStyle = 'rgba(255,255,255,0.2)'
             ctx.lineWidth = 0.5
             ctx.beginPath()
@@ -300,9 +305,6 @@ import { apiFetch } from '@/utils/apiFetch'
         if(matchId) {
             try {
                 const winnerId = player2.id
-                // const winnerId = score_p1.value >= score_p2.value
-                // ? player2.id
-                // : player1.id
                 await saveMatch()
                 await finishMatch(winnerId)
             } catch(e) {

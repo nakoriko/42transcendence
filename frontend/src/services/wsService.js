@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   wsService.js                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: scarlucc <scarlucc@student.42firenze.it    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/03 20:56:22 by nakoriko          #+#    #+#             */
-/*   Updated: 2026/07/11 10:34:36 by scarlucc         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 import { useChatStore } from "@/stores/chat"
 import { usePresenceStore } from "@/stores/presence"
 
@@ -18,7 +6,6 @@ export { connect, disconnect, send}
 let socket = null
 
 const messageHandlers = {
-    auth_success: () => console.log('WS: authenticated'),
     chat_message: (data) =>  {
         const chatStore = useChatStore()
         chatStore.receiveMessage(data)
@@ -27,7 +14,6 @@ const messageHandlers = {
     chat_error: (data) =>  {
         const chatStore = useChatStore()
         chatStore.receiveError(data)
-        // console.warn('WS: chat error', data),
     },
 
     online_count: (data) => {
@@ -35,16 +21,11 @@ const messageHandlers = {
         presenceStore.setCount(data.count)
     },
     presence_update: (data) => {
-        console.log('friend change online status')
         const presenceStore = usePresenceStore()
         presenceStore.setStatus(data.user_id, data.is_online)
     },
     
-    //!!!!!!! NAT: 
-    //add for recive friends request in real time. 
-    //UNcomment when Sabino will finish on backend
-    //in App.vue add aevetnListener as well (onMounted + onUnmounted)
-    
+    // friend requests in real time: App, profile and chat reload their lists on 'friends-updated'
     friend_request_received:  () => {
         window.dispatchEvent(new CustomEvent('friends-updated'))
     },
@@ -79,7 +60,7 @@ function connect(token) {
 
     socket.onerror = (err) => {
         console.error('WS error', err)
-    } //for debugging
+    }
 }
 
 

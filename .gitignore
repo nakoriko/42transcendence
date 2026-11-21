@@ -3,6 +3,7 @@ db/postgres-data/
 
 # Media
 backend/media/
+backend/staticfiles/
 
 # Environment variables
 .env
